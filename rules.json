@@ -1,5 +1,5 @@
 {
-  "watchlist": ["BTCUSD", "ETHUSD", "SOLUSD"],
+  "watchlist": ["BTCUSD"],
   "default_timeframe": "240",
 
   "bias_criteria": {
