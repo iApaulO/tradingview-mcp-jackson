@@ -4,6 +4,7 @@ scripts/current.pine
 temp_*
 *.log
 discovery-log.json
+supertrend-status.json
 
 # Secrets — never commit
 .env
