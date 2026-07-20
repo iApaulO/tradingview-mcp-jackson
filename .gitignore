@@ -5,6 +5,7 @@ temp_*
 *.log
 discovery-log.json
 supertrend-status.json
+signal-grid.json
 
 # Secrets — never commit
 .env
