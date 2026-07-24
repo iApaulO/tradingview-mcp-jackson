@@ -71,8 +71,10 @@ export async function fetchCandles(symbol, timeframeKey, limit = 250) {
   return fetchBitstampOhlc(symbol, step, limit);
 }
 
+export { ATR_LEN };
+
 // ── True Range / ATR (Wilder's RMA, matches Pine ta.atr) ───────────────────
-function calcATRSeries(candles, length) {
+export function calcATRSeries(candles, length) {
   const tr = candles.map((c, i) => {
     if (i === 0) return c.h - c.l;
     const prevClose = candles[i - 1].c;
@@ -129,7 +131,9 @@ function kmeansCluster(atrWindow, lower, upper) {
 }
 
 // ── Adaptive SuperTrend — recursive band logic, mirrors pine_supertrend() ──
-function computeAdaptiveSuperTrend(candles, atr) {
+// Exported for the backtest engine (scripts/backtest/), which needs the full per-bar dir/st
+// series over historical candles, not just the last-bar summary scanAdaptiveSuperTrend returns.
+export function computeAdaptiveSuperTrend(candles, atr) {
   const n = candles.length;
   const dir = new Array(n).fill(NaN);
   const st = new Array(n).fill(NaN);

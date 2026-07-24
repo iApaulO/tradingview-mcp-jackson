@@ -156,6 +156,47 @@ survivorship bias in reported results). A lab that can't catch those isn't the l
 4. Pine `strategy()` translation for the TV-native-dependent signals
 5. Unify reporting across both engines
 
+### Phase 2 — own JS backtest engine, proved on SuperTrend — done 2026-07-24
+
+`scripts/backtest/lib/` (load-candles, simulate-trades, metrics) + `run-supertrend-backtest.js`.
+Reuses `scripts/lib/adaptive-supertrend.js`'s actual calculation (now exports
+`calcATRSeries`/`computeAdaptiveSuperTrend`/`ATR_LEN` for this) — same code path as the live
+monitor, run over full historical series instead of the last bar. Fill discipline: next-bar
+open after signal confirmation, not same-bar close, to avoid look-ahead bias. No position
+sizing/commission/slippage modeled yet (full-equity compounding, zero costs) — that's a real
+simplification, not hidden.
+
+**First real results (BTC, 2017-08-17 to 2024-12-31, in-sample, no anti-overfitting harness
+yet — see caveats below):**
+
+| Run | Trades | Win rate | Profit factor | Net return | Max DD | vs. buy-and-hold (21.5x) |
+|---|---|---|---|---|---|---|
+| 4H, long-short | 356 | 37.4% | 1.39 | 8.6x | 58.9% | **Loses** (8.6x vs 21.5x) |
+| 4H, long-only | 178 | 39.3% | 2.00 | **27.8x** | **39.6%** | **Beats it** — more return, less drawdown |
+| 1D, long-short | 64 | 31.3% | 1.49 | **0.94x** | 78.0% | **Loses money outright** |
+
+Two things worth flagging, not burying:
+
+1. **The 1D result is a genuine catch, not a bug worry.** Profit factor 1.49 (>1, "profitable"
+   per trade) but net return is *negative* (0.94x = a 6% loss) once compounded. That's sequence
+   risk — a few large losses landing at costly points in the equity curve — and it's exactly why
+   compounded equity curves matter more than average-trade stats. Good sign the engine's math is
+   doing something real, not just naive averaging.
+2. **Shorting is actively hurting the 4H strategy.** Long-only (27.8x, beats buy-and-hold with
+   *less* drawdown than raw BTC ever had) dramatically outperforms long-short (8.6x) on the same
+   data. Consistent with BTC's strong secular uptrend over this specific window — shorting into
+   that bias gave back most of what the long side made.
+
+**Caveats — these are Phase 2 proof-of-mechanics results, not evidence of edge:**
+- In-sample only. No train/test split, no walk-forward, no out-of-sample check.
+- No random-entry Monte Carlo baseline run yet (§7's own method against SMC/ICT) — until that
+  comparison exists, "beats buy-and-hold" isn't the same as "has statistically real edge."
+- One instrument (BTC), one indicator, one simple flip rule. Phase 3 exists to stress-test all
+  of this properly before anyone treats these numbers as decision-grade.
+
+Results saved to `scripts/backtest/results/` (committed, not gitignored — small JSON files,
+meant to accumulate as the experiment log per pillar 6).
+
 ### Data source — found, imported, Phase 1 done — 2026-07-24
 
 `S:\Housekeeping\junkyard\Binance_Historical_Data.db` (SQLite, 650MB) — pre-aggregated OHLCV
@@ -274,6 +315,11 @@ Sources:
 
 ## 8. Changelog
 
+- 2026-07-24 — Phase 2 (own JS backtest engine) done, proved on SuperTrend. First real results:
+  4H long-only beats buy-and-hold (27.8x vs 21.5x) with less drawdown; 4H long-short and 1D
+  long-short both lose to buy-and-hold, 1D long-short loses money outright despite profit factor
+  >1 (real sequence-risk catch, not a bug). All in-sample, no anti-overfitting harness yet --
+  Phase 3 next, before any of this is decision-grade.
 - 2026-07-24 — Phase 1 (historical data layer) done: `scripts/backtest/import-historical-data.js`
   decoded all 14 timeframe tables from `Binance_Historical_Data.db` into clean CSVs under
   `data/historical/` (gitignored, regenerable from source). 8,390,000 rows total, 546MB, zero

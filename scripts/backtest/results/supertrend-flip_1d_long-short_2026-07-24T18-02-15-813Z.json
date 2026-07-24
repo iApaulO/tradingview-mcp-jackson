@@ -1,0 +1,33 @@
+{
+  "strategy": "supertrend-flip",
+  "timeframe": "1d",
+  "mode": "long-short",
+  "data_range": {
+    "from": "2017-08-17T00:00:00.000Z",
+    "to": "2024-12-31T00:00:00.000Z",
+    "candle_count": 2694
+  },
+  "metrics": {
+    "trade_count": 64,
+    "long_trades": 32,
+    "short_trades": 32,
+    "win_rate": 0.3125,
+    "avg_win_pct": 0.3782379777238133,
+    "avg_loss_pct": 0.11501256072291058,
+    "profit_factor": 1.4948484968092393,
+    "net_return_pct": -0.05965115418077804,
+    "max_drawdown_pct": 0.7796125011121867,
+    "avg_bars_held": 40.3125,
+    "final_equity_multiple": 0.940348845819222,
+    "buy_and_hold_multiple": 21.83763196953149,
+    "beat_buy_and_hold": false
+  },
+  "generated_at": "2026-07-24T18:02:15.813Z",
+  "git_commit": "6f3e017d28a49db01102ae1499c7cfcc26604837",
+  "caveats": [
+    "In-sample only -- no train/test split, no walk-forward, no out-of-sample validation yet (Phase 3).",
+    "No random-entry Monte Carlo baseline compared against yet (Phase 3) -- do not read these numbers as evidence of edge.",
+    "No position sizing, commission, or slippage modeled -- full-equity compounding, zero costs.",
+    "Fills at next-bar open after signal confirmation (no look-ahead), but real execution would add slippage."
+  ]
+}
