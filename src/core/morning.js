@@ -94,7 +94,7 @@ export async function runBrief({ rules_path } = {}) {
 
       const [state, indicators, quote] = await Promise.all([
         chart.getState(),
-        data.getStudyValues(),
+        data.getStudyValuesEnsured(),
         data.getQuote({}),
       ]);
 

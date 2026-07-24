@@ -153,7 +153,7 @@ async function scanChartTimeframe(symbol, tf) {
   await new Promise((r) => setTimeout(r, 900));
 
   const [values, labels, lines, quote] = await Promise.all([
-    data.getStudyValues(),
+    data.getStudyValuesEnsured(),
     data.getPineLabels({ study_filter: "Smart Money", max_labels: 10 }),
     data.getPineLines({ study_filter: "Divergence for Many" }),
     data.getQuote({}),

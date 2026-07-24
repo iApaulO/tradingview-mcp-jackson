@@ -20,7 +20,7 @@ register('ohlcv', {
 
 register('values', {
   description: 'Get current indicator values from data window',
-  handler: () => core.getStudyValues(),
+  handler: () => core.getStudyValuesEnsured(),
 });
 
 register('data', {

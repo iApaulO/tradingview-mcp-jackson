@@ -291,3 +291,36 @@ export async function uiEvaluate({ expression }) {
   const result = await evaluate(expression);
   return { success: true, result };
 }
+
+// The Data Window panel has a per-study "Show/Hide data" toggle (the eye icon in each study's
+// row). It's flipped a study to hidden on us a few times during normal use (cause unconfirmed --
+// possibly triggered by symbol/timeframe switches), which silently drops that study's values from
+// getStudyValues() since it reads the same underlying visibility flag. This clicks any hidden
+// study's toggle back on. Safe to call anytime -- a no-op when nothing's hidden.
+export async function ensureDataWindowVisible() {
+  const result = await evaluate(`
+    (function() {
+      var tabs = Array.prototype.filter.call(document.querySelectorAll('button'), function(b) {
+        return b.textContent.indexOf('Data window') !== -1;
+      });
+      if (tabs.length) tabs[0].click();
+
+      var dw = document.querySelector('.chart-data-window');
+      if (!dw) return { fixed: [], dataWindowFound: false };
+
+      var fixed = [];
+      var rows = dw.querySelectorAll('[role="row"]');
+      for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        var btn = row.querySelector('button[aria-label*="data"]');
+        if (btn && btn.getAttribute('aria-label') === 'Show data') {
+          var titleEl = row.querySelector('[class*="headerTitle"]');
+          btn.click();
+          fixed.push(titleEl ? titleEl.textContent.trim() : (row.getAttribute('data-id') || 'unknown'));
+        }
+      }
+      return { fixed: fixed, dataWindowFound: true };
+    })()
+  `);
+  return { success: true, fixed: result?.fixed || [], data_window_found: !!result?.dataWindowFound };
+}

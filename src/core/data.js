@@ -2,6 +2,8 @@
  * Core data access logic.
  */
 import { evaluate, evaluateAsync, KNOWN_PATHS } from '../connection.js';
+import * as chart from './chart.js';
+import { ensureDataWindowVisible } from './ui.js';
 
 const MAX_OHLCV_BARS = 500;
 const MAX_TRADES = 20;
@@ -355,6 +357,34 @@ export async function getStudyValues() {
     })()
   `);
   return { success: true, study_count: data?.length || 0, studies: data || [] };
+}
+
+// getStudyValues() silently drops any indicator whose Data Window "Show data" toggle is off (see
+// ensureDataWindowVisible in ui.js). This wraps it with a self-healing check: compare against the
+// chart's actual study list, and if any are missing, fix the toggle(s) and retry once. Callers
+// that need reliable per-symbol/per-timeframe sweeps (morning_brief, signal-grid.js) should use
+// this instead of the raw getStudyValues().
+export async function getStudyValuesEnsured() {
+  let result = await getStudyValues();
+
+  let expectedNames;
+  try {
+    const state = await chart.getState();
+    expectedNames = (state.studies || []).map((s) => s.name);
+  } catch (_) {
+    return result; // can't verify -- return what we have rather than fail the caller
+  }
+
+  const gotNames = new Set(result.studies.map((s) => s.name));
+  const missing = expectedNames.filter((n) => !gotNames.has(n));
+  if (missing.length === 0) return result;
+
+  const fix = await ensureDataWindowVisible();
+  if (!fix.fixed?.length) return result; // nothing we could do -- return the partial result
+
+  await new Promise((r) => setTimeout(r, 700)); // panel needs a moment to repopulate after the click
+  result = await getStudyValues();
+  return { ...result, auto_fixed: fix.fixed, was_missing: missing };
 }
 
 export async function getPineLines({ study_filter, verbose } = {}) {
