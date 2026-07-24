@@ -197,6 +197,54 @@ Two things worth flagging, not burying:
 Results saved to `scripts/backtest/results/` (committed, not gitignored — small JSON files,
 meant to accumulate as the experiment log per pillar 6).
 
+### Phase 3 — anti-overfitting harness, run on Phase 2's results — done 2026-07-24, and it changed the conclusion
+
+`scripts/backtest/lib/segment.js` (in-sample/out-of-sample split, year grouping) +
+`monte-carlo.js` (random-entry baseline, seeded/reproducible) + `run-harness.js` orchestrator.
+Three checks per run: IS/OOS consistency, year-by-year regime breakdown, and a random-entry
+Monte Carlo baseline matching the real strategy's exact trade count/sides/holding-period shape —
+the same method §7 documents being used against SMC/ICT's own claimed edge, turned on our own
+result first.
+
+**This flips Phase 2's headline finding.** 4H long-only looked like the clear winner (27.8x,
+beat buy-and-hold, lower drawdown). Under the harness:
+
+| | 4H long-only | 4H long-short |
+|---|---|---|
+| Full-period return | 27.8x | 8.6x (loses to buy-and-hold) |
+| In-sample (70%) -> out-of-sample (30%) | 8.44x -> 1.94x | 5.05x -> 0.43x |
+| Random-entry baseline mean / median (same shape) | 13.62x / 4.87x | 1.01x / 0.13x |
+| Real result's percentile vs. random | 89.6th | 97.8th |
+| p-value (random beats real) | **0.104 — NOT significant** | **0.022 — significant at 5%** |
+
+**Long-only's big number is statistically indistinguishable from luck.** 10.4% of purely
+random-entry sequences with the identical trade count/holding-period shape did as well or
+better. The random baseline's own mean (13.6x) is high because being long *anything* for
+random ~46-bar windows tends to work when the underlying asset went up ~20x over the test
+window — the strategy wasn't shown to be doing something a coin flip couldn't.
+
+**Long-short, despite the worse raw return, has real signal (p=0.022).** Why: the random
+baseline for long-short is a much weaker opponent — half of random entries are shorts, and
+random shorts lose money in a secular bull market. So a strategy that correctly *times* both
+sides stands out clearly against that baseline, even though shorting into the overall uptrend
+costs it raw return. The year-by-year breakdown supports this directly: long-short was
+profitable in 2018 (+193%) and roughly flat in 2022 (+12%) — the two clearest bear-market
+years — while long-only was flat in 2018 (+7%) and lost money in 2022 (−26%), having nothing
+to offset the downside. The short side appears to be adding real, complementary value in down
+years specifically, not just dead weight.
+
+**Practical takeaway:** the naive Phase 2 read ("drop shorts, long-only is clearly better") was
+wrong, or at least unproven. Long-short is the one with statistical backing; long-only's
+outperformance is plausibly just riding BTC's trend. This is exactly the failure mode the
+harness exists to catch, and it caught it on our own first real result — not hypothetically.
+
+**Still not decision-grade** — one instrument (Binance BTC spot proxy), one indicator, one
+timeframe with real signal so far, IS/OOS split uses a single K-means fit over the whole
+history rather than true walk-forward re-optimization, and the Monte Carlo baseline doesn't
+model real market regime correlation. Directionally trustworthy, not yet a green light.
+
+Results saved to `scripts/backtest/results/harness_*.json`.
+
 ### Data source — found, imported, Phase 1 done — 2026-07-24
 
 `S:\Housekeeping\junkyard\Binance_Historical_Data.db` (SQLite, 650MB) — pre-aggregated OHLCV
@@ -314,6 +362,13 @@ Sources:
 - [Dumb Money Concepts and Backtest Limitations — Sentient Trading Society (Medium)](https://medium.com/@SentientTradingSociety/dumb-money-concepts-and-stat-test-limitations-110dcd4b67cf)
 
 ## 8. Changelog
+
+- 2026-07-24 — Phase 3 (anti-overfitting harness) done, run on both 4H variants. Result:
+  flips the Phase 2 conclusion. 4H long-only's headline 27.8x is statistically indistinguishable
+  from a random-entry baseline with the same trade shape (p=0.104). 4H long-short, despite the
+  lower raw return, clears significance (p=0.022) — the short side appears to carry real signal
+  in bear years specifically, not dead weight. Not decision-grade yet, but the harness did
+  exactly what it was built for on its first real use.
 
 - 2026-07-24 — Phase 2 (own JS backtest engine) done, proved on SuperTrend. First real results:
   4H long-only beats buy-and-hold (27.8x vs 21.5x) with less drawdown; 4H long-short and 1D

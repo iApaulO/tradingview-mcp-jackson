@@ -15,9 +15,7 @@
 
 import { writeFileSync, mkdirSync } from "fs";
 import { execSync } from "child_process";
-import { loadCandles } from "./lib/load-candles.js";
-import { calcATRSeries, computeAdaptiveSuperTrend, ATR_LEN } from "../lib/adaptive-supertrend.js";
-import { simulateSuperTrendFlipStrategy } from "./lib/simulate-trades.js";
+import { runSuperTrendStrategy } from "./lib/run-strategy.js";
 import { computeMetrics } from "./lib/metrics.js";
 
 const args = Object.fromEntries(
@@ -40,19 +38,12 @@ function gitCommit() {
 }
 
 async function main() {
-  console.log(`Loading data/historical/binance-btc-${TIMEFRAME}.csv ...`);
-  const candles = await loadCandles(TIMEFRAME);
-  if (candles.length === 0) throw new Error(`No candles loaded for timeframe "${TIMEFRAME}" -- does the CSV exist?`);
-  console.log(`  ${candles.length.toLocaleString()} candles: ${new Date(candles[0].t * 1000).toISOString()} -> ${new Date(candles[candles.length - 1].t * 1000).toISOString()}`);
-
-  console.log("Computing Adaptive SuperTrend series...");
-  const atr = calcATRSeries(candles, ATR_LEN);
-  const { dir } = computeAdaptiveSuperTrend(candles, atr);
+  console.log(`Loading data/historical/binance-btc-${TIMEFRAME}.csv, computing indicator, simulating (mode=${MODE})...`);
+  const { candles, dir, trades } = await runSuperTrendStrategy(TIMEFRAME, { mode: MODE });
   const validBars = dir.filter((d) => !Number.isNaN(d)).length;
-  console.log(`  ${validBars.toLocaleString()} bars past warmup (of ${candles.length.toLocaleString()})`);
+  console.log(`  ${candles.length.toLocaleString()} candles (${validBars.toLocaleString()} past warmup): ${new Date(candles[0].t * 1000).toISOString()} -> ${new Date(candles[candles.length - 1].t * 1000).toISOString()}`);
+  console.log(`  ${trades.length} trades generated`);
 
-  console.log(`Simulating trades (mode=${MODE})...`);
-  const trades = simulateSuperTrendFlipStrategy(candles, dir, { mode: MODE });
   const metrics = computeMetrics(trades);
 
   // Pillar 5 (§6): a strategy result means little without a baseline. Buy-and-hold over the same
