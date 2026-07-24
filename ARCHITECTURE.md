@@ -156,11 +156,14 @@ survivorship bias in reported results). A lab that can't catch those isn't the l
 4. Pine `strategy()` translation for the TV-native-dependent signals
 5. Unify reporting across both engines
 
-### Data source found — 2026-07-24
+### Data source — found, imported, Phase 1 done — 2026-07-24
 
 `S:\Housekeeping\junkyard\Binance_Historical_Data.db` (SQLite, 650MB) — pre-aggregated OHLCV
 tables for every timeframe from 1m to 1w (`T_1m` ... `T_1w`), Binance BTC, **2017-08-17 through
-2024-12-31/2025-01-05** (7.4 years). Validated:
+2024-12-31/2025-01-05** (7.4 years). Validated, then imported via
+`scripts/backtest/import-historical-data.js` into `data/historical/binance-btc-{tf}.csv`
+(gitignored, regenerable from source) — **8,390,000 rows, 546MB, zero out-of-order timestamps
+in any of the 14 files.** Phase 1 of §6's phasing is done.
 
 | Table | Rows | Range |
 |---|---|---|
@@ -271,6 +274,11 @@ Sources:
 
 ## 8. Changelog
 
+- 2026-07-24 — Phase 1 (historical data layer) done: `scripts/backtest/import-historical-data.js`
+  decoded all 14 timeframe tables from `Binance_Historical_Data.db` into clean CSVs under
+  `data/historical/` (gitignored, regenerable from source). 8,390,000 rows total, 546MB, zero
+  out-of-order timestamps across any table. Ready for Phase 2 (own JS backtest engine, proved on
+  SuperTrend first).
 - 2026-07-24 — added §6 Backtesting lab design (pillars, phasing) and a validated data source:
   `Binance_Historical_Data.db` (7.4yr multi-timeframe BTC OHLCV, gap-free, decode gotcha solved).
   Fixed a section-numbering gap (§6 didn't exist before). About to build the import.
