@@ -446,8 +446,61 @@ Sources:
 - [Smart Money Concepts (SMC) [LuxAlgo] — TradingView](https://www.tradingview.com/script/CnB3fSph-Smart-Money-Concepts-SMC-LuxAlgo/)
 - [Dumb Money Concepts and Backtest Limitations — Sentient Trading Society (Medium)](https://medium.com/@SentientTradingSociety/dumb-money-concepts-and-stat-test-limitations-110dcd4b67cf)
 
+### Bollinger Bands (optimized settings + divergence) — researched 2026-07-24
+
+**One genuine academic paper found**, unlike the SuperTrend/SMC searches: ["Bollinger Bands
+Thirty Years Later" (arXiv:1212.4890)](https://arxiv.org/abs/1212.4890), Mark Leeds. Real, but
+answers a different question than ours — it's about the statistical/rolling-regression
+foundations of Bollinger Bands and a pairs-trading variant ("Fixed Forecast Maximum Duration
+Bands"), tested on SAP and Nikkei. No single-asset parameter-optimization or divergence-strategy
+results in it. Cited for completeness, not as validation of anything we tested.
+
+**Parameter optimization:** no rigorous single source, but consistent informal convergence
+around the same default we already used (20-period, 2 std-dev) as a reasonable starting point —
+one large-scale community backtest (TrendSpider, unverified methodology) reportedly found
+SMA-20/2σ on a 60-min chart as "best" among tested combinations, and academic-adjacent technique
+references exist for optimizing BB parameters via swarm/genetic algorithms for pairs trading
+specifically (Butler & Kazakov; Ni & Zhang) — real methods, but not results we could verify or
+that apply directly to our single-asset, non-pairs setup.
+
+**Divergence-specific backtests — mixed, and one number is directly relevant to us:** a
+community-reported cross-market backtest of a BB+divergence strategy found win rates of 60%
+(EURUSD), 70% (US30), and **40% (BTC)** — crypto was the weakest of the three markets tested,
+worth remembering before assuming a divergence approach transfers cleanly to BTC. A separate
+source reported a Bollinger+RSI "double strategy" backtest across **4,032 parameter/pair/
+timeframe combinations, of which only 1,849 (46%) had profit factor > 1** — i.e. the *majority*
+of tested combinations were unprofitable. That statistic is the most trustworthy one found here
+precisely because it's unflattering and specific, not a cherry-picked highlight.
+
+**Higher-sounding numbers exist but couldn't be verified.** A MACD+BB divergence combo claiming
+78% win rate / 1.4% per trade / 15% max drawdown, and a "Bitcoin Bollinger Bands strategy...
+nearly 50% CAGR" claim, both come from the same content-marketing-style source
+(quantifiedstrategies.com) that blocked direct verification (bot-check wall) both times it was
+fetched. Not dismissed outright, but not weighted the same as the 46%-of-combinations-profitable
+number above, which came with its own methodology visible in the search summary.
+
+**How this lines up with what we found ourselves today:** the "most combinations don't help"
+pattern in this research matches our own two-for-two negative results (SuperTrend+BB trend
+filter: redundant; mean-reversion+SuperTrend gate: net negative, worse than random). That's
+mutually reinforcing, not a coincidence to read too much into from two data points — but it does
+mean our results aren't an outlier against the wider (thin, mixed-quality) literature; they're
+consistent with it. The BTC-specific 40% divergence win rate is the most actionable single data
+point here if a Bollinger Band divergence strategy is tried next — go in expecting BTC to be the
+harder market for this to work in, not the easier one.
+
+Sources:
+- [Bollinger Bands Thirty Years Later (arXiv:1212.4890)](https://arxiv.org/abs/1212.4890)
+- [Bollinger bands trading strategy (with divergence) — AsiaForexMentor](https://www.asiaforexmentor.com/bollinger-bands-trading-strategy/)
+- [12 Bollinger Bands Trading Strategies: Backtested With Settings — QuantifiedStrategies.com](https://www.quantifiedstrategies.com/bollinger-bands-trading-strategy/)
+
 ## 8. Changelog
 
+- 2026-07-24 — Researched Bollinger Bands optimized settings + divergence (§7). One real
+  academic paper found (pairs-trading focused, not directly applicable). Most useful data point:
+  a community backtest across 4,032 parameter/pair/timeframe combos found only 46% profitable
+  (PF>1) -- majority failed, matching our own two-for-two negative results today. BTC-specific
+  divergence win rate (40%) was the weakest of three markets tested -- worth knowing before
+  trying a divergence-based approach on our instrument.
 - 2026-07-24 — Tested mean-reversion entries at the Bollinger Bands, gated by SuperTrend
   direction (the reversed combination role). Loses money outright (0.46x long-short, 0.72x
   long-only) and is *worse* than a random-entry baseline with the same trade shape (14th
