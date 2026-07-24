@@ -1,6 +1,11 @@
 {
-  "watchlist": ["BTCUSD"],
+  "watchlist": ["COINBASE:BIPZ2030"],
   "default_timeframe": "240",
+
+  "supertrend_proxy": {
+    "COINBASE:BIPZ2030": "BTCUSD"
+  },
+  "_supertrend_proxy_note": "The background SuperTrend calc (scripts/supertrend-monitor.js, scripts/signal-grid.js) pulls candles from Bitstamp's public API, which doesn't list Coinbase Derivatives futures. Each watchlist symbol maps to its nearest liquid Bitstamp spot pair as a close-tracking proxy -- not the exact instrument.",
 
   "bias_criteria": {
     "bullish": [

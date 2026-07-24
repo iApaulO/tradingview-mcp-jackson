@@ -26,17 +26,21 @@ function loadRules() {
   if (!TF_TO_STEP[rules.default_timeframe]) {
     console.warn(`  ⚠ Unrecognized default_timeframe "${rules.default_timeframe}" — defaulting to 4H`);
   }
-  return { watchlist: rules.watchlist, timeframe: tf };
+  return { watchlist: rules.watchlist, timeframe: tf, proxyMap: rules.supertrend_proxy || {} };
 }
 
 async function runOnce() {
-  const { watchlist, timeframe } = loadRules();
+  const { watchlist, timeframe, proxyMap } = loadRules();
   const results = [];
   for (const symbol of watchlist) {
+    // Bitstamp (our candle source here) doesn't list every TradingView-facing instrument --
+    // e.g. Coinbase Derivatives futures -- so watchlist entries can map to a spot proxy pair.
+    const proxySymbol = proxyMap[symbol] || symbol;
     try {
-      results.push(await scanAdaptiveSuperTrend(symbol, timeframe));
+      const result = await scanAdaptiveSuperTrend(proxySymbol, timeframe);
+      results.push({ ...result, symbol, proxy_symbol: proxySymbol !== symbol ? proxySymbol : undefined });
     } catch (err) {
-      results.push({ symbol, error: err.message });
+      results.push({ symbol, proxy_symbol: proxySymbol !== symbol ? proxySymbol : undefined, error: err.message });
     }
   }
 
@@ -53,8 +57,9 @@ async function runOnce() {
     const flip = r.last_flip
       ? ` | flipped ${r.last_flip.direction} ${r.last_flip.bars_ago} bar(s) ago @ ${r.last_flip.price_at_flip}`
       : "";
+    const proxyNote = r.proxy_symbol ? ` [via ${r.proxy_symbol} proxy]` : "";
     console.log(
-      `  ${r.symbol}: ${arrow} ${r.direction.toUpperCase()} | ST ${r.supertrend} | price ${r.price} | vol: ${r.volatility_regime}${flip}`,
+      `  ${r.symbol}${proxyNote}: ${arrow} ${r.direction.toUpperCase()} | ST ${r.supertrend} | price ${r.price} | vol: ${r.volatility_regime}${flip}`,
     );
   }
   return status;

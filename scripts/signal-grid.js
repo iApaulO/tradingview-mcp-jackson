@@ -36,7 +36,7 @@ const TIMEFRAMES = [
 
 function loadWatchlist() {
   const rules = JSON.parse(readFileSync(RULES_PATH, "utf8"));
-  return rules.watchlist || [];
+  return { watchlist: rules.watchlist || [], proxyMap: rules.supertrend_proxy || {} };
 }
 
 function ribbonDirection(emas) {
@@ -171,7 +171,7 @@ async function scanChartTimeframe(symbol, tf) {
 }
 
 async function buildGrid() {
-  const watchlist = loadWatchlist();
+  const { watchlist, proxyMap } = loadWatchlist();
   const totalSteps = watchlist.length * TIMEFRAMES.length;
   const grid = { generated_at: new Date().toISOString(), symbols: {} };
   let completedSteps = 0;
@@ -190,13 +190,17 @@ async function buildGrid() {
 
     // SuperTrend doesn't touch the chart at all (independent Bitstamp fetch) — kick off all
     // timeframes for this symbol concurrently instead of serializing them with the chart sweep.
+    // Bitstamp doesn't list every TradingView-facing instrument (e.g. Coinbase Derivatives
+    // futures), so this may resolve through rules.json's supertrend_proxy mapping instead.
+    const proxySymbol = proxyMap[symbol] || symbol;
     const supertrendPromises = Object.fromEntries(
-      TIMEFRAMES.map((tf) => [tf.label, scanAdaptiveSuperTrend(symbol, tf.stKey).catch((err) => ({ error: err.message }))]),
+      TIMEFRAMES.map((tf) => [tf.label, scanAdaptiveSuperTrend(proxySymbol, tf.stKey).catch((err) => ({ error: err.message }))]),
     );
 
     for (const tf of TIMEFRAMES) {
       const chartData = await scanChartTimeframe(symbol, tf).catch((err) => ({ error: err.message }));
       const supertrend = await supertrendPromises[tf.label];
+      if (supertrend && proxySymbol !== symbol) supertrend.proxy_symbol = proxySymbol;
       grid.symbols[symbol].timeframes[tf.label] = { ...chartData, supertrend };
       completedSteps++;
 
