@@ -76,10 +76,31 @@ request/fork like we did for Cipher B, or reverse-engineer from behavior).
 
 ## 5. Open architecture questions (sketching, not decided)
 
-1. **True multi-timeframe parallelism.** Before reaching for external exchange data: TV Desktop
-   supports multi-pane/multi-tab layouts (`tv pane`, `tv tab` already exist in the CLI) — worth
-   testing whether several panes pinned to different timeframes, read concurrently, beats
-   sequential switching. Untested.
+1. **True multi-timeframe parallelism via multi-pane — TESTED, answer is no.** Hands-on test
+   2026-07-24: switched to a 2-pane layout and inspected both `chart.getState()` and
+   `data.getStudyValues()` while pane 0 was active. Findings:
+   - **Plan-capped at 2 panes.** TradingView's own upgrade modal fired requesting a plan upgrade
+     for >2 charts/tab (Essential=2, Plus=4, up to 16 on higher tiers). Not "many timeframes at
+     once" without a paid upgrade regardless of anything else.
+   - **The read APIs are scoped to the single active pane, not all panes at once.**
+     `getStudyValues()` reads via `window.TradingViewApi._activeChartWidgetWV` — confirmed
+     empirically: with pane 0 focused, `values` returned exactly our 5 indicators, nothing from
+     pane 1. So even with N panes visually rendering concurrently, reading them programmatically
+     is still one-at-a-time: focus pane -> read -> focus next pane -> read. No free parallelism.
+   - **Each pane needs its own full indicator setup.** Pane 1 (a stale pane from earlier
+     experimentation, symbol `MEXC:BTCUSDT.P`) had a completely different, unrelated indicator
+     set on it ("Step Channel Momentum Trend", "Neural Network Buy/Sell Signals" — duplicated
+     twice each). Nothing shares across panes automatically; every pane used for real work would
+     need all 5 indicators added and Data Window visibility managed independently.
+   - **One real upside found: focus-switching is fast.** `pane focus` took ~200ms vs. the
+     ~1.8s+ settle time `signal-grid.js` currently pays per symbol+timeframe switch. Not a
+     parallelism win, but could speed up a 2-wide sweep if ever worth the setup cost above.
+   - **Conclusion:** not worth pursuing further. Plan cap + per-pane setup cost + no actual
+     concurrent reads means this doesn't solve the multi-timeframe problem. The existing approach
+     (sequential TV-native sweep, with the independent SuperTrend calc already running truly
+     parallel across timeframes since it doesn't touch the chart at all) is the right shape —
+     if more speed is needed later, look at trimming settle-time / narrowing what's queried per
+     timeframe rather than multi-pane.
 2. **Exchange-direct vs. TV-native, per signal type.** Current lean: keep the four sophisticated
    community indicators (Cipher A/B, SMC, Boom Hunter) TV-native — reimplementing them is
    high-effort, high-risk (SuperTrend alone took real work and is still an approximation).
@@ -100,3 +121,6 @@ request/fork like we did for Cipher B, or reverse-engineer from behavior).
 
 - 2026-07-24 — doc created. Captures state after: 5-indicator signal grid with full Cipher B
   battery, Coinbase futures watchlist switch + proxy mapping, self-healing Data Window fix.
+- 2026-07-24 — multi-pane parallelism question tested and closed (§5.1): not viable, plan-capped
+  and reads aren't actually concurrent. Discovered a stale second pane with unrelated leftover
+  indicators from earlier experimentation — left in place untouched, just not in the active layout.
