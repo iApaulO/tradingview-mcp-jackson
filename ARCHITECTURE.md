@@ -285,6 +285,51 @@ different combination role if this is revisited, not just re-running this one on
 
 Results saved to `scripts/backtest/results/harness_supertrend-bb_*.json`.
 
+### Tested: mean-reversion entries at the bands, gated by SuperTrend — 2026-07-24
+
+The other combination role flagged above: reversed from the trend-filter test, here Bollinger
+Bands drive entry *timing* and SuperTrend only gates *direction* + provides the exit stop.
+New strategy shape, not a filter on the flip strategy — added `simulate-mean-reversion.js` +
+`runMeanReversionStrategy` (`--strategy=mean-reversion`).
+
+**Rules:** SuperTrend bullish + this bar's low touches/crosses the lower band -> long (mirror
+for short). Exit on whichever comes first: price reverts to the BB basis (take profit) or
+SuperTrend flips against the position (stop). "Buy the dip in an uptrend, sell the rally in a
+downtrend" — a standard, sensible-sounding combination.
+
+**Result: loses money outright, and is worse than random.**
+
+| | Long-short | Long-only |
+|---|---|---|
+| Trades | 432 | 221 |
+| Win rate | 53.7% | 55.7% |
+| Avg win / avg loss | 1.49% / **2.05%** | 1.46% / **2.11%** |
+| Net return | **0.46x** (lost 54%) | **0.72x** (lost 28%) |
+| vs. buy-and-hold (21.5x) | Loses badly | Loses badly |
+| vs. random-entry baseline | **14.1th percentile** | not run |
+| p-value | **0.859 — real is worse than 86% of random runs** | not run |
+
+The win rate looks fine in isolation (>50%, the mean-reversion signature) but average losses are
+meaningfully bigger than average wins, and that asymmetry is enough to make the whole thing
+net-negative. The Monte Carlo result is the sharper finding: this isn't "no edge," it's *negative*
+edge — random entries with the identical trade count/sides/holding-period shape did better 86%
+of the time. The entry timing itself (band touch, trend-agreeing) is actively counterproductive
+here, not neutral.
+
+**Plausible reason, not yet tested:** avg ~3.5 bars held (14 hours on 4H) is short — reversion
+targets get hit quickly when the thesis works, but the trend-flip stop may not be cutting losers
+fast enough when it doesn't, letting losses run longer than wins on average. A tighter/faster
+stop, or requiring a deeper band penetration before entry (less noise-sensitive), are the more
+promising next tweaks — not abandoning mean-reversion-on-BB entirely from one untuned attempt.
+
+**Bottom line so far, across both combination roles tried:** BB-as-trend-filter was redundant
+(§ above); BB-as-mean-reversion-trigger is actively harmful as implemented. Neither result
+should be read as "Bollinger Bands don't work with SuperTrend" in general — both were one
+specific, untuned rule set each. What they do establish: don't assume a plausible-sounding
+combination helps without running it through the harness. Two for two, intuition was wrong.
+
+Results saved to `scripts/backtest/results/*mean-reversion*.json`.
+
 ### Data source — found, imported, Phase 1 done — 2026-07-24
 
 `S:\Housekeeping\junkyard\Binance_Historical_Data.db` (SQLite, 650MB) — pre-aggregated OHLCV
@@ -403,6 +448,12 @@ Sources:
 
 ## 8. Changelog
 
+- 2026-07-24 — Tested mean-reversion entries at the Bollinger Bands, gated by SuperTrend
+  direction (the reversed combination role). Loses money outright (0.46x long-short, 0.72x
+  long-only) and is *worse* than a random-entry baseline with the same trade shape (14th
+  percentile, p=0.859) -- not just no edge, negative edge. Avg loss > avg win despite >50% win
+  rate. Two different SuperTrend+BB combination roles tried today, both failed -- intuition about
+  "plausible-sounding combinations" was wrong both times, exactly why the harness exists.
 - 2026-07-24 — Tested SuperTrend + Bollinger Bands (standard trend-agreement filter) through the
   full harness. Negative result: does nothing for long-only (0 trades ever filtered), and barely
   anything for long-short (3 of 356 trades filtered, metrics very slightly worse). Redundant with

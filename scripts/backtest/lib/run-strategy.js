@@ -6,6 +6,7 @@
 import { loadCandles } from "./load-candles.js";
 import { calcATRSeries, computeAdaptiveSuperTrend, ATR_LEN } from "../../lib/adaptive-supertrend.js";
 import { simulateSuperTrendFlipStrategy } from "./simulate-trades.js";
+import { simulateMeanReversionStrategy } from "./simulate-mean-reversion.js";
 import { calcBollingerBands } from "./bollinger.js";
 
 export async function runSuperTrendStrategy(timeframeKey, { mode = "long-short" } = {}) {
@@ -35,4 +36,17 @@ export async function runSuperTrendBBStrategy(timeframeKey, { mode = "long-short
 
   const trades = simulateSuperTrendFlipStrategy(candles, dir, { mode, entryFilter });
   return { candles, dir, bands: { basis, upper, lower }, trades };
+}
+
+// Reversed combination role from runSuperTrendBBStrategy: BB drives entry timing (mean-reversion
+// at the bands), SuperTrend only gates which direction is allowed and provides the trend-flip
+// stop -- see simulate-mean-reversion.js for the full entry/exit logic.
+export async function runMeanReversionStrategy(timeframeKey, { mode = "long-short", bbPeriod = 20, bbMult = 2 } = {}) {
+  const candles = await loadCandles(timeframeKey);
+  if (candles.length === 0) throw new Error(`No candles loaded for timeframe "${timeframeKey}" -- does the CSV exist?`);
+  const atr = calcATRSeries(candles, ATR_LEN);
+  const { dir } = computeAdaptiveSuperTrend(candles, atr);
+  const bands = calcBollingerBands(candles, bbPeriod, bbMult);
+  const trades = simulateMeanReversionStrategy(candles, dir, bands, { mode });
+  return { candles, dir, bands, trades };
 }

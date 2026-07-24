@@ -51,7 +51,9 @@ export function simulateSuperTrendFlipStrategy(candles, dir, { mode = "long-shor
   return trades;
 }
 
-function closeTrade(position, exitPrice, exitTime, exitIdx, openAtEnd = false) {
+// Exported for reuse by other strategy shapes (e.g. simulate-mean-reversion.js) that need the
+// same pnl/shape bookkeeping but different entry/exit trigger logic.
+export function closeTrade(position, exitPrice, exitTime, exitIdx, openAtEnd = false, reason = "signal") {
   const pnlPct =
     position.side === "long"
       ? (exitPrice - position.entryPrice) / position.entryPrice
@@ -65,5 +67,6 @@ function closeTrade(position, exitPrice, exitTime, exitIdx, openAtEnd = false) {
     pnlPct,
     barsHeld: exitIdx - position.entryIdx,
     openAtEnd,
+    exitReason: reason,
   };
 }

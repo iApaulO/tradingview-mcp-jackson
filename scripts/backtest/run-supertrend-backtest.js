@@ -16,7 +16,7 @@
 
 import { writeFileSync, mkdirSync } from "fs";
 import { execSync } from "child_process";
-import { runSuperTrendStrategy, runSuperTrendBBStrategy } from "./lib/run-strategy.js";
+import { runSuperTrendStrategy, runSuperTrendBBStrategy, runMeanReversionStrategy } from "./lib/run-strategy.js";
 import { computeMetrics } from "./lib/metrics.js";
 
 const args = Object.fromEntries(
@@ -28,7 +28,7 @@ const args = Object.fromEntries(
 const TIMEFRAME = args.tf || "4h";
 const MODE = args.mode || "long-short";
 const STRATEGY = args.strategy || "supertrend";
-const RUNNERS = { supertrend: runSuperTrendStrategy, "supertrend-bb": runSuperTrendBBStrategy };
+const RUNNERS = { supertrend: runSuperTrendStrategy, "supertrend-bb": runSuperTrendBBStrategy, "mean-reversion": runMeanReversionStrategy };
 if (!RUNNERS[STRATEGY]) throw new Error(`Unknown --strategy "${STRATEGY}" -- expected one of: ${Object.keys(RUNNERS).join(", ")}`);
 
 const RESULTS_DIR = new URL("results/", import.meta.url);

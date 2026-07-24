@@ -14,7 +14,7 @@
 
 import { writeFileSync, mkdirSync } from "fs";
 import { execSync } from "child_process";
-import { runSuperTrendStrategy, runSuperTrendBBStrategy } from "./lib/run-strategy.js";
+import { runSuperTrendStrategy, runSuperTrendBBStrategy, runMeanReversionStrategy } from "./lib/run-strategy.js";
 import { computeMetrics } from "./lib/metrics.js";
 import { splitInSampleOutOfSample, groupTradesByYear } from "./lib/segment.js";
 import { randomEntryBaseline, summarizeMonteCarlo } from "./lib/monte-carlo.js";
@@ -30,7 +30,7 @@ const MODE = args.mode || "long-short";
 const ITERATIONS = parseInt(args.iterations || "1000", 10);
 const SEED = parseInt(args.seed || "42", 10);
 const STRATEGY = args.strategy || "supertrend";
-const RUNNERS = { supertrend: runSuperTrendStrategy, "supertrend-bb": runSuperTrendBBStrategy };
+const RUNNERS = { supertrend: runSuperTrendStrategy, "supertrend-bb": runSuperTrendBBStrategy, "mean-reversion": runMeanReversionStrategy };
 if (!RUNNERS[STRATEGY]) throw new Error(`Unknown --strategy "${STRATEGY}" -- expected one of: ${Object.keys(RUNNERS).join(", ")}`);
 
 const RESULTS_DIR = new URL("results/", import.meta.url);

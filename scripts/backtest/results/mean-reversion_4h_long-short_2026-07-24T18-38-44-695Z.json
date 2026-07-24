@@ -1,0 +1,33 @@
+{
+  "strategy": "mean-reversion",
+  "timeframe": "4h",
+  "mode": "long-short",
+  "data_range": {
+    "from": "2017-08-17T04:00:00.000Z",
+    "to": "2024-12-31T20:00:00.000Z",
+    "candle_count": 16146
+  },
+  "metrics": {
+    "trade_count": 432,
+    "long_trades": 221,
+    "short_trades": 211,
+    "win_rate": 0.5370370370370371,
+    "avg_win_pct": 0.01493124463760167,
+    "avg_loss_pct": 0.020544988694013003,
+    "profit_factor": 0.8430398301784032,
+    "net_return_pct": -0.5374498462492681,
+    "max_drawdown_pct": 0.636781532011989,
+    "avg_bars_held": 3.4768518518518516,
+    "final_equity_multiple": 0.462550153750732,
+    "buy_and_hold_multiple": 21.51177359028412,
+    "beat_buy_and_hold": false
+  },
+  "generated_at": "2026-07-24T18:38:44.695Z",
+  "git_commit": "6d0c5d17edfdc91a36b1563d8e142fcfebf7eec1",
+  "caveats": [
+    "In-sample only -- no train/test split, no walk-forward, no out-of-sample validation yet (Phase 3).",
+    "No random-entry Monte Carlo baseline compared against yet (Phase 3) -- do not read these numbers as evidence of edge.",
+    "No position sizing, commission, or slippage modeled -- full-equity compounding, zero costs.",
+    "Fills at next-bar open after signal confirmation (no look-ahead), but real execution would add slippage."
+  ]
+}
