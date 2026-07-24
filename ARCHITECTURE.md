@@ -106,18 +106,93 @@ request/fork like we did for Cipher B, or reverse-engineer from behavior).
    high-effort, high-risk (SuperTrend alone took real work and is still an approximation).
    Reserve direct exchange/bulk data for (a) backtesting at scale and (b) signals we've already
    proven we can reimplement faithfully.
-3. **Backtesting path.** Two tiers, neither started:
-   - *Manual now*: `skills/replay-practice/SKILL.md` + `agents/performance-analyst.md` already
-     exist — Replay mode, discretionary rule application, P&L summary. Zero new code.
-   - *Automated, not yet built*: needs `rules.json`'s bias/risk criteria translated into an
-     actual Pine `strategy()` script with `strategy.entry()`/`strategy.exit()`. Everything
-     downstream (`data_get_strategy_results`, `strategy-report` skill, `performance-analyst`
-     agent) is already scaffolded and waiting.
-   - **Raised in priority by §7** — public data can't answer "are our settings/signals any good,"
-     only we can, on our actual instrument. That's what this path is for.
+3. **Backtesting path.** Full design in §6 — this is no longer "open," it's the current focus.
 4. **Performance baselines.** Not established for any indicator individually or in combination.
-   Needs the backtesting path above before this is answerable with real numbers rather than
-   vibes.
+   This is what §6 exists to produce.
+
+## 6. Backtesting lab design
+
+"Enterprise grade" here means something specific: not "runs a backtest and shows an equity
+curve," but statistically rigorous, reproducible, and hardened against the exact failure modes
+§7 documents (parameter-optimization overfit, unfalsifiable-by-design methodologies,
+survivorship bias in reported results). A lab that can't catch those isn't the lab we need.
+
+### Pillars
+
+1. **Historical data layer.** Years of OHLCV stored locally and versioned — not re-fetched live
+   each run — so tests are reproducible and bulk/parameter-sweep runs don't hammer an API. See
+   "Data source found" below — this pillar just got a running start.
+2. **Two backtest engines, matching §5.2's TV-native/independent split:**
+   - **TV Pine `strategy()` + Strategy Tester** for anything depending on the four TV-native
+     black-box indicators (Cipher A/B, SMC, Boom Hunter) — we deliberately chose not to
+     reimplement their logic, so testing them means testing them inside TV, via the MCP tools
+     that already exist (`data_get_strategy_results`/`trades`/`equity`).
+   - **Our own JS engine** for anything independently reimplemented (SuperTrend) or pure
+     price-action rules — full control, fast parameter sweeps, no UI dependency.
+3. **Every risk rule is an executable constraint, not a note.** R:R >= 1:2, max 2 open
+   positions, no trading in the first 15 min of NY open, stop for the day after 2 losses — these
+   have to be real logic in whichever engine runs the test, or the backtest isn't testing our
+   actual rules.
+4. **Anti-overfitting safeguards — the part that actually earns "enterprise grade":**
+   - In-sample/out-of-sample split, walk-forward re-optimization (not one static fit)
+   - Test across multiple regimes (trending/chop, high/low vol), not one lucky window
+   - Parameter sensitivity checks — if a 1-tick nudge craters performance, that's a fragile
+     overfit, not an edge
+   - **A random-entry Monte Carlo baseline, run every time** — the same method §7's SMC/ICT
+     skeptic used. If we can't beat random entries at the same R:R and trade count by a
+     statistically meaningful margin, there's no edge, regardless of how good the curve looks.
+5. **Baselines and decomposition.** Compare against buy-and-hold, and test each indicator alone
+   vs. the combined stack — need to know combining signals adds value before the meta-agent
+   vision gets built on that assumption.
+6. **Experiment tracking.** Every result tagged with the exact `rules.json`/code commit that
+   produced it, so results are comparable across iterations.
+
+### Phasing (staying honest about "start slow")
+
+1. Historical data layer
+2. Own JS backtest engine, proved end-to-end on SuperTrend alone first (simplest case: already
+   reimplemented, no Pine dependency)
+3. Anti-overfitting harness, built once and generically, reusable for every future strategy
+4. Pine `strategy()` translation for the TV-native-dependent signals
+5. Unify reporting across both engines
+
+### Data source found — 2026-07-24
+
+`S:\Housekeeping\junkyard\Binance_Historical_Data.db` (SQLite, 650MB) — pre-aggregated OHLCV
+tables for every timeframe from 1m to 1w (`T_1m` ... `T_1w`), Binance BTC, **2017-08-17 through
+2024-12-31/2025-01-05** (7.4 years). Validated:
+
+| Table | Rows | Range |
+|---|---|---|
+| T_1m | 3,870,558 | 2017-08-17 -> 2024-12-31 |
+| T_15m | 258,046 | same |
+| T_1h | 64,525 | same |
+| T_4h | 16,146 | same |
+| T_1d | 2,694 | same |
+| T_1w | 386 | 2017-08-17 -> 2025-01-05 |
+
+(T_2m/T_3m/T_5m/T_30m/T_2h/T_6h/T_12h/T_5d also present, same range, not detailed here.)
+
+Spans the 2017 bull/crash, 2018-19 bear, 2020 COVID crash + bull run, 2022 bear (Luna/FTX), and
+2023-24 recovery — genuinely multi-regime, exactly what pillar 4 needs. Daily table checked for
+gaps/duplicates: **zero of either** across 2,694 consecutive days.
+
+**Decode gotcha:** the `timestamp` column is declared `TEXT` but stores raw binary — a
+pandas/numpy `to_sql()` quirk. Actual encoding: **little-endian int64, nanoseconds since Unix
+epoch** (standard `datetime64[ns]` byte layout). Confirmed against known BTC price history (row 1
+decodes to 2017-08-17T04:00:00Z at open $4,261.48 — correct for that date). Any import script
+must decode with this before the timestamps are usable.
+
+**Proxy caveat:** Binance BTC spot, not our exact Coinbase nano-futures contract — same style of
+mismatch already accepted for the SuperTrend monitor's Bitstamp proxy, just smaller in practice
+(spot-to-spot cross-exchange vs. spot-to-futures).
+
+**Also found in that same folder, not touched:** `binance api key.txt` and `kraken.key` sitting
+in plaintext — not our concern to fix, flagged for iapaulo's own awareness. Two other candle
+sources exist in the same folder (`Binance_Candles_Database.db`, `btcusd_1m_master.csv`) but
+weren't vetted — `Binance_Historical_Data.db` is the strongest candidate found (clean schema,
+full timeframe coverage, validated gap-free) so no need to chase the others unless this one
+turns out to have issues on import.
 
 ## 7. Empirical research log
 
@@ -196,6 +271,9 @@ Sources:
 
 ## 8. Changelog
 
+- 2026-07-24 — added §6 Backtesting lab design (pillars, phasing) and a validated data source:
+  `Binance_Historical_Data.db` (7.4yr multi-timeframe BTC OHLCV, gap-free, decode gotcha solved).
+  Fixed a section-numbering gap (§6 didn't exist before). About to build the import.
 - 2026-07-24 — doc created. Captures state after: 5-indicator signal grid with full Cipher B
   battery, Coinbase futures watchlist switch + proxy mapping, self-healing Data Window fix.
 - 2026-07-24 — multi-pane parallelism question tested and closed (§5.1): not viable, plan-capped
