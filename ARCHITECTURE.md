@@ -245,6 +245,46 @@ model real market regime correlation. Directionally trustworthy, not yet a green
 
 Results saved to `scripts/backtest/results/harness_*.json`.
 
+### Tested: SuperTrend + Bollinger Bands combination — 2026-07-24
+
+Question asked directly, answered by building it rather than theorizing. Added
+`scripts/backtest/lib/bollinger.js` (standard 20-period SMA, 2 std-dev, untuned) and a filtered
+strategy variant (`runSuperTrendBBStrategy` in `lib/run-strategy.js`, `--strategy=supertrend-bb`
+on both orchestrators): the standard "double confirmation" combination — only take a SuperTrend
+flip if price also agrees with the Bollinger Band basis direction (close above basis for longs,
+below for shorts). Ran both modes through the full harness (baseline + IS/OOS + year breakdown +
+Monte Carlo).
+
+**Result: the filter does effectively nothing on this instrument/timeframe, and what little it
+does do is slightly negative.**
+
+| | Long-short | Long-short + BB | Long-only | Long-only + BB |
+|---|---|---|---|---|
+| Trades | 356 | 353 | 178 | **178 (identical)** |
+| Net return | 7.63x | 7.30x | 26.78x | **26.78x (identical)** |
+| p-value | 0.022 | 0.027 | 0.104 | **0.104 (identical)** |
+
+**Long-only: the filter changed literally nothing** — zero of the 178 SuperTrend bullish flips
+were ever rejected by the BB-basis condition. Makes sense once you see it: SuperTrend's own
+volatility-adaptive bands are already trend-following in the same spirit as a 20-SMA basis, so
+requiring agreement with a second, cruder trend proxy doesn't screen out anything SuperTrend
+wasn't already screening on its own.
+
+**Long-short: only 3 of 356 trades were filtered out (0.8%)**, and every metric got very
+slightly worse — lower net return, lower out-of-sample return, and a *higher* (worse) p-value.
+Not a meaningful difference either way, but if anything this specific combination is a mild net
+negative, not an improvement.
+
+**Bottom line:** Bollinger Bands as a same-direction trend filter is redundant with SuperTrend
+here — they're both approximating the same medium-term trend, so requiring both to agree barely
+changes the trade set. This doesn't rule out BB adding value in a *different* role (e.g.
+mean-reversion entries filtered by SuperTrend as the trend gate, rather than the other way
+around, or using band width for a volatility-squeeze breakout signal instead of the basis for
+direction) — just that the most obvious combination doesn't help. Worth trying a genuinely
+different combination role if this is revisited, not just re-running this one on other timeframes.
+
+Results saved to `scripts/backtest/results/harness_supertrend-bb_*.json`.
+
 ### Data source — found, imported, Phase 1 done — 2026-07-24
 
 `S:\Housekeeping\junkyard\Binance_Historical_Data.db` (SQLite, 650MB) — pre-aggregated OHLCV
@@ -363,6 +403,12 @@ Sources:
 
 ## 8. Changelog
 
+- 2026-07-24 — Tested SuperTrend + Bollinger Bands (standard trend-agreement filter) through the
+  full harness. Negative result: does nothing for long-only (0 trades ever filtered), and barely
+  anything for long-short (3 of 356 trades filtered, metrics very slightly worse). Redundant with
+  SuperTrend's own trend logic in this role -- documented as a real finding, not a dead end to
+  hide, and noted that a different combination role (mean-reversion entries, squeeze breakout)
+  wasn't tried.
 - 2026-07-24 — Phase 3 (anti-overfitting harness) done, run on both 4H variants. Result:
   flips the Phase 2 conclusion. 4H long-only's headline 27.8x is statistically indistinguishable
   from a random-entry baseline with the same trade shape (p=0.104). 4H long-short, despite the

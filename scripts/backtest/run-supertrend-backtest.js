@@ -12,10 +12,11 @@
 // Usage:
 //   node scripts/backtest/run-supertrend-backtest.js --tf=4h
 //   node scripts/backtest/run-supertrend-backtest.js --tf=1d --mode=long-only
+//   node scripts/backtest/run-supertrend-backtest.js --tf=4h --strategy=supertrend-bb
 
 import { writeFileSync, mkdirSync } from "fs";
 import { execSync } from "child_process";
-import { runSuperTrendStrategy } from "./lib/run-strategy.js";
+import { runSuperTrendStrategy, runSuperTrendBBStrategy } from "./lib/run-strategy.js";
 import { computeMetrics } from "./lib/metrics.js";
 
 const args = Object.fromEntries(
@@ -26,6 +27,9 @@ const args = Object.fromEntries(
 );
 const TIMEFRAME = args.tf || "4h";
 const MODE = args.mode || "long-short";
+const STRATEGY = args.strategy || "supertrend";
+const RUNNERS = { supertrend: runSuperTrendStrategy, "supertrend-bb": runSuperTrendBBStrategy };
+if (!RUNNERS[STRATEGY]) throw new Error(`Unknown --strategy "${STRATEGY}" -- expected one of: ${Object.keys(RUNNERS).join(", ")}`);
 
 const RESULTS_DIR = new URL("results/", import.meta.url);
 
@@ -38,8 +42,8 @@ function gitCommit() {
 }
 
 async function main() {
-  console.log(`Loading data/historical/binance-btc-${TIMEFRAME}.csv, computing indicator, simulating (mode=${MODE})...`);
-  const { candles, dir, trades } = await runSuperTrendStrategy(TIMEFRAME, { mode: MODE });
+  console.log(`Loading data/historical/binance-btc-${TIMEFRAME}.csv, computing indicator (strategy=${STRATEGY}), simulating (mode=${MODE})...`);
+  const { candles, dir, trades } = await RUNNERS[STRATEGY](TIMEFRAME, { mode: MODE });
   const validBars = dir.filter((d) => !Number.isNaN(d)).length;
   console.log(`  ${candles.length.toLocaleString()} candles (${validBars.toLocaleString()} past warmup): ${new Date(candles[0].t * 1000).toISOString()} -> ${new Date(candles[candles.length - 1].t * 1000).toISOString()}`);
   console.log(`  ${trades.length} trades generated`);
@@ -53,7 +57,7 @@ async function main() {
   metrics.beat_buy_and_hold = metrics.final_equity_multiple > buyAndHoldMultiple;
 
   const result = {
-    strategy: "supertrend-flip",
+    strategy: STRATEGY,
     timeframe: TIMEFRAME,
     mode: MODE,
     data_range: {
@@ -76,7 +80,7 @@ async function main() {
   console.log(JSON.stringify(metrics, null, 2));
 
   mkdirSync(RESULTS_DIR, { recursive: true });
-  const fname = `supertrend-flip_${TIMEFRAME}_${MODE}_${result.generated_at.replace(/[:.]/g, "-")}.json`;
+  const fname = `${STRATEGY}_${TIMEFRAME}_${MODE}_${result.generated_at.replace(/[:.]/g, "-")}.json`;
   const outPath = new URL(fname, RESULTS_DIR);
   writeFileSync(outPath, JSON.stringify(result, null, 2));
   console.log(`\nSaved: ${outPath.pathname.replace(/^\/([A-Z]:)/, "$1")}`);

@@ -6,6 +6,7 @@
 import { loadCandles } from "./load-candles.js";
 import { calcATRSeries, computeAdaptiveSuperTrend, ATR_LEN } from "../../lib/adaptive-supertrend.js";
 import { simulateSuperTrendFlipStrategy } from "./simulate-trades.js";
+import { calcBollingerBands } from "./bollinger.js";
 
 export async function runSuperTrendStrategy(timeframeKey, { mode = "long-short" } = {}) {
   const candles = await loadCandles(timeframeKey);
@@ -14,4 +15,24 @@ export async function runSuperTrendStrategy(timeframeKey, { mode = "long-short" 
   const { dir } = computeAdaptiveSuperTrend(candles, atr);
   const trades = simulateSuperTrendFlipStrategy(candles, dir, { mode });
   return { candles, dir, trades };
+}
+
+// SuperTrend flip signal, filtered by Bollinger Band basis (20-SMA) agreement: only take a long
+// entry if close is above the basis, only take a short if below. Standard "trend + trend" double
+// confirmation -- rejects SuperTrend flips that fire against the medium-term trend as the BB
+// basis approximates it, on the theory that those are more likely whipsaws.
+export async function runSuperTrendBBStrategy(timeframeKey, { mode = "long-short", bbPeriod = 20, bbMult = 2 } = {}) {
+  const candles = await loadCandles(timeframeKey);
+  if (candles.length === 0) throw new Error(`No candles loaded for timeframe "${timeframeKey}" -- does the CSV exist?`);
+  const atr = calcATRSeries(candles, ATR_LEN);
+  const { dir } = computeAdaptiveSuperTrend(candles, atr);
+  const { basis, upper, lower } = calcBollingerBands(candles, bbPeriod, bbMult);
+
+  const entryFilter = (c, i, newSide) => {
+    if (Number.isNaN(basis[i])) return false; // BB not warmed up yet -- stay flat rather than trade unfiltered
+    return newSide === "long" ? c[i].c > basis[i] : c[i].c < basis[i];
+  };
+
+  const trades = simulateSuperTrendFlipStrategy(candles, dir, { mode, entryFilter });
+  return { candles, dir, bands: { basis, upper, lower }, trades };
 }

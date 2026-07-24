@@ -14,7 +14,7 @@
 
 import { writeFileSync, mkdirSync } from "fs";
 import { execSync } from "child_process";
-import { runSuperTrendStrategy } from "./lib/run-strategy.js";
+import { runSuperTrendStrategy, runSuperTrendBBStrategy } from "./lib/run-strategy.js";
 import { computeMetrics } from "./lib/metrics.js";
 import { splitInSampleOutOfSample, groupTradesByYear } from "./lib/segment.js";
 import { randomEntryBaseline, summarizeMonteCarlo } from "./lib/monte-carlo.js";
@@ -29,6 +29,9 @@ const TIMEFRAME = args.tf || "4h";
 const MODE = args.mode || "long-short";
 const ITERATIONS = parseInt(args.iterations || "1000", 10);
 const SEED = parseInt(args.seed || "42", 10);
+const STRATEGY = args.strategy || "supertrend";
+const RUNNERS = { supertrend: runSuperTrendStrategy, "supertrend-bb": runSuperTrendBBStrategy };
+if (!RUNNERS[STRATEGY]) throw new Error(`Unknown --strategy "${STRATEGY}" -- expected one of: ${Object.keys(RUNNERS).join(", ")}`);
 
 const RESULTS_DIR = new URL("results/", import.meta.url);
 
@@ -41,8 +44,8 @@ function gitCommit() {
 }
 
 async function main() {
-  console.log(`Loading data/historical/binance-btc-${TIMEFRAME}.csv, computing indicator, simulating (mode=${MODE})...`);
-  const { candles, trades } = await runSuperTrendStrategy(TIMEFRAME, { mode: MODE });
+  console.log(`Loading data/historical/binance-btc-${TIMEFRAME}.csv, computing indicator (strategy=${STRATEGY}), simulating (mode=${MODE})...`);
+  const { candles, trades } = await RUNNERS[STRATEGY](TIMEFRAME, { mode: MODE });
   console.log(`  ${candles.length.toLocaleString()} candles, ${trades.length} trades\n`);
 
   // --- 1. Full-period baseline (same as run-supertrend-backtest.js) ---
@@ -81,7 +84,7 @@ async function main() {
   console.log(`  p-value (fraction of random runs >= real): ${mc.p_value_random_beats_real.toFixed(4)} ${mc.significant_at_5pct ? "(significant at 5%)" : "(NOT significant at 5% -- indistinguishable from random entries at this trade count)"}`);
 
   const result = {
-    strategy: "supertrend-flip",
+    strategy: STRATEGY,
     timeframe: TIMEFRAME,
     mode: MODE,
     full_period: fullMetrics,
@@ -100,7 +103,7 @@ async function main() {
   };
 
   mkdirSync(RESULTS_DIR, { recursive: true });
-  const fname = `harness_${TIMEFRAME}_${MODE}_${result.generated_at.replace(/[:.]/g, "-")}.json`;
+  const fname = `harness_${STRATEGY}_${TIMEFRAME}_${MODE}_${result.generated_at.replace(/[:.]/g, "-")}.json`;
   const outPath = new URL(fname, RESULTS_DIR);
   writeFileSync(outPath, JSON.stringify(result, null, 2));
   console.log(`\nSaved: ${outPath.pathname.replace(/^\/([A-Z]:)/, "$1")}`);

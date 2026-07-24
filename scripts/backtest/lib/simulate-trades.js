@@ -8,11 +8,18 @@
 // mode: "long-short" (default, always in the market, flips direction) or "long-only" (flat
 // during bearish stretches).
 //
+// entryFilter(candles, flipBarIdx, newSide) => boolean: optional gate on taking a NEW position
+// when a flip occurs. Exits still always happen on a flip (no filter on getting out); a filtered
+// entry just means staying flat until the next flip that passes. Defaults to always-true, which
+// reproduces the unfiltered SuperTrend-alone behavior exactly -- used to combine with another
+// indicator (e.g. Bollinger Bands, scripts/backtest/lib/bollinger.js) without touching this file
+// again per combination.
+//
 // No position sizing, commission, or slippage modeling yet -- full-equity-per-trade compounding,
 // zero costs. That's a deliberate Phase 2 simplification (proving the engine mechanics), not a
 // claim about real tradability -- see ARCHITECTURE.md §6.
 
-export function simulateSuperTrendFlipStrategy(candles, dir, { mode = "long-short" } = {}) {
+export function simulateSuperTrendFlipStrategy(candles, dir, { mode = "long-short", entryFilter = () => true } = {}) {
   const trades = [];
   let position = null;
 
@@ -30,7 +37,8 @@ export function simulateSuperTrendFlipStrategy(candles, dir, { mode = "long-shor
       position = null;
     }
 
-    if (mode === "long-short" || newSide === "long") {
+    const sideAllowed = mode === "long-short" || newSide === "long";
+    if (sideAllowed && entryFilter(candles, i, newSide)) {
       position = { side: newSide, entryIdx: fillIdx, entryTime: fillTime, entryPrice: fillPrice };
     }
   }
