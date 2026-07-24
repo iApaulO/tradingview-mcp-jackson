@@ -113,14 +113,94 @@ request/fork like we did for Cipher B, or reverse-engineer from behavior).
      actual Pine `strategy()` script with `strategy.entry()`/`strategy.exit()`. Everything
      downstream (`data_get_strategy_results`, `strategy-report` skill, `performance-analyst`
      agent) is already scaffolded and waiting.
+   - **Raised in priority by §7** — public data can't answer "are our settings/signals any good,"
+     only we can, on our actual instrument. That's what this path is for.
 4. **Performance baselines.** Not established for any indicator individually or in combination.
    Needs the backtesting path above before this is answerable with real numbers rather than
    vibes.
 
-## 6. Changelog
+## 7. Empirical research log
+
+Tracking what public/published data exists (or doesn't) for our indicators' settings and
+real-world edge — so "has anyone validated this" only gets researched once per indicator.
+
+### Adaptive SuperTrend [AlgoAlpha] — researched 2026-07-24
+
+**For this exact indicator: nothing.** Checked the TradingView script page, a derivative
+"strategy" version (trade_crush's ML Adaptive SuperTrend Strategy), and general search — no
+published backtest results, win rate, profit factor, or community-validated settings for
+`atr_len`/`factor`/`training_data_period`/the volatility percentile guesses. Free community
+script, feature description only, no performance validation from the author or anyone else.
+
+**For the underlying classic SuperTrend (ATR+multiplier, no ML clustering) — real research
+exists** and is directly relevant even though it's not our exact indicator. A 2024 arXiv
+thesis used Bayesian optimization across 5 assets:
+
+| Asset | Optimal ATR period | Optimal multiplier | vs. default (14/3) |
+|---|---|---|---|
+| Microsoft | 19 | 3.0 | **+233%** |
+| Nvidia | 14 | 4.0 | +112.5% |
+| HUL | 5 | 1.0 | +79.5% |
+| Infosys | 14 | 5.0 | **−28%** (optimization made it worse) |
+| Nifty 50 | 20 | 4.0 | default returned 0% profit |
+
+**Headline finding, not a footnote:** optimal parameters "vary significantly across different
+assets" — no universal best setting, and blind optimization can backfire. This reframes the
+question: AlgoAlpha's K-means clustering is essentially an attempt to solve exactly this problem
+(auto-adapt instead of hand-tune) — but nobody, including AlgoAlpha, has published whether their
+specific approach (their percentile guesses, their 100-bar window) actually beats a well-tuned
+static SuperTrend for any given instrument. Given even simple ATR/multiplier tuning is this
+asset-specific, a generic "best settings" claim for our nano BTC futures shouldn't be trusted
+either way without testing it ourselves.
+
+Source: [Optimising Supertrend Parameters using Bayesian Optimization (arXiv:2405.14262)](https://arxiv.org/html/2405.14262v1)
+
+### Smart Money Concepts [LuxAlgo] / ICT — researched 2026-07-24
+
+**For the LuxAlgo indicator specifically: nothing**, same pattern as SuperTrend — no published
+win rate, profit factor, or backtest data from LuxAlgo for the SMC indicator itself.
+
+**For the underlying ICT/SMC methodology (order blocks, BOS/CHoCH, liquidity sweeps, FVG) —
+genuine, unresolved controversy**, not just an absence of data:
+
+- **Optimistic side:** community-reported backtests of specific rule-based SMC entries (e.g.
+  order blocks after liquidity sweeps in discount zones) cite 50-65% win rates with profit
+  factor >1.5 — but these are forum/community-level claims, not peer-reviewed, and vary by
+  market/timeframe/execution.
+- **Skeptical side, with actual statistical reasoning:** a critique argues SMC/ICT resists
+  rigorous backtesting because it's fundamentally discretionary ("no objective way to use SMC...
+  depends on how the person who uses it decides to use it"), which makes it unfalsifiable — a
+  failed backtest gets attributed to misapplication, not the framework. It ran a **Monte Carlo
+  simulation of 5 million random trading paths** (25% win rate, 1:3 R:R — pure breakeven-by-chance
+  assumptions) and found outcomes up to $3.7M, with 15 paths exceeding $1M purely from variance.
+  Argument: with 2.5M+ people trading SMC, the handful of famous "ICT success stories" are
+  statistically expected from pure noise (survivorship bias), not evidence of edge. It also cites
+  Reddit-documented backtests showing isolated Fair Value Gap setups are unprofitable in isolation.
+- **Academic literature:** "limited attention," per search — SMC/ICT is largely a
+  practitioner/retail-trading-community framework, not something with much peer-reviewed
+  validation either way. One tangential academic thread (institutional trading behavior around
+  earnings announcements showing superior information processing) is sometimes cited as loose
+  support for the general "smart money moves differently" premise, but that's not evidence for
+  the specific ICT trading rules (order blocks, BOS/CHoCH, etc.).
+
+**Bottom line:** more contested than SuperTrend, not just under-researched. The subjectivity
+critique matters directly for us — our SMC extraction (`extractStructure` in signal-grid.js)
+reads LuxAlgo's own BOS/CHoCH/OB detection, which is itself one specific algorithmic
+interpretation of an inherently discretionary framework. Worth remembering when weighing SMC
+signals in the brief: this is the least empirically settled indicator in the stack, and its
+own claims are genuinely disputed, not just untested.
+
+Sources:
+- [Smart Money Concepts (SMC) [LuxAlgo] — TradingView](https://www.tradingview.com/script/CnB3fSph-Smart-Money-Concepts-SMC-LuxAlgo/)
+- [Dumb Money Concepts and Backtest Limitations — Sentient Trading Society (Medium)](https://medium.com/@SentientTradingSociety/dumb-money-concepts-and-stat-test-limitations-110dcd4b67cf)
+
+## 8. Changelog
 
 - 2026-07-24 — doc created. Captures state after: 5-indicator signal grid with full Cipher B
   battery, Coinbase futures watchlist switch + proxy mapping, self-healing Data Window fix.
 - 2026-07-24 — multi-pane parallelism question tested and closed (§5.1): not viable, plan-capped
   and reads aren't actually concurrent. Discovered a stale second pane with unrelated leftover
   indicators from earlier experimentation — left in place untouched, just not in the active layout.
+- 2026-07-24 — added empirical research log (§7): no public validation exists for either
+  AlgoAlpha's ML Adaptive SuperTrend or LuxAlgo's SMC specifically; SMC/ICT as a methodology has
+  genuine, unresolved controversy (not just an absence of data). Raised backtesting path priority.
