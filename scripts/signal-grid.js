@@ -139,10 +139,59 @@ function extractCipherB(indicatorStudies) {
   };
 }
 
+// Boom Hunter Pro (pine/boom-hunter-pro.pine) reuses the plot titles "Quotient 1" and
+// "Quotient 2" SIX times across three independent Ehlers-style oscillator systems (EOT 1/2/3),
+// plus reuses "Exit Warning" twice and "Break" twice for opposite-direction signals. TradingView's
+// Data Window collapses same-titled plots to one key, so we only ever see the LAST plot() call
+// with each title (confirmed: extractCipherB's isFiring/findVal pattern relies on the same
+// collapsing behavior). Reading the source top-to-bottom, "last wins" resolves to:
+//   Quotient 2 = q1        (EOT 1's main oscillator, scaled 0-100, source's Plot4)
+//   Quotient 1 = trigger   (2-bar SMA of q1, i.e. q1's own signal line, source's Plot3)
+// That's a sensible pairing (oscillator + trigger, exactly what every enter*/senter* condition
+// crosses), but it's an INFERENCE about TradingView's duplicate-title resolution order, not
+// verified against the live UI -- if morning_brief readings ever look off, check this first.
+// The other 4 Quotient plots (EOT2's Q3/Q4 "Red Wave", EOT3's Q5/Q6) are NOT reachable via the
+// Data Window under this naming collision.
+//
+// "Exit Warning" also collapses two conditions to one key; last-wins = over3 (cross(Q3,Q4) &&
+// Q3>0, plotted with text "Overbought"), not `over` (cross(Q5,Q6) && Q5>0.5, plotted first).
+//
+// "Break" collapses two OPPOSITE-direction signals: senter3 (a SHORT setup, text "Short") is
+// plotted first; the bullish resistance-continuation breakout (text "Continuation") is plotted
+// LAST -- so Data Window "Break" firing means bullish continuation, not the short setup. The
+// short setup (senter3) is not separately reachable via the Data Window under this name.
+//
+// The four "Long <color>" signals have unique titles (no collision) and are trustworthy as-is:
+//   Long gray   = enter6 (recent oversold recovery, q1<=60)      -- weakest/broadest tier
+//   Long yellow = enter7 (Quotient3<=-0.9 extreme + trigger cross) -- Red Wave extreme
+//   Long blue   = enter5 (fast reversal, within 5 bars of extreme oversold crossunder)
+//   Long Lime   = enter3 (most-filtered: Red Wave extreme + recent 20-level reclaim)  -- "QUALITY ENTRIES" per source comment
 function extractBoomHunter(indicatorStudies) {
   const boom = indicatorStudies.find((s) => s.name.includes("Boom"));
   if (!boom) return { found: false };
-  return { found: true, quotient_1: num(boom.values["Quotient 1"]), quotient_2: num(boom.values["Quotient 2"]) };
+  const v = boom.values;
+  const q2 = num(v["Quotient 2"]); // q1: main EOT-1 oscillator, 0-100 scaled
+  const q1 = num(v["Quotient 1"]); // trigger: 2-bar SMA of q1
+
+  const signalMap = {
+    long_gray: "long gray",
+    long_yellow: "long yellow",
+    long_blue: "long blue",
+    long_lime: "long lime",
+    exit_warning_ambiguous: "exit warning", // collapses over/over3 -- see comment above
+    break_ambiguous: "break", // collapses senter3(short)/continuation -- see comment above, likely continuation
+  };
+  const signals_firing = Object.entries(signalMap)
+    .filter(([, substr]) => isFiring(findVal(v, substr)))
+    .map(([name]) => name);
+
+  return {
+    found: true,
+    quotient_1: q1,
+    quotient_2: q2,
+    momentum_direction: Number.isNaN(q1) || Number.isNaN(q2) ? "unknown" : q2 > q1 ? "bullish" : q2 < q1 ? "bearish" : "flat",
+    signals_firing,
+  };
 }
 
 function extractDivergence(lineStudies) {

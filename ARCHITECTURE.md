@@ -45,15 +45,18 @@ assumed equivalent.
 | **VuManChu Cipher A** (ribbon) | TV-native, source obtained: `pine/vmc-cipher-a-ribbon.pine` | 8-EMA ribbon (periods 5,11,15,18,21,24,28,34), plus Long/Short EMA Signal, Red cross, Blue Triangle, Red Diamond, Bull candle, Blood Diamond, Yellow Cross | Ribbon direction is the indicator's own `ema8 < ema2` formula (corrected from a guessed monotonic-8-EMA-stack heuristic, see §3/§8 2026-07-25). Exact formulas now known for every signal. Its Data Window row has silently gone hidden 3x — now self-healing, see §4. |
 | **VuManChu B Divergences** (Cipher B) | TV-native, source obtained: `pine/vmc-cipher-b-divergences.pine` | WaveTrend (WT1/WT2/VWAP spread), MFI, RSI(14), Stoch K/D, Schaff Trend Cycle, 4 divergence families (WT regular + WT 2nd-range, RSI, Stoch), buy/sell circles, "gold" warning circle, Sommi higher-TF flags/diamonds | Fully mapped — `extractCipherB` in signal-grid.js pulls the whole battery, not just RSI/WT. |
 | **Smart Money Concepts [LuxAlgo]** | TV-native, source obtained: `pine/smart-money-concepts-luxalgo.pine` | BOS/CHoCH structure, Order Blocks (internal+swing, drawn as boxes), EQH/EQL liquidity pools, FVG, Premium/Discount/Equilibrium zones | Order block color decoded and confirmed (§3/§8 2026-07-25) — was "unverified," now resolved. **Important:** BOS/CHoCH tag text alone does NOT encode bullish/bearish — direction comes from which pivot (high vs. low) was crossed, not the tag. Our label reads so far have been direction-blind; see §3. |
-| **Boom Hunter Pro 1.022** | TV-native, source not obtained | Quotient 1/2, Exit Warning, Long gray/yellow/blue/Lime, Break | Raw values only pulled so far (signal-grid.js) — meaning of Quotient 1/2 not yet documented. Last of the 5 TV-native indicators still pending source. |
+| **Boom Hunter Pro 1.022** | TV-native, source obtained: `pine/boom-hunter-pro.pine` | 3 independent Ehlers-style oscillator systems (EOT 1/2/3: highpass -> SuperSmoother -> Fast-Attack-Slow-Decay peak norm -> quotient warp), q1/trigger crossover drives all entries. Long gray/yellow/blue/Lime (4 distinct, unique-title long setups, tiered by strictness), Exit Warning, Break | Source reuses the plot titles "Quotient 1"/"Quotient 2" **six times** across the 3 oscillator systems, and "Exit Warning"/"Break" twice each for *opposite-direction* signals — the Data Window collapses same-titled plots to one key. Resolved via "last plot() call wins" (see `extractBoomHunter` comment in signal-grid.js, 2026-07-25): Quotient 2 = q1 (main EOT-1 oscillator), Quotient 1 = its 2-bar-SMA trigger; Exit Warning = the Q3/Q4-based "Overbought" condition, not the Q5/Q6 one; **Break = the bullish continuation breakout, not the short setup** (`senter3`) — counterintuitive given the Long-signal naming pattern, worth double-checking against a live UI capture before trusting it. The 4 Long signals are safe as-is (unique titles). |
 | **Divergence for Many Indicators v4** | TV-native, source obtained: `pine/divergence-for-many-relevance-gated.pine` | MACD/MACD Hist/RSI/Stoch divergence badges, relevance-gated "promoted" support/resistance glow levels | Fully mapped, settings match "Commander default profile." |
 | **Adaptive SuperTrend [AlgoAlpha]** | Independently computed, source obtained: `pine/ml-adaptive-supertrend-algoalpha.pine` | K-means volatility-regime clustering (High/Med/Low) -> ATR-adaptive SuperTrend line + direction | Not on the visible chart by design — runs headless. Cross-validated once against the on-chart Pine instance (matched within ~$1). |
 
-**Open:** Boom Hunter is the only one of the 5 TV-native indicators still without source (4 of 5
-obtained as of 2026-07-25). With source in hand for Cipher A, Cipher B, SMC, and
-Divergence-for-Many, all four are now candidates for independent JS reimplementation the way
-SuperTrend already was — not done yet, deliberately batched until Boom Hunter's source arrives
-too (see §6 discussion, 2026-07-25).
+**Milestone, 2026-07-25:** all 5 TV-native indicators now have source in hand (Cipher A, Cipher B,
+SMC, Divergence-for-Many, and now Boom Hunter Pro), plus SuperTrend already independently
+computed — full source coverage of the stack for the first time. All 5 TV-native indicators are
+now candidates for independent JS reimplementation for true retroactive backtesting, the way
+SuperTrend already was. Deliberately not started yet — batching was intentional, this was the
+trigger condition ("proceed once the set is complete"). Next architectural conversation: which
+indicator(s) to reimplement first, and whether the MTF signal bus / persistent memory matrix
+design (raised earlier, deferred pending this exact milestone) should be revisited now.
 
 ## 3. Known limitations
 
@@ -511,6 +514,18 @@ Sources:
 
 ## 8. Changelog
 
+- 2026-07-25 — Received source for Boom Hunter Pro, the last of the 5 TV-native indicators
+  (`pine/boom-hunter-pro.pine`) — full source coverage of the stack achieved, see §2 milestone
+  note. Found and resolved a real ambiguity: the script reuses the plot titles "Quotient 1"/
+  "Quotient 2" six times across 3 separate oscillator systems, and "Exit Warning"/"Break" twice
+  each for opposite-direction conditions -- the Data Window silently collapses same-titled plots
+  to their last-defined value. Resolved via source read-order ("last plot() wins"): Quotient 2 =
+  the main EOT-1 oscillator (q1), Quotient 1 = its trigger line; most notably, "Break" turns out
+  to mean the *bullish continuation* signal, not the short setup (`senter3`) its naming pattern
+  would suggest -- flagged for a live-UI double-check rather than treated as fully certain.
+  Rewrote `extractBoomHunter()` in signal-grid.js to pull the 4 distinct Long gray/yellow/blue/
+  Lime signals (unique titles, trustworthy) plus a derived `momentum_direction` from
+  quotient_2 vs quotient_1, with the ambiguous Exit Warning/Break fields explicitly labeled as such.
 - 2026-07-25 — Received source for Cipher A and Smart Money Concepts (4 of 5 TV-native
   indicators now have source; only Boom Hunter remains). Fixed a real bug: Cipher A's
   `ribbonDirection()` was a guessed monotonic-8-EMA-stack heuristic, stricter than the
