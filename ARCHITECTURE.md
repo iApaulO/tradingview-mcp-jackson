@@ -349,6 +349,58 @@ combination helps without running it through the harness. Two for two, intuition
 
 Results saved to `scripts/backtest/results/*mean-reversion*.json`.
 
+### Mitigating critique issue #1: cost sensitivity sweep — 2026-07-25
+
+An institutional-quant-lens critique of everything in this section (run 2026-07-25) flagged zero
+cost modeling as the single fatal issue: every result above is gross, and gross "beats
+buy-and-hold" claims are not net-edge claims. Built `scripts/backtest/lib/costs.js`
+(`applyCosts`/`costSensitivitySweep`) and wired it into `run-harness.js` as a new reporting block,
+rather than hand-picking one fee number to bake in — Coinbase's own fee-schedule and funding-rate
+pages both returned HTTP 403 to automated fetch (scraping blocked), so the exact account-tier fee
+and real historical funding-rate series are **not confirmed**, only a third-party-aggregator
+figure (0.60%/0.40% taker/maker, explicitly Coinbase's lowest-volume <$10k/mo tier) and a
+cross-exchange representative funding magnitude (~0.00125%/hr). Structural fact that *is*
+reasonably confirmed: Coinbase perpetual-style futures settle funding **hourly**, not the more
+common 8-hour cadence. Given the uncertainty, costs are swept as a band (gross / retail-worst-case
+/ 3x-funding-stress / mid-tier-illustrative / high-volume-illustrative), not asserted as one number.
+
+**Result: the one statistically-significant finding (4H long-short, p=0.023 vs. random) does not
+survive realistic retail costs.**
+
+| Scenario | Taker fee | Funding/hr | 4H long-short net return | 4H long-only net return |
+|---|---|---|---|---|
+| Gross (zero cost) | 0% | 0% | 7.63x | 26.78x |
+| Retail worst-case | 0.60% | 0.00125% | **-0.95x (95% loss)** | 1.26x |
+| Retail worst-case, 3x funding stress | 0.60% | 0.00375% | -0.99x (near-total loss) | 0.03x (breakeven) |
+| Mid-tier (illustrative) | 0.15% | 0.00125% | 0.38x (62% loss) | 10.14x |
+| High-volume (illustrative) | 0.02% | 0.00125% | 2.50x | 16.62x |
+
+Long-short has 356 trades (178 round trips each side) against long-only's 178 — roughly double
+the fee drag for a strategy whose gross edge (7.63x) was already thinner than long-only's. At the
+retail tier, that's enough to erase the entire statistically-significant result and then some. It
+only turns net-positive again at a high-volume/near-institutional fee tier neither confirmed nor
+likely to reflect the account this will actually trade from. Long-only is more cost-resilient
+(half the round trips, bigger gross edge) but recall it was already shown statistically
+indistinguishable from random entries (p=0.109) — so its cost-resilience doesn't rescue a result
+that was never established as real to begin with.
+
+**Bottom line: nothing in this backtest program currently clears the bar of "real, costed edge" at
+a plausible retail cost level.** The long-short result that looked like the program's best finding
+(real signal, not just a trending-market artifact) is the one costs hit hardest.
+
+**Not yet done, flagged as the immediate next step, not a closed loop:** the Monte Carlo
+significance test above still compares GROSS real returns against an un-costed random baseline —
+an apples-to-oranges comparison now that costs are known to matter this much. Re-running the
+random-entry baseline with the same cost model applied per random trade (same hours-held-derived
+funding drag, same round-trip fee) is required before the p=0.023 figure can be trusted at all
+post-cost — it's possible costs shrink the *gap* between real and random, not just the real
+result's absolute level. Also still outstanding from the same critique: real Coinbase fee-tier
+confirmation (only iapaulo's account can supply this), multiple-testing correction across the 6
+strategy variants tested, parameter-sensitivity sweep on the inherited K-means constants, a
+second asset, and a true walk-forward split.
+
+Results saved to `scripts/backtest/results/harness_supertrend_4h_*_2026-07-25*.json`.
+
 ### Data source — found, imported, Phase 1 done — 2026-07-24
 
 `S:\Housekeeping\junkyard\Binance_Historical_Data.db` (SQLite, 650MB) — pre-aggregated OHLCV
@@ -514,6 +566,17 @@ Sources:
 
 ## 8. Changelog
 
+- 2026-07-25 — Institutional-quant-lens critique of the full backtest program to date (6
+  strategy variants), followed by the first mitigation: a cost-sensitivity sweep
+  (`scripts/backtest/lib/costs.js`, wired into `run-harness.js`). Sobering result: the one
+  statistically-significant finding so far (4H long-short vs. random, p=0.023) is wiped out
+  (-95%) at a realistic retail fee/funding tier and only turns net-positive again at an
+  unconfirmed high-volume tier — see §6. Coinbase's fee-schedule and funding-rate pages both
+  blocked automated fetch (403), so the fee tier used is a third-party-sourced, explicitly
+  worst-case-labeled anchor, not a confirmed number; funding cadence (hourly) is reasonably
+  confirmed. Five more mitigation items (costed Monte Carlo re-test, real fee-tier confirmation,
+  multiple-testing correction, parameter-sensitivity sweep, second asset, true walk-forward
+  split) remain open, tracked in §6's new subsection.
 - 2026-07-25 — Received source for Boom Hunter Pro, the last of the 5 TV-native indicators
   (`pine/boom-hunter-pro.pine`) — full source coverage of the stack achieved, see §2 milestone
   note. Found and resolved a real ambiguity: the script reuses the plot titles "Quotient 1"/

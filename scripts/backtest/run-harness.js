@@ -18,6 +18,7 @@ import { runSuperTrendStrategy, runSuperTrendBBStrategy, runMeanReversionStrateg
 import { computeMetrics } from "./lib/metrics.js";
 import { splitInSampleOutOfSample, groupTradesByYear } from "./lib/segment.js";
 import { randomEntryBaseline, summarizeMonteCarlo } from "./lib/monte-carlo.js";
+import { costSensitivitySweep } from "./lib/costs.js";
 
 const args = Object.fromEntries(
   process.argv.slice(2).map((a) => {
@@ -83,6 +84,21 @@ async function main() {
   console.log(`  real beat ${(mc.real_percentile_rank * 100).toFixed(1)}% of random-entry runs with the identical trade shape`);
   console.log(`  p-value (fraction of random runs >= real): ${mc.p_value_random_beats_real.toFixed(4)} ${mc.significant_at_5pct ? "(significant at 5%)" : "(NOT significant at 5% -- indistinguishable from random entries at this trade count)"}`);
 
+  // --- 5. Cost sensitivity sweep (gross vs. several fee/funding scenarios) ---
+  // Neither fee tier nor funding magnitude is a confirmed account-specific number -- see
+  // lib/costs.js header. This answers "does the edge survive ANY plausible cost level," not
+  // "here is the exact net return," until the real Coinbase fee tier is confirmed.
+  console.log("\n--- Cost sensitivity (full period, gross vs. costed scenarios) ---");
+  const costSweep = costSensitivitySweep(trades);
+  const costMetrics = {};
+  for (const [name, { params, trades: costedTrades }] of Object.entries(costSweep)) {
+    const m = computeMetrics(costedTrades);
+    costMetrics[name] = { params, metrics: m };
+    console.log(
+      `  ${name.padEnd(34)} taker=${(params.takerFeePct * 100).toFixed(3)}% funding/hr=${(params.fundingPctPerHour * 100).toFixed(5)}%  net_return=${m.net_return_pct?.toFixed(2)}x  beats_buy_hold=${m.final_equity_multiple > buyAndHoldMultiple}`,
+    );
+  }
+
   const result = {
     strategy: STRATEGY,
     timeframe: TIMEFRAME,
@@ -92,13 +108,14 @@ async function main() {
     out_of_sample: oosMetrics,
     by_year: yearMetrics,
     monte_carlo: mc,
+    cost_sensitivity: costMetrics,
     generated_at: new Date().toISOString(),
     git_commit: gitCommit(),
     caveats: [
       "One instrument (Binance BTC spot proxy), one indicator, one simple flip rule -- not a general edge claim.",
       "IS/OOS split and year buckets both use the SAME full-history SuperTrend calc (K-means trained once, over everything) -- this tests consistency across periods, not true walk-forward re-optimization (nothing is re-fit per window).",
-      "Monte Carlo baseline matches trade count/sides/holding-period shape, but not the specific timing correlation structure of real market regimes -- a stronger test than none, not a complete one.",
-      "No position sizing, commission, or slippage modeled.",
+      "Monte Carlo baseline matches trade count/sides/holding-period shape, but not the specific timing correlation structure of real market regimes -- a stronger test than none, not a complete one. It also compares against GROSS real returns only -- costed-vs-costed Monte Carlo significance re-testing is not yet done (fast follow).",
+      "Cost sensitivity uses an UNCONFIRMED fee tier (Coinbase's own fee/funding pages blocked automated fetch) and a cross-exchange representative funding rate, not Coinbase's own historical funding series -- see lib/costs.js. Treat as a sensitivity band, not a net-edge claim, until confirmed.",
     ],
   };
 
