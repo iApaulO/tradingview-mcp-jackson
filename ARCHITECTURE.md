@@ -416,11 +416,41 @@ contract = 1/100 BTC), not a % of notional. If so, the cost model itself needs a
 (flat-per-contract fee, not %-of-notional) once the real derivatives fee schedule is confirmed —
 this is a modeling gap, not just an unconfirmed number.
 
-Still outstanding from the same critique: real Coinbase **derivatives-specific** fee-tier
-confirmation (only iapaulo's account/the derivatives fee page can supply this — and it may
-require a flat-per-contract cost model, not the %-based one built here), multiple-testing
-correction across the 6 strategy variants tested, parameter-sensitivity sweep on the inherited
-K-means constants, a second asset, and a true walk-forward split.
+**Confirmed same day: real fee tier obtained, and the picture changes materially for the
+better.** iapaulo supplied the actual Coinbase Advanced dashboard screenshot: Advanced 1 tier,
+$73,923.25 trailing-30-day *derivatives* volume, fees **0.070% taker / 0.065% maker** — a real,
+percentage-based fee (no flat-per-contract restructuring needed after all). This confirmed the
+suspicion directly: the earlier "retail_worst_case" (0.60%/0.40%) was Coinbase's *spot* tier,
+never actually paid on derivatives trades, and overstated real costs by roughly 8x.
+`lib/costs.js` updated (`confirmed_derivatives`, `confirmed_derivatives_with_one_rebate`,
+`confirmed_derivatives_3x_funding_stress`; the wrong spot figure kept only as a labeled contrast).
+
+| | 4H long-short | 4H long-only |
+|---|---|---|
+| Gross | 7.63x | 26.78x |
+| **Confirmed real fee tier** | **1.45x (+145%)** | 13.77x |
+| Confirmed tier, 3x funding stress | **-0.47x (loses)** | 5.81x |
+| With Coinbase One rebate (unconfirmed enrollment) | 1.77x | 14.71x |
+| Costed Monte Carlo p-value (confirmed tier) | **0.022 — significant** | 0.105 — not significant |
+
+**Long-short is now both statistically significant AND net-profitable at the real fee tier** —
+the earlier "wiped out" finding was an artifact of testing against the wrong product's fee
+schedule, not a property of the strategy. This is a materially better result than either the
+gross number (looked great, wasn't real) or the spot-tier number (looked dead, wasn't real cost)
+suggested on their own — the correct answer needed the correct input, which is exactly why this
+was worth confirming rather than assuming.
+
+**Still fragile, not yet decision-grade:** the 3x-funding-stress column flips long-short back to
+a loss (-0.47x) — funding rate magnitude is still an unconfirmed cross-exchange placeholder
+(~0.00125%/hr), not Coinbase's own historical funding series, and it's now the single largest
+remaining source of uncertainty in the cost model (the fee side is confirmed; the funding side
+isn't). Long-only remains statistically indistinguishable from random regardless of fee tier —
+its absolute profit is still attributable to riding BTC's trend, not to real signal.
+
+Still outstanding from the same critique: Coinbase's own historical funding-rate data (to replace
+the placeholder magnitude — the highest-value remaining unknown now that fees are confirmed),
+multiple-testing correction across the 6 strategy variants tested, parameter-sensitivity sweep on
+the inherited K-means constants, a second asset, and a true walk-forward split.
 
 Results saved to `scripts/backtest/results/harness_supertrend_4h_*_2026-07-25*.json`.
 
@@ -589,6 +619,15 @@ Sources:
 
 ## 8. Changelog
 
+- 2026-07-25 — iapaulo confirmed the real Coinbase derivatives fee tier from the account
+  dashboard (Advanced 1, 0.070%/0.065% taker/maker) — resolving mitigation item #3 and
+  confirming the earlier "retail_worst_case" figure was Coinbase's spot tier, never actually
+  paid, overstating real costs ~8x. Re-ran cost sensitivity + costed Monte Carlo with the real
+  number: **4H long-short is now both statistically significant (p=0.022) and net-profitable
+  (1.45x/+145%) at real costs** — a materially better result than either the gross number or
+  the wrong-tier number suggested. Still fragile to the funding-rate assumption specifically
+  (3x funding stress flips it to a loss) — funding magnitude is now the largest remaining
+  cost-model uncertainty, having replaced fees as the open question. See §6.
 - 2026-07-25 — Costed Monte Carlo re-test (`randomEntryBaseline`'s new `costParams`, applied to
   both real and random draws at the retail-worst-case tier). Result: 4H long-short's edge is
   still statistically significant after matched costs (p=0.022) but NOT profitable at that tier

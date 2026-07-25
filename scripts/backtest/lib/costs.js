@@ -16,22 +16,26 @@
 //     deliberately pessimistic (real funding oscillates sign; this assumes it's always a cost,
 //     never a tailwind) until real historical funding data is sourced.
 //
-// NEITHER the fee tier NOR the funding magnitude below is a confirmed, account-specific number --
-// Coinbase's own fee-schedule and funding-rate pages both returned HTTP 403 to automated fetch
-// (scraping blocked). The 0.60%/0.40% figure came from a third-party aggregator during research,
-// is explicitly Coinbase's lowest-volume (<$10k/mo) tier, and may not match iapaulo's real tier.
-// Use costSensitivitySweep() to see how sensitive a result is across a plausible range rather than
-// trusting one point estimate -- and confirm the real tier from the Coinbase account dashboard
-// when this needs to become a "net edge" claim rather than a sensitivity check.
+// UPDATE 2026-07-25: iapaulo confirmed the real account fee schedule directly from the Coinbase
+// Advanced dashboard (screenshot): Advanced 1 tier, $73,923.25 trailing-30-day DERIVATIVES volume.
+// This validated the suspicion below -- the earlier "retail_worst_case" figure (0.60%/0.40%) was
+// indeed Coinbase's SPOT tier, not derivatives, and overstated real costs by roughly 8x. Kept here
+// (renamed) only as a labeled contrast, not as a plausible real scenario anymore. Funding rate
+// magnitude is still NOT Coinbase-specific (dashboard doesn't surface historical funding data) --
+// the representative cross-exchange figure below remains a placeholder for that one component.
 
 export const FEE_TIERS = {
-  // Coinbase's lowest tier (<$10k/mo trailing volume), per third-party aggregator, NOT
-  // independently confirmed against Coinbase's own fee page. Worst-case anchor, not a confirmed number.
-  retail_worst_case: { takerFeePct: 0.006, makerFeePct: 0.004 },
-  // Illustrative mid-volume tier -- NOT sourced from Coinbase docs, a placeholder for sensitivity-band width only.
-  mid_tier_illustrative: { takerFeePct: 0.0015, makerFeePct: 0.001 },
-  // Illustrative high-volume/institutional tier -- same caveat.
-  high_volume_illustrative: { takerFeePct: 0.0002, makerFeePct: 0 },
+  // CONFIRMED 2026-07-25 from iapaulo's own Coinbase Advanced dashboard, Advanced 1 tier,
+  // derivatives volume $73,923.25/30d. This is the real number -- use this as the default going
+  // forward, not a sensitivity extreme.
+  confirmed_derivatives: { takerFeePct: 0.0007, makerFeePct: 0.00065 },
+  // Same tier, IF enrolled in Coinbase One (25% fee rebate per the dashboard) -- unconfirmed
+  // whether iapaulo is actually enrolled, kept separate rather than assumed.
+  confirmed_derivatives_with_one_rebate: { takerFeePct: 0.0007 * 0.75, makerFeePct: 0.00065 * 0.75 },
+  // WRONG PRODUCT, kept only to show how much the fee schedule mattered: this is Coinbase's SPOT
+  // tier (<$10k/mo), surfaced via a third-party aggregator before the real derivatives tier was
+  // confirmed. Derivatives trading never actually paid this -- do not use as a real scenario.
+  coinbase_spot_tier_wrong_product_for_contrast_only: { takerFeePct: 0.006, makerFeePct: 0.004 },
 };
 
 // Widely-cited cross-exchange BTC perp funding baseline (~0.01% per 8h == 0.00125%/hr), used ONLY
@@ -51,13 +55,22 @@ export function applyCosts(trades, { takerFeePct = 0, fundingPctPerHour = 0 } = 
 export function costSensitivitySweep(trades) {
   const scenarios = {
     gross_zero_cost: { takerFeePct: 0, fundingPctPerHour: 0 },
-    retail_worst_case: { takerFeePct: FEE_TIERS.retail_worst_case.takerFeePct, fundingPctPerHour: REPRESENTATIVE_FUNDING_PCT_PER_HOUR },
-    retail_worst_case_3x_funding_stress: {
-      takerFeePct: FEE_TIERS.retail_worst_case.takerFeePct,
+    confirmed_derivatives: {
+      takerFeePct: FEE_TIERS.confirmed_derivatives.takerFeePct,
+      fundingPctPerHour: REPRESENTATIVE_FUNDING_PCT_PER_HOUR,
+    },
+    confirmed_derivatives_3x_funding_stress: {
+      takerFeePct: FEE_TIERS.confirmed_derivatives.takerFeePct,
       fundingPctPerHour: REPRESENTATIVE_FUNDING_PCT_PER_HOUR * 3,
     },
-    mid_tier_illustrative: { takerFeePct: FEE_TIERS.mid_tier_illustrative.takerFeePct, fundingPctPerHour: REPRESENTATIVE_FUNDING_PCT_PER_HOUR },
-    high_volume_illustrative: { takerFeePct: FEE_TIERS.high_volume_illustrative.takerFeePct, fundingPctPerHour: REPRESENTATIVE_FUNDING_PCT_PER_HOUR },
+    confirmed_derivatives_with_one_rebate: {
+      takerFeePct: FEE_TIERS.confirmed_derivatives_with_one_rebate.takerFeePct,
+      fundingPctPerHour: REPRESENTATIVE_FUNDING_PCT_PER_HOUR,
+    },
+    coinbase_spot_tier_wrong_product_for_contrast_only: {
+      takerFeePct: FEE_TIERS.coinbase_spot_tier_wrong_product_for_contrast_only.takerFeePct,
+      fundingPctPerHour: REPRESENTATIVE_FUNDING_PCT_PER_HOUR,
+    },
   };
   const out = {};
   for (const [name, params] of Object.entries(scenarios)) {

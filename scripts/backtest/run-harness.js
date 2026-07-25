@@ -99,17 +99,17 @@ async function main() {
     );
   }
 
-  // --- 6. Costed Monte Carlo re-test (retail worst-case tier) ---
+  // --- 6. Costed Monte Carlo re-test (confirmed real derivatives fee tier) ---
   // Step 4's Monte Carlo compares a GROSS real result against an uncosted random baseline --
   // apples to oranges once costs matter this much (see §6 critique mitigation, 2026-07-25). This
-  // applies the SAME cost model to every random draw as the real trades got, at the retail
-  // worst-case tier (the decisive scenario from step 5), for a fair post-cost significance test.
-  const retailParams = costMetrics.retail_worst_case.params;
+  // applies the SAME cost model to every random draw as the real trades got, at iapaulo's
+  // confirmed real Coinbase derivatives fee tier, for a fair post-cost significance test.
+  const retailParams = costMetrics.confirmed_derivatives.params;
   console.log(
-    `\n--- Costed Random-entry Monte Carlo (retail worst-case: taker=${(retailParams.takerFeePct * 100).toFixed(2)}% funding/hr=${(retailParams.fundingPctPerHour * 100).toFixed(5)}%) ---`,
+    `\n--- Costed Random-entry Monte Carlo (confirmed derivatives tier: taker=${(retailParams.takerFeePct * 100).toFixed(3)}% funding/hr=${(retailParams.fundingPctPerHour * 100).toFixed(5)}%) ---`,
   );
   const costedRandomResults = randomEntryBaseline(candles, trades, { iterations: ITERATIONS, seed: SEED, costParams: retailParams });
-  const costedRealFinalEquity = costMetrics.retail_worst_case.metrics.final_equity_multiple;
+  const costedRealFinalEquity = costMetrics.confirmed_derivatives.metrics.final_equity_multiple;
   const mcCosted = summarizeMonteCarlo(costedRandomResults, costedRealFinalEquity);
   console.log(
     `  real(costed)=${mcCosted.real_final_equity.toFixed(2)}x  random(costed) mean=${mcCosted.random_mean_final_equity.toFixed(2)}x median=${mcCosted.random_median_final_equity.toFixed(2)}x range=[${mcCosted.random_min.toFixed(2)}x, ${mcCosted.random_max.toFixed(2)}x]`,
@@ -129,15 +129,15 @@ async function main() {
     by_year: yearMetrics,
     monte_carlo: mc,
     cost_sensitivity: costMetrics,
-    monte_carlo_costed_retail_worst_case: mcCosted,
+    monte_carlo_costed_confirmed_derivatives: mcCosted,
     generated_at: new Date().toISOString(),
     git_commit: gitCommit(),
     caveats: [
       "One instrument (Binance BTC spot proxy), one indicator, one simple flip rule -- not a general edge claim.",
       "IS/OOS split and year buckets both use the SAME full-history SuperTrend calc (K-means trained once, over everything) -- this tests consistency across periods, not true walk-forward re-optimization (nothing is re-fit per window).",
-      "Gross Monte Carlo (monte_carlo) matches trade count/sides/holding-period shape but compares GROSS real vs. GROSS random -- kept for reference, superseded for significance purposes by monte_carlo_costed_retail_worst_case.",
-      "Costed Monte Carlo (monte_carlo_costed_retail_worst_case) applies the identical, still-UNCONFIRMED retail-worst-case fee/funding assumption to both sides -- see lib/costs.js. Neither Monte Carlo variant models real market regime correlation in the random draws.",
-      "Cost sensitivity / costed Monte Carlo use an UNCONFIRMED fee tier (Coinbase's own fee/funding pages blocked automated fetch) and a cross-exchange representative funding rate, not Coinbase's own historical funding series. Treat as a sensitivity band, not a net-edge claim, until confirmed.",
+      "Gross Monte Carlo (monte_carlo) matches trade count/sides/holding-period shape but compares GROSS real vs. GROSS random -- kept for reference, superseded for significance purposes by monte_carlo_costed_confirmed_derivatives.",
+      "Costed Monte Carlo (monte_carlo_costed_confirmed_derivatives) applies iapaulo's CONFIRMED real Coinbase derivatives fee tier (Advanced 1, 0.070%/0.065% taker/maker, confirmed 2026-07-25 from the account dashboard) to both sides -- see lib/costs.js. Funding rate magnitude is still a cross-exchange placeholder, not Coinbase's own historical series. Neither Monte Carlo variant models real market regime correlation in the random draws.",
+      "Cost sensitivity's confirmed_derivatives scenario is the real fee tier; coinbase_spot_tier_wrong_product_for_contrast_only is kept only to show how much the earlier (wrong) assumption mattered, not as a plausible scenario. Funding magnitude remains an unconfirmed cross-exchange placeholder.",
     ],
   };
 
