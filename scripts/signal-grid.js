@@ -39,16 +39,27 @@ function loadWatchlist() {
   return { watchlist: rules.watchlist || [], proxyMap: rules.supertrend_proxy || {} };
 }
 
+// Cipher A's own native definition (confirmed from source, pine/vmc-cipher-a-ribbon.pine):
+// ribbonDir = ema8 < ema2. Only the slowest EMA vs. EMA2 -- not EMA1, and not a full-stack
+// check. Correcting our earlier guess (a strict monotonic 8-EMA stack requirement), which was
+// stricter than the real indicator and over-reported "mixed/flat" as a result.
 function ribbonDirection(emas) {
+  if (emas.some((v) => v == null || Number.isNaN(v))) return "unknown";
+  return emas[7] < emas[1] ? "bullish" : "bearish"; // index 1 = EMA2, index 7 = EMA8
+}
+
+// Supplementary, not the indicator's own signal: is the full 8-EMA stack cleanly ordered
+// (stronger-looking trend) or tangled even though direction (above) still resolves either way?
+function ribbonStackShape(emas) {
   if (emas.some((v) => v == null || Number.isNaN(v))) return "unknown";
   let asc = true, desc = true;
   for (let i = 1; i < emas.length; i++) {
     if (emas[i] >= emas[i - 1]) desc = false;
     if (emas[i] <= emas[i - 1]) asc = false;
   }
-  if (desc) return "bullish"; // fast EMA above slow EMA, stacked descending
-  if (asc) return "bearish";
-  return "mixed/flat";
+  if (desc) return "clean_bullish_stack";
+  if (asc) return "clean_bearish_stack";
+  return "tangled";
 }
 
 function num(raw) {
@@ -62,7 +73,7 @@ function extractRibbon(indicatorStudies) {
   const firedSignals = Object.entries(cipherA.values)
     .filter(([k, v]) => !k.startsWith("EMA") && parseFloat(v) !== 0)
     .map(([k]) => k);
-  return { found: true, ema_fast: emas[0], ema_slow: emas[7], direction: ribbonDirection(emas), signals_fired: firedSignals };
+  return { found: true, ema_fast: emas[0], ema_slow: emas[7], direction: ribbonDirection(emas), stack_shape: ribbonStackShape(emas), signals_fired: firedSignals };
 }
 
 function findVal(values, substrLower) {
