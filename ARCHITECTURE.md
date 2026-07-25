@@ -433,9 +433,12 @@ never actually paid on derivatives trades, and overstated real costs by roughly 
 | With Coinbase One rebate (unconfirmed enrollment) | 1.77x | 14.71x |
 | Costed Monte Carlo p-value (confirmed tier) | **0.022 — significant** | 0.105 — not significant |
 
-**Long-short is now both statistically significant AND net-profitable at the real fee tier** —
-the earlier "wiped out" finding was an artifact of testing against the wrong product's fee
-schedule, not a property of the strategy. This is a materially better result than either the
+**Long-short is now both statistically significant (in isolation) AND net-profitable at the real
+fee tier** — the earlier "wiped out" finding was an artifact of testing against the wrong
+product's fee schedule, not a property of the strategy. **Update, same day:** "significant in
+isolation" turns out to matter — see the multiple-testing correction subsection below, which
+shows this p-value does not survive correction for the 5 variants tried this session. Net-
+profitability at real costs still stands; the significance claim needed downgrading. This is a materially better result than either the
 gross number (looked great, wasn't real) or the spot-tier number (looked dead, wasn't real cost)
 suggested on their own — the correct answer needed the correct input, which is exactly why this
 was worth confirming rather than assuming.
@@ -479,6 +482,48 @@ understood), multiple-testing correction across the 6 strategy variants tested, 
 sensitivity sweep on the inherited K-means constants, a second asset, and a true walk-forward split.
 
 Results saved to `scripts/backtest/results/harness_supertrend_4h_*_2026-07-25*.json`.
+
+### Mitigating critique issue #6: multiple-testing correction — 2026-07-25
+
+The institutional-quant-lens critique's remaining statistical issue: one p<0.05 result found
+after trying 5 distinct strategy variants in the same session is weaker evidence than a single
+pre-registered p<0.05 test. Built `scripts/backtest/lib/multiple-testing.js`
+(Bonferroni / Holm-Bonferroni / Benjamini-Hochberg, most to least conservative) and
+`run-multiple-testing-correction.js`, applied to the 5 variants that actually got a Monte Carlo
+significance test this session (GROSS p-values, for apples-to-apples comparison — only
+supertrend-flip has costed re-tests so far):
+
+| Variant | Raw p | Bonferroni | Holm | Benjamini-Hochberg |
+|---|---|---|---|---|
+| supertrend-flip long-short | 0.022 | not sig | not sig | not sig |
+| supertrend-flip long-only | 0.104 | not sig | not sig | not sig |
+| supertrend-bb long-short | 0.027 | not sig | not sig | not sig |
+| supertrend-bb long-only | 0.104 | not sig | not sig | not sig |
+| mean-reversion long-short | 0.859 | not sig | not sig | not sig |
+
+**None of the 5 variants survive any correction — including supertrend-flip long-short, the
+program's one headline finding.** Two raw p-values (0.022, 0.027) clear the uncorrected 5%
+bar, but Bonferroni's per-test threshold at n=5 is 0.01 — neither clears it, and Holm/BH (less
+conservative than Bonferroni) don't rescue it either, since the two smallest p-values are close
+to each other and both still exceed even the least strict correction's threshold at their rank.
+
+**Claim label downgrade, per epistemology.md:** supertrend-flip long-short's edge moves from
+*Supported* back to **Hypothesized**. This doesn't mean the effect isn't real — it means the
+evidence gathered so far can't distinguish "real edge" from "the best-looking result out of 5
+searched variants," which is exactly the failure mode multiple-testing correction exists to
+catch. The costed-Monte-Carlo and confirmed-fee-tier work earlier in §6 answered "does this
+survive realistic costs" (yes, at the real fee tier) — this answers a *different*, harder
+question ("was finding it in the first place already priced by how many things were tried"),
+and the honest answer here is no, not yet.
+
+**What would fix this properly, not just re-run the same test:** a single new, pre-registered
+test that isn't part of this searched family — e.g. the same supertrend-flip long-short
+rule set on a second asset (ETH) or timeframe, decided *before* looking at the result. That
+result wouldn't need correcting against these 5, because it wasn't chosen from among them.
+Re-running variants already in this family, no matter how many times, doesn't fix this — it can
+only make the correction stricter (more tests = smaller per-test threshold).
+
+Results saved to `scripts/backtest/results/multiple_testing_correction_2026-07-25*.json`.
 
 ### Data source — found, imported, Phase 1 done — 2026-07-24
 
@@ -645,6 +690,14 @@ Sources:
 
 ## 8. Changelog
 
+- 2026-07-25 — Multiple-testing correction (`scripts/backtest/lib/multiple-testing.js`,
+  Bonferroni/Holm/Benjamini-Hochberg) applied across the 5 strategy variants Monte-Carlo-tested
+  this session. **None survive correction, including supertrend-flip long-short (raw p=0.022,
+  Bonferroni threshold at n=5 is 0.01)** — downgraded from Supported back to Hypothesized per
+  epistemology.md's claim labels. The costed/fee-tier work still stands (real net-profitability
+  at the confirmed fee tier is unaffected), but "statistically distinguishable from random" does
+  not survive being corrected for the 5 variants searched this session. Fix requires one new,
+  pre-registered test outside this family (e.g. a second asset), not more re-runs within it. See §6.
 - 2026-07-25 — iapaulo confirmed Coinbase's actual funding MECHANISM (hourly, basis-driven,
   peer-to-peer transfer between longs and shorts) — revealing the original cost model's
   "funding always costs both sides" assumption was mechanistically wrong (funding is zero-sum

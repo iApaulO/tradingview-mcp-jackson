@@ -1,0 +1,113 @@
+{
+  "alpha": 0.05,
+  "trial_family_size": 5,
+  "generated_at": "2026-07-25T22:46:19.968Z",
+  "note": "p-values are GROSS (uncosted) Monte Carlo results, for apples-to-apples comparison across all 5 variants -- only supertrend-flip has costed re-tests so far (see ARCHITECTURE.md §6). Trial family is hand-curated (see TRIAL_FAMILY in this script), not auto-discovered -- re-runs of the same variant are not counted as separate trials.",
+  "entries": [
+    {
+      "name": "supertrend-flip long-short (4H)",
+      "file": "harness_4h_long-short_2026-07-24T18-13-56-918Z.json",
+      "p": 0.022,
+      "net_return": 7.632498117472597,
+      "bonferroni": {
+        "p": 0.022,
+        "threshold": 0.01,
+        "significant": false
+      },
+      "holm": {
+        "p": 0.022,
+        "threshold": 0.01,
+        "significant": false
+      },
+      "bh": {
+        "p": 0.022,
+        "threshold": 0.01,
+        "significant": false
+      }
+    },
+    {
+      "name": "supertrend-flip long-only (4H)",
+      "file": "harness_4h_long-only_2026-07-24T18-13-27-593Z.json",
+      "p": 0.104,
+      "net_return": 26.77681306890672,
+      "bonferroni": {
+        "p": 0.104,
+        "threshold": 0.01,
+        "significant": false
+      },
+      "holm": {
+        "p": 0.104,
+        "threshold": 0.016666666666666666,
+        "significant": false
+      },
+      "bh": {
+        "p": 0.104,
+        "threshold": 0.030000000000000006,
+        "significant": false
+      }
+    },
+    {
+      "name": "supertrend-bb long-short (4H)",
+      "file": "harness_supertrend-bb_4h_long-short_2026-07-24T18-30-41-221Z.json",
+      "p": 0.027,
+      "net_return": 7.295909495854911,
+      "bonferroni": {
+        "p": 0.027,
+        "threshold": 0.01,
+        "significant": false
+      },
+      "holm": {
+        "p": 0.027,
+        "threshold": 0.0125,
+        "significant": false
+      },
+      "bh": {
+        "p": 0.027,
+        "threshold": 0.02,
+        "significant": false
+      }
+    },
+    {
+      "name": "supertrend-bb long-only (4H)",
+      "file": "harness_supertrend-bb_4h_long-only_2026-07-24T18-31-05-417Z.json",
+      "p": 0.104,
+      "net_return": 26.77681306890672,
+      "bonferroni": {
+        "p": 0.104,
+        "threshold": 0.01,
+        "significant": false
+      },
+      "holm": {
+        "p": 0.104,
+        "threshold": 0.025,
+        "significant": false
+      },
+      "bh": {
+        "p": 0.104,
+        "threshold": 0.04,
+        "significant": false
+      }
+    },
+    {
+      "name": "mean-reversion long-short (4H)",
+      "file": "harness_mean-reversion_4h_long-short_2026-07-24T18-39-16-822Z.json",
+      "p": 0.859,
+      "net_return": -0.5374498462492681,
+      "bonferroni": {
+        "p": 0.859,
+        "threshold": 0.01,
+        "significant": false
+      },
+      "holm": {
+        "p": 0.859,
+        "threshold": 0.05,
+        "significant": false
+      },
+      "bh": {
+        "p": 0.859,
+        "threshold": 0.05,
+        "significant": false
+      }
+    }
+  ]
+}
