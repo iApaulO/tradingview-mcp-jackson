@@ -447,10 +447,36 @@ remaining source of uncertainty in the cost model (the fee side is confirmed; th
 isn't). Long-only remains statistically indistinguishable from random regardless of fee tier —
 its absolute profit is still attributable to riding BTC's trend, not to real signal.
 
-Still outstanding from the same critique: Coinbase's own historical funding-rate data (to replace
-the placeholder magnitude — the highest-value remaining unknown now that fees are confirmed),
-multiple-testing correction across the 6 strategy variants tested, parameter-sensitivity sweep on
-the inherited K-means constants, a second asset, and a true walk-forward split.
+**Same day, funding mechanism confirmed (magnitude still not):** iapaulo confirmed Coinbase's own
+description of how funding actually works — calculated hourly from the futures-vs-spot basis over
+the prior hour; contract above spot means longs pay shorts, contract below spot means shorts pay
+longs. This matters structurally: funding is a **peer-to-peer transfer**, not an exchange fee, so
+it cannot be a net cost to both sides of the same position simultaneously — the original
+"subtract funding regardless of side" model was mechanistically wrong, not just conservative.
+`applyCosts()` now supports two modes: `pessimistic_both_sides` (legacy, kept as an explicit
+worst-case stress bound) and `signed_contango_bias` (cost to longs, credit to shorts — modeling
+the commonly-cited tendency for crypto perp funding to skew positive across full cycles;
+**Hypothesized / recollection-based, not verified against Coinbase's own historical series**).
+
+| | Pessimistic (both sides pay) | Signed (contango-bias: longs pay, shorts receive) |
+|---|---|---|
+| 4H long-short | 1.45x | **4.19x** |
+| 4H long-only (no shorts, converges exactly — consistency check passed) | 13.77x | 13.77x |
+
+Long-short's real net return spans **1.45x–4.19x depending on funding sign assumption alone** —
+both scenarios remain profitable and (per the pessimistic scenario's already-run costed Monte
+Carlo, §above) statistically significant; the signed scenario is strictly more favorable to this
+specific strategy (its shorts cluster in down-trending stretches, plausibly correlated with
+periods contango-bias would model as funding-receiving for shorts) so significance is expected to
+hold at least as strongly there too, not yet re-run. The true number depends on Coinbase's actual
+historical funding sign/magnitude series, still not sourced — that remains the single highest-value
+open item in the cost model, now doubly so (both scenarios are directionally reasonable, and only
+real data resolves which is closer to true).
+
+Still outstanding from the same critique: Coinbase's own historical funding-rate data (magnitude
+*and* sign — the highest-value remaining unknown now that fees are confirmed and the mechanism is
+understood), multiple-testing correction across the 6 strategy variants tested, parameter-
+sensitivity sweep on the inherited K-means constants, a second asset, and a true walk-forward split.
 
 Results saved to `scripts/backtest/results/harness_supertrend_4h_*_2026-07-25*.json`.
 
@@ -619,6 +645,14 @@ Sources:
 
 ## 8. Changelog
 
+- 2026-07-25 — iapaulo confirmed Coinbase's actual funding MECHANISM (hourly, basis-driven,
+  peer-to-peer transfer between longs and shorts) — revealing the original cost model's
+  "funding always costs both sides" assumption was mechanistically wrong (funding is zero-sum
+  between the two sides, not a fee charged to everyone). Added a `signed_contango_bias` mode to
+  `applyCosts()` (long pays, short receives) alongside the legacy `pessimistic_both_sides` bound.
+  4H long-short's real net return now spans 1.45x (pessimistic) to 4.19x (signed) depending on
+  this one assumption — both profitable, real historical funding sign/magnitude data still not
+  sourced and remains the top open item. See §6.
 - 2026-07-25 — iapaulo confirmed the real Coinbase derivatives fee tier from the account
   dashboard (Advanced 1, 0.070%/0.065% taker/maker) — resolving mitigation item #3 and
   confirming the earlier "retail_worst_case" figure was Coinbase's spot tier, never actually

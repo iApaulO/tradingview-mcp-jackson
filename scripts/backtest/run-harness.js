@@ -95,7 +95,7 @@ async function main() {
     const m = computeMetrics(costedTrades);
     costMetrics[name] = { params, metrics: m };
     console.log(
-      `  ${name.padEnd(34)} taker=${(params.takerFeePct * 100).toFixed(3)}% funding/hr=${(params.fundingPctPerHour * 100).toFixed(5)}%  net_return=${m.net_return_pct?.toFixed(2)}x  beats_buy_hold=${m.final_equity_multiple > buyAndHoldMultiple}`,
+      `  ${name.padEnd(38)} taker=${(params.takerFeePct * 100).toFixed(3)}% funding/hr=${(params.fundingPctPerHour * 100).toFixed(5)}% (${params.fundingMode || "pessimistic_both_sides"})  net_return=${m.net_return_pct?.toFixed(2)}x  beats_buy_hold=${m.final_equity_multiple > buyAndHoldMultiple}`,
     );
   }
 

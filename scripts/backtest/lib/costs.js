@@ -42,11 +42,30 @@ export const FEE_TIERS = {
 // as a sensitivity anchor -- not sourced from Coinbase's own historical funding data (not imported).
 export const REPRESENTATIVE_FUNDING_PCT_PER_HOUR = 0.0000125;
 
-export function applyCosts(trades, { takerFeePct = 0, fundingPctPerHour = 0 } = {}) {
+// UPDATE 2026-07-25: iapaulo confirmed the funding MECHANISM directly (Coinbase's own
+// description): calculated hourly from the futures-vs-spot basis over the past hour: contract
+// above spot -> longs pay shorts; contract below spot -> shorts pay longs. Funding is a
+// peer-to-peer TRANSFER, not an exchange fee -- it cannot be a net cost to both sides of the same
+// position simultaneously, which the original "always subtract, regardless of side" model
+// implied. Two modes now:
+//   - "pessimistic_both_sides" (legacy default behavior, kept as an explicit worst-case stress
+//     bound: treats magnitude as a pure drag no matter which side you're on -- can't literally be
+//     true for both sides at once, but useful as a "what if I'm always on the wrong side of
+//     funding" ceiling.)
+//   - "signed_contango_bias": applies the magnitude as a cost to longs, a credit to shorts --
+//     modeling a persistent-positive-funding (contango) regime, i.e. the commonly-cited tendency
+//     for crypto perp funding to skew positive across full market cycles (Hypothesized /
+//     Supported-by-recollection here, NOT verified against Coinbase's own historical funding
+//     series this session -- a real sign/magnitude series is still the right long-term fix).
+// Neither mode is a confirmed historical sign distribution. Report both, don't pick the
+// flattering one and call it final.
+export function applyCosts(trades, { takerFeePct = 0, fundingPctPerHour = 0, fundingMode = "pessimistic_both_sides" } = {}) {
   return trades.map((t) => {
     const hoursHeld = Math.max(0, (t.exitTime - t.entryTime) / 3600);
     const roundTripFee = 2 * takerFeePct; // entry + exit, worst case both taker
-    const fundingDrag = fundingPctPerHour * hoursHeld; // pessimistic: always a cost, never a tailwind
+    const fundingMagnitude = fundingPctPerHour * hoursHeld;
+    const fundingDrag =
+      fundingMode === "signed_contango_bias" ? (t.side === "long" ? fundingMagnitude : -fundingMagnitude) : fundingMagnitude;
     const costPct = roundTripFee + fundingDrag;
     return { ...t, pnlPct: t.pnlPct - costPct, gross_pnlPct: t.pnlPct, cost_pct_applied: costPct };
   });
@@ -62,6 +81,11 @@ export function costSensitivitySweep(trades) {
     confirmed_derivatives_3x_funding_stress: {
       takerFeePct: FEE_TIERS.confirmed_derivatives.takerFeePct,
       fundingPctPerHour: REPRESENTATIVE_FUNDING_PCT_PER_HOUR * 3,
+    },
+    confirmed_derivatives_signed_funding: {
+      takerFeePct: FEE_TIERS.confirmed_derivatives.takerFeePct,
+      fundingPctPerHour: REPRESENTATIVE_FUNDING_PCT_PER_HOUR,
+      fundingMode: "signed_contango_bias",
     },
     confirmed_derivatives_with_one_rebate: {
       takerFeePct: FEE_TIERS.confirmed_derivatives_with_one_rebate.takerFeePct,

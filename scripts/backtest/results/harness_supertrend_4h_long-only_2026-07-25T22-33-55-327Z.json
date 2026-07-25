@@ -1,0 +1,301 @@
+{
+  "strategy": "supertrend",
+  "timeframe": "4h",
+  "mode": "long-only",
+  "full_period": {
+    "trade_count": 178,
+    "long_trades": 178,
+    "short_trades": 0,
+    "win_rate": 0.39325842696629215,
+    "avg_win_pct": 0.13118849373028452,
+    "avg_loss_pct": 0.042581702167605186,
+    "profit_factor": 1.996857216626645,
+    "net_return_pct": 26.77681306890672,
+    "max_drawdown_pct": 0.395836129499544,
+    "avg_bars_held": 46.46629213483146,
+    "final_equity_multiple": 27.77681306890672,
+    "buy_and_hold_multiple": 21.51177359028412,
+    "beat_buy_and_hold": true
+  },
+  "in_sample": {
+    "trade_count": 124,
+    "long_trades": 124,
+    "short_trades": 0,
+    "win_rate": 0.3870967741935484,
+    "avg_win_pct": 0.14388708906537248,
+    "avg_loss_pct": 0.04786127415536438,
+    "profit_factor": 1.8987387581203505,
+    "net_return_pct": 8.442718241030624,
+    "max_drawdown_pct": 0.395836129499544,
+    "avg_bars_held": 46.92741935483871,
+    "final_equity_multiple": 9.442718241030624,
+    "split_time": "2022-12-20T16:00:00.000Z"
+  },
+  "out_of_sample": {
+    "trade_count": 54,
+    "long_trades": 54,
+    "short_trades": 0,
+    "win_rate": 0.4074074074074074,
+    "avg_win_pct": 0.10348246754463802,
+    "avg_loss_pct": 0.030042718696677094,
+    "profit_factor": 2.3681011414192557,
+    "net_return_pct": 1.9416119765398232,
+    "max_drawdown_pct": 0.23367826399992014,
+    "avg_bars_held": 45.407407407407405,
+    "final_equity_multiple": 2.941611976539823
+  },
+  "by_year": {
+    "2017": {
+      "trade_count": 9,
+      "long_trades": 9,
+      "short_trades": 0,
+      "win_rate": 0.5555555555555556,
+      "avg_win_pct": 0.20945230895237638,
+      "avg_loss_pct": 0.07361212333490139,
+      "profit_factor": 3.556688413935984,
+      "net_return_pct": 0.8660301736383087,
+      "max_drawdown_pct": 0.17011632289947812,
+      "avg_bars_held": 49.44444444444444,
+      "final_equity_multiple": 1.8660301736383087
+    },
+    "2018": {
+      "trade_count": 21,
+      "long_trades": 21,
+      "short_trades": 0,
+      "win_rate": 0.3333333333333333,
+      "avg_win_pct": 0.11396243544625613,
+      "avg_loss_pct": 0.045638479476872544,
+      "profit_factor": 1.248534534372546,
+      "net_return_pct": 0.0734182448394376,
+      "max_drawdown_pct": 0.23045973160899783,
+      "avg_bars_held": 47.19047619047619,
+      "final_equity_multiple": 1.0734182448394376
+    },
+    "2019": {
+      "trade_count": 21,
+      "long_trades": 21,
+      "short_trades": 0,
+      "win_rate": 0.42857142857142855,
+      "avg_win_pct": 0.15311025662914382,
+      "avg_loss_pct": 0.04215382633539036,
+      "profit_factor": 2.7241344963137966,
+      "net_return_pct": 0.9602569425947782,
+      "max_drawdown_pct": 0.27823544608002676,
+      "avg_bars_held": 52.523809523809526,
+      "final_equity_multiple": 1.9602569425947782
+    },
+    "2020": {
+      "trade_count": 24,
+      "long_trades": 24,
+      "short_trades": 0,
+      "win_rate": 0.375,
+      "avg_win_pct": 0.21679225207388633,
+      "avg_loss_pct": 0.0296433158663796,
+      "profit_factor": 4.388016233766164,
+      "net_return_pct": 2.1813135533166936,
+      "max_drawdown_pct": 0.2074848118517549,
+      "avg_bars_held": 54.708333333333336,
+      "final_equity_multiple": 3.1813135533166936
+    },
+    "2021": {
+      "trade_count": 24,
+      "long_trades": 24,
+      "short_trades": 0,
+      "win_rate": 0.375,
+      "avg_win_pct": 0.14406275337052504,
+      "avg_loss_pct": 0.07175774750321601,
+      "profit_factor": 1.204575882463996,
+      "net_return_pct": -0.00495793718303994,
+      "max_drawdown_pct": 0.388355540280982,
+      "avg_bars_held": 44.708333333333336,
+      "final_equity_multiple": 0.9950420628169601
+    },
+    "2022": {
+      "trade_count": 26,
+      "long_trades": 26,
+      "short_trades": 0,
+      "win_rate": 0.34615384615384615,
+      "avg_win_pct": 0.04843270262113391,
+      "avg_loss_pct": 0.041018365133357514,
+      "profit_factor": 0.6251064000422025,
+      "net_return_pct": -0.25556245494954466,
+      "max_drawdown_pct": 0.33969889589867514,
+      "avg_bars_held": 36.23076923076923,
+      "final_equity_multiple": 0.7444375450504553
+    },
+    "2023": {
+      "trade_count": 25,
+      "long_trades": 25,
+      "short_trades": 0,
+      "win_rate": 0.36,
+      "avg_win_pct": 0.1344805025503578,
+      "avg_loss_pct": 0.02882408114438173,
+      "profit_factor": 2.624377939600712,
+      "net_return_pct": 0.8715265045062581,
+      "max_drawdown_pct": 0.15634708999676836,
+      "avg_bars_held": 49,
+      "final_equity_multiple": 1.8715265045062581
+    },
+    "2024": {
+      "trade_count": 28,
+      "long_trades": 28,
+      "short_trades": 0,
+      "win_rate": 0.4642857142857143,
+      "avg_win_pct": 0.08202228946375513,
+      "avg_loss_pct": 0.032005150395982424,
+      "profit_factor": 2.2210795238395273,
+      "net_return_pct": 0.6040193942525476,
+      "max_drawdown_pct": 0.2336782639999199,
+      "avg_bars_held": 42.107142857142854,
+      "final_equity_multiple": 1.6040193942525476
+    }
+  },
+  "monte_carlo": {
+    "iterations": 1000,
+    "real_final_equity": 27.77681306890672,
+    "random_mean_final_equity": 13.553734944229188,
+    "random_median_final_equity": 4.825965938274284,
+    "random_min": 0.04923434749259245,
+    "random_max": 367.7001277023054,
+    "real_percentile_rank": 0.891,
+    "p_value_random_beats_real": 0.109,
+    "significant_at_5pct": false
+  },
+  "cost_sensitivity": {
+    "gross_zero_cost": {
+      "params": {
+        "takerFeePct": 0,
+        "fundingPctPerHour": 0
+      },
+      "metrics": {
+        "trade_count": 178,
+        "long_trades": 178,
+        "short_trades": 0,
+        "win_rate": 0.39325842696629215,
+        "avg_win_pct": 0.13118849373028452,
+        "avg_loss_pct": 0.042581702167605186,
+        "profit_factor": 1.996857216626645,
+        "net_return_pct": 26.77681306890672,
+        "max_drawdown_pct": 0.395836129499544,
+        "avg_bars_held": 46.46629213483146,
+        "final_equity_multiple": 27.77681306890672
+      }
+    },
+    "confirmed_derivatives": {
+      "params": {
+        "takerFeePct": 0.0007,
+        "fundingPctPerHour": 0.0000125
+      },
+      "metrics": {
+        "trade_count": 178,
+        "long_trades": 178,
+        "short_trades": 0,
+        "win_rate": 0.37640449438202245,
+        "avg_win_pct": 0.13170084372428553,
+        "avg_loss_pct": 0.044168791013590836,
+        "profit_factor": 1.7998025765557624,
+        "net_return_pct": 13.77001801730701,
+        "max_drawdown_pct": 0.4627037392239339,
+        "avg_bars_held": 46.46629213483146,
+        "final_equity_multiple": 14.77001801730701
+      }
+    },
+    "confirmed_derivatives_3x_funding_stress": {
+      "params": {
+        "takerFeePct": 0.0007,
+        "fundingPctPerHour": 0.000037500000000000003
+      },
+      "metrics": {
+        "trade_count": 178,
+        "long_trades": 178,
+        "short_trades": 0,
+        "win_rate": 0.3539325842696629,
+        "avg_win_pct": 0.1320892472683287,
+        "avg_loss_pct": 0.04546349435553182,
+        "profit_factor": 1.5916492228722896,
+        "net_return_pct": 5.808669540291147,
+        "max_drawdown_pct": 0.5385714485015042,
+        "avg_bars_held": 46.46629213483146,
+        "final_equity_multiple": 6.808669540291147
+      }
+    },
+    "confirmed_derivatives_signed_funding": {
+      "params": {
+        "takerFeePct": 0.0007,
+        "fundingPctPerHour": 0.0000125,
+        "fundingMode": "signed_contango_bias"
+      },
+      "metrics": {
+        "trade_count": 178,
+        "long_trades": 178,
+        "short_trades": 0,
+        "win_rate": 0.37640449438202245,
+        "avg_win_pct": 0.13170084372428553,
+        "avg_loss_pct": 0.044168791013590836,
+        "profit_factor": 1.7998025765557624,
+        "net_return_pct": 13.77001801730701,
+        "max_drawdown_pct": 0.4627037392239339,
+        "avg_bars_held": 46.46629213483146,
+        "final_equity_multiple": 14.77001801730701
+      }
+    },
+    "confirmed_derivatives_with_one_rebate": {
+      "params": {
+        "takerFeePct": 0.000525,
+        "fundingPctPerHour": 0.0000125
+      },
+      "metrics": {
+        "trade_count": 178,
+        "long_trades": 178,
+        "short_trades": 0,
+        "win_rate": 0.38202247191011235,
+        "avg_win_pct": 0.13011346194988926,
+        "avg_loss_pct": 0.04421995168703557,
+        "profit_factor": 1.818947633579052,
+        "net_return_pct": 14.710110698987181,
+        "max_drawdown_pct": 0.45440980257005587,
+        "avg_bars_held": 46.46629213483146,
+        "final_equity_multiple": 15.710110698987181
+      }
+    },
+    "coinbase_spot_tier_wrong_product_for_contrast_only": {
+      "params": {
+        "takerFeePct": 0.006,
+        "fundingPctPerHour": 0.0000125
+      },
+      "metrics": {
+        "trade_count": 178,
+        "long_trades": 178,
+        "short_trades": 0,
+        "win_rate": 0.3202247191011236,
+        "avg_win_pct": 0.14308106350968183,
+        "avg_loss_pct": 0.05058842886804394,
+        "profit_factor": 1.3323565252841965,
+        "net_return_pct": 1.255799060400001,
+        "max_drawdown_pct": 0.6641815270732608,
+        "avg_bars_held": 46.46629213483146,
+        "final_equity_multiple": 2.255799060400001
+      }
+    }
+  },
+  "monte_carlo_costed_confirmed_derivatives": {
+    "iterations": 1000,
+    "real_final_equity": 14.77001801730701,
+    "random_mean_final_equity": 7.06246714402277,
+    "random_median_final_equity": 2.4830824577842767,
+    "random_min": 0.024795969438636264,
+    "random_max": 193.4735955303971,
+    "real_percentile_rank": 0.895,
+    "p_value_random_beats_real": 0.105,
+    "significant_at_5pct": false
+  },
+  "generated_at": "2026-07-25T22:33:55.327Z",
+  "git_commit": "50a18b5ecbd2b5708669319ee295e0b5419d8ce8",
+  "caveats": [
+    "One instrument (Binance BTC spot proxy), one indicator, one simple flip rule -- not a general edge claim.",
+    "IS/OOS split and year buckets both use the SAME full-history SuperTrend calc (K-means trained once, over everything) -- this tests consistency across periods, not true walk-forward re-optimization (nothing is re-fit per window).",
+    "Gross Monte Carlo (monte_carlo) matches trade count/sides/holding-period shape but compares GROSS real vs. GROSS random -- kept for reference, superseded for significance purposes by monte_carlo_costed_confirmed_derivatives.",
+    "Costed Monte Carlo (monte_carlo_costed_confirmed_derivatives) applies iapaulo's CONFIRMED real Coinbase derivatives fee tier (Advanced 1, 0.070%/0.065% taker/maker, confirmed 2026-07-25 from the account dashboard) to both sides -- see lib/costs.js. Funding rate magnitude is still a cross-exchange placeholder, not Coinbase's own historical series. Neither Monte Carlo variant models real market regime correlation in the random draws.",
+    "Cost sensitivity's confirmed_derivatives scenario is the real fee tier; coinbase_spot_tier_wrong_product_for_contrast_only is kept only to show how much the earlier (wrong) assumption mattered, not as a plausible scenario. Funding magnitude remains an unconfirmed cross-exchange placeholder."
+  ]
+}
