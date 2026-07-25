@@ -19,7 +19,13 @@ function mulberry32(seed) {
   };
 }
 
-export function randomEntryBaseline(candles, realTrades, { iterations = 1000, seed = 42 } = {}) {
+// costParams: optional { takerFeePct, fundingPctPerHour } (same shape as lib/costs.js) -- applies
+// the identical round-trip-fee + hours-held funding drag to EVERY random draw. Needed for an
+// apples-to-apples significance test once costs are in the picture: comparing a costed real
+// result against an uncosted random baseline (the original default) overstates significance,
+// because costs shrink real and random results by different amounts (real's edge, if any, is a
+// smaller fraction of its gross return than the random baseline's average is of its own gross).
+export function randomEntryBaseline(candles, realTrades, { iterations = 1000, seed = 42, costParams = null } = {}) {
   const rng = mulberry32(seed);
   const finalEquities = [];
 
@@ -33,10 +39,14 @@ export function randomEntryBaseline(candles, realTrades, { iterations = 1000, se
       const exitIdx = entryIdx + holdBars;
       const entryPrice = candles[entryIdx].o;
       const exitPrice = candles[exitIdx].o;
-      const pnlPct =
+      let pnlPct =
         t.side === "long"
           ? (exitPrice - entryPrice) / entryPrice
           : (entryPrice - exitPrice) / entryPrice;
+      if (costParams) {
+        const hoursHeld = Math.max(0, (candles[exitIdx].t - candles[entryIdx].t) / 3600);
+        pnlPct -= 2 * costParams.takerFeePct + costParams.fundingPctPerHour * hoursHeld;
+      }
       equity *= 1 + pnlPct;
     }
     finalEquities.push(equity);

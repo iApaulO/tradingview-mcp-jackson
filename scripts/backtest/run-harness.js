@@ -99,6 +99,26 @@ async function main() {
     );
   }
 
+  // --- 6. Costed Monte Carlo re-test (retail worst-case tier) ---
+  // Step 4's Monte Carlo compares a GROSS real result against an uncosted random baseline --
+  // apples to oranges once costs matter this much (see §6 critique mitigation, 2026-07-25). This
+  // applies the SAME cost model to every random draw as the real trades got, at the retail
+  // worst-case tier (the decisive scenario from step 5), for a fair post-cost significance test.
+  const retailParams = costMetrics.retail_worst_case.params;
+  console.log(
+    `\n--- Costed Random-entry Monte Carlo (retail worst-case: taker=${(retailParams.takerFeePct * 100).toFixed(2)}% funding/hr=${(retailParams.fundingPctPerHour * 100).toFixed(5)}%) ---`,
+  );
+  const costedRandomResults = randomEntryBaseline(candles, trades, { iterations: ITERATIONS, seed: SEED, costParams: retailParams });
+  const costedRealFinalEquity = costMetrics.retail_worst_case.metrics.final_equity_multiple;
+  const mcCosted = summarizeMonteCarlo(costedRandomResults, costedRealFinalEquity);
+  console.log(
+    `  real(costed)=${mcCosted.real_final_equity.toFixed(2)}x  random(costed) mean=${mcCosted.random_mean_final_equity.toFixed(2)}x median=${mcCosted.random_median_final_equity.toFixed(2)}x range=[${mcCosted.random_min.toFixed(2)}x, ${mcCosted.random_max.toFixed(2)}x]`,
+  );
+  console.log(`  real beat ${(mcCosted.real_percentile_rank * 100).toFixed(1)}% of costed random-entry runs with the identical trade shape`);
+  console.log(
+    `  p-value (costed, fraction of costed-random runs >= costed-real): ${mcCosted.p_value_random_beats_real.toFixed(4)} ${mcCosted.significant_at_5pct ? "(significant at 5%)" : "(NOT significant at 5% -- indistinguishable from random entries once both sides pay the same costs)"}`,
+  );
+
   const result = {
     strategy: STRATEGY,
     timeframe: TIMEFRAME,
@@ -109,13 +129,15 @@ async function main() {
     by_year: yearMetrics,
     monte_carlo: mc,
     cost_sensitivity: costMetrics,
+    monte_carlo_costed_retail_worst_case: mcCosted,
     generated_at: new Date().toISOString(),
     git_commit: gitCommit(),
     caveats: [
       "One instrument (Binance BTC spot proxy), one indicator, one simple flip rule -- not a general edge claim.",
       "IS/OOS split and year buckets both use the SAME full-history SuperTrend calc (K-means trained once, over everything) -- this tests consistency across periods, not true walk-forward re-optimization (nothing is re-fit per window).",
-      "Monte Carlo baseline matches trade count/sides/holding-period shape, but not the specific timing correlation structure of real market regimes -- a stronger test than none, not a complete one. It also compares against GROSS real returns only -- costed-vs-costed Monte Carlo significance re-testing is not yet done (fast follow).",
-      "Cost sensitivity uses an UNCONFIRMED fee tier (Coinbase's own fee/funding pages blocked automated fetch) and a cross-exchange representative funding rate, not Coinbase's own historical funding series -- see lib/costs.js. Treat as a sensitivity band, not a net-edge claim, until confirmed.",
+      "Gross Monte Carlo (monte_carlo) matches trade count/sides/holding-period shape but compares GROSS real vs. GROSS random -- kept for reference, superseded for significance purposes by monte_carlo_costed_retail_worst_case.",
+      "Costed Monte Carlo (monte_carlo_costed_retail_worst_case) applies the identical, still-UNCONFIRMED retail-worst-case fee/funding assumption to both sides -- see lib/costs.js. Neither Monte Carlo variant models real market regime correlation in the random draws.",
+      "Cost sensitivity / costed Monte Carlo use an UNCONFIRMED fee tier (Coinbase's own fee/funding pages blocked automated fetch) and a cross-exchange representative funding rate, not Coinbase's own historical funding series. Treat as a sensitivity band, not a net-edge claim, until confirmed.",
     ],
   };
 

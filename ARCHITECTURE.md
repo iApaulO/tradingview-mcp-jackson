@@ -388,16 +388,39 @@ that was never established as real to begin with.
 a plausible retail cost level.** The long-short result that looked like the program's best finding
 (real signal, not just a trending-market artifact) is the one costs hit hardest.
 
-**Not yet done, flagged as the immediate next step, not a closed loop:** the Monte Carlo
-significance test above still compares GROSS real returns against an un-costed random baseline —
-an apples-to-oranges comparison now that costs are known to matter this much. Re-running the
-random-entry baseline with the same cost model applied per random trade (same hours-held-derived
-funding drag, same round-trip fee) is required before the p=0.023 figure can be trusted at all
-post-cost — it's possible costs shrink the *gap* between real and random, not just the real
-result's absolute level. Also still outstanding from the same critique: real Coinbase fee-tier
-confirmation (only iapaulo's account can supply this), multiple-testing correction across the 6
-strategy variants tested, parameter-sensitivity sweep on the inherited K-means constants, a
-second asset, and a true walk-forward split.
+**Mitigation follow-up, same day: costed Monte Carlo re-test.** The gross Monte Carlo above
+compares a GROSS real result against an un-costed random baseline — apples to oranges once costs
+matter this much. Added `costParams` support to `randomEntryBaseline()` (`lib/monte-carlo.js`) so
+every random draw pays the identical round-trip fee + hours-held funding drag as the real trades,
+then re-ran significance at the retail-worst-case tier for both variants:
+
+| | Real (costed) | Random mean (costed) | Percentile rank | p-value (costed) |
+|---|---|---|---|---|
+| 4H long-short | 0.05x (95% loss) | 0.01x | 97.8th | **0.022 — still significant** |
+| 4H long-only | 2.26x | 1.08x | 89.5th | 0.105 — still not significant |
+
+**Important, easy-to-misread result: long-short's edge is still statistically real even after
+matched costs — but "statistically real" and "profitable" are separate questions, and this
+answers only the first one.** Both the real strategy and the random baseline lose money outright
+at this cost tier (real ends down 95%; random's median is a near-total wipeout too) — the
+strategy loses *less catastrophically* than random, which is enough to stay significant, but
+losing less badly than random is not the same as making money. At the retail-worst-case tier, this
+strategy is not tradeable regardless of its statistical validity.
+
+**New suspicion raised by running the numbers, not just citing them:** 356 round trips (long-short)
+against a 0.60% taker fee implies over 400% of cumulative fee drag before compounding — punishing
+enough to suspect **`retail_worst_case` may be the wrong product's fee schedule entirely.** The
+0.60%/0.40% figure is plausibly Coinbase Advanced Trade's *spot* tier, not a derivatives-specific
+one — and Coinbase futures fees are typically quoted as a **flat $ amount per contract** (a nano
+contract = 1/100 BTC), not a % of notional. If so, the cost model itself needs a structural change
+(flat-per-contract fee, not %-of-notional) once the real derivatives fee schedule is confirmed —
+this is a modeling gap, not just an unconfirmed number.
+
+Still outstanding from the same critique: real Coinbase **derivatives-specific** fee-tier
+confirmation (only iapaulo's account/the derivatives fee page can supply this — and it may
+require a flat-per-contract cost model, not the %-based one built here), multiple-testing
+correction across the 6 strategy variants tested, parameter-sensitivity sweep on the inherited
+K-means constants, a second asset, and a true walk-forward split.
 
 Results saved to `scripts/backtest/results/harness_supertrend_4h_*_2026-07-25*.json`.
 
@@ -566,6 +589,15 @@ Sources:
 
 ## 8. Changelog
 
+- 2026-07-25 — Costed Monte Carlo re-test (`randomEntryBaseline`'s new `costParams`, applied to
+  both real and random draws at the retail-worst-case tier). Result: 4H long-short's edge is
+  still statistically significant after matched costs (p=0.022) but NOT profitable at that tier
+  (real ends down 95%, random even worse) — significance and profitability are separate
+  questions here, and only the first one survives. Also surfaced a modeling suspicion: 356
+  round trips at 0.60% taker implies 400%+ cumulative fee drag, punishing enough to suspect
+  `retail_worst_case` is Coinbase's *spot* fee tier, not derivatives-specific — real futures
+  fees are typically flat-$-per-contract, which would need a structural change to the cost
+  model, not just a different number. See §6.
 - 2026-07-25 — Institutional-quant-lens critique of the full backtest program to date (6
   strategy variants), followed by the first mitigation: a cost-sensitivity sweep
   (`scripts/backtest/lib/costs.js`, wired into `run-harness.js`). Sobering result: the one
