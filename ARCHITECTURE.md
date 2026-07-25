@@ -42,15 +42,18 @@ assumed equivalent.
 
 | Indicator | Source | Signal Data | Notes |
 |---|---|---|---|
-| **VuManChu Cipher A** (ribbon) | TV-native, public script, source not obtained | 8-EMA ribbon (periods 5,11,15,18,21,24,28,34), plus Long/Short EMA Signal, Red cross, Blue Triangle, Red Diamond, Bull candle, Blood Diamond, Yellow Cross | Ribbon direction = monotonic EMA stack (`extractRibbon` in signal-grid.js). Its Data Window row has silently gone hidden 3x — now self-healing, see §4. |
+| **VuManChu Cipher A** (ribbon) | TV-native, source obtained: `pine/vmc-cipher-a-ribbon.pine` | 8-EMA ribbon (periods 5,11,15,18,21,24,28,34), plus Long/Short EMA Signal, Red cross, Blue Triangle, Red Diamond, Bull candle, Blood Diamond, Yellow Cross | Ribbon direction is the indicator's own `ema8 < ema2` formula (corrected from a guessed monotonic-8-EMA-stack heuristic, see §3/§8 2026-07-25). Exact formulas now known for every signal. Its Data Window row has silently gone hidden 3x — now self-healing, see §4. |
 | **VuManChu B Divergences** (Cipher B) | TV-native, source obtained: `pine/vmc-cipher-b-divergences.pine` | WaveTrend (WT1/WT2/VWAP spread), MFI, RSI(14), Stoch K/D, Schaff Trend Cycle, 4 divergence families (WT regular + WT 2nd-range, RSI, Stoch), buy/sell circles, "gold" warning circle, Sommi higher-TF flags/diamonds | Fully mapped — `extractCipherB` in signal-grid.js pulls the whole battery, not just RSI/WT. |
-| **Smart Money Concepts [LuxAlgo]** | TV-native, source not obtained | BOS/CHoCH structure, Order Blocks (internal+swing, drawn as boxes), EQH/EQL liquidity pools, FVG, Premium/Discount/Equilibrium zones | Box data gives high/low but color->bullish/bearish classification unverified (ARGB values didn't map to an obvious convention) — open item. |
-| **Boom Hunter Pro 1.022** | TV-native, source not obtained | Quotient 1/2, Exit Warning, Long gray/yellow/blue/Lime, Break | Raw values only pulled so far (signal-grid.js) — meaning of Quotient 1/2 not yet documented. |
+| **Smart Money Concepts [LuxAlgo]** | TV-native, source obtained: `pine/smart-money-concepts-luxalgo.pine` | BOS/CHoCH structure, Order Blocks (internal+swing, drawn as boxes), EQH/EQL liquidity pools, FVG, Premium/Discount/Equilibrium zones | Order block color decoded and confirmed (§3/§8 2026-07-25) — was "unverified," now resolved. **Important:** BOS/CHoCH tag text alone does NOT encode bullish/bearish — direction comes from which pivot (high vs. low) was crossed, not the tag. Our label reads so far have been direction-blind; see §3. |
+| **Boom Hunter Pro 1.022** | TV-native, source not obtained | Quotient 1/2, Exit Warning, Long gray/yellow/blue/Lime, Break | Raw values only pulled so far (signal-grid.js) — meaning of Quotient 1/2 not yet documented. Last of the 5 TV-native indicators still pending source. |
 | **Divergence for Many Indicators v4** | TV-native, source obtained: `pine/divergence-for-many-relevance-gated.pine` | MACD/MACD Hist/RSI/Stoch divergence badges, relevance-gated "promoted" support/resistance glow levels | Fully mapped, settings match "Commander default profile." |
 | **Adaptive SuperTrend [AlgoAlpha]** | Independently computed, source obtained: `pine/ml-adaptive-supertrend-algoalpha.pine` | K-means volatility-regime clustering (High/Med/Low) -> ATR-adaptive SuperTrend line + direction | Not on the visible chart by design — runs headless. Cross-validated once against the on-chart Pine instance (matched within ~$1). |
 
-**Open:** Boom Hunter and SMC signal semantics aren't fully documented (no source yet — could
-request/fork like we did for Cipher B, or reverse-engineer from behavior).
+**Open:** Boom Hunter is the only one of the 5 TV-native indicators still without source (4 of 5
+obtained as of 2026-07-25). With source in hand for Cipher A, Cipher B, SMC, and
+Divergence-for-Many, all four are now candidates for independent JS reimplementation the way
+SuperTrend already was — not done yet, deliberately batched until Boom Hunter's source arrives
+too (see §6 discussion, 2026-07-25).
 
 ## 3. Known limitations
 
@@ -63,8 +66,21 @@ request/fork like we did for Cipher B, or reverse-engineer from behavior).
 - **Sequential timeframe switching** — `signal-grid.js` sweeps 15m/1H/4H/1D/1W one at a time on a
   single chart (each switch has real settle-time). SuperTrend calcs across timeframes are already
   parallelized (independent of the chart); the TV-native reads are not. See §5.
-- **Order block bullish/bearish classification unverified** — SMC's box color data doesn't map
-  cleanly to a known convention; currently reporting raw zones without a direction label.
+- ~~Order block bullish/bearish classification unverified~~ — **RESOLVED 2026-07-25.** SMC's box
+  color is packed **ABGR**, not the more common ARGB (confirmed programmatically, not by hand):
+  decoding the two 4H order-block colors captured earlier gives exact matches to source --
+  `#3179f5` (`internalBullishOrderBlockColor`) for the box containing current price, `#f77c80`
+  (`internalBearishOrderBlockColor`) for the box above it. Not yet wired into `signal-grid.js`'s
+  extraction (still just reports raw box zones, no bias field) — straightforward now that the
+  byte order is known, just not built.
+- **BOS/CHoCH tag text doesn't encode direction** (found reading `pine/smart-money-concepts-luxalgo.pine`,
+  2026-07-25) — `displayStructure()` sets the tag to `CHOCH` when the trend bias reverses and
+  `BOS` otherwise, but bullish/bearish is a *separate* fact: whether price crossed *above* a high
+  pivot (bullish) or *below* a low pivot (bearish). Every "most recent BOS/CHoCH" read this
+  session inferred direction from price context, not from the label text -- which was actually
+  the only thing that could be done with label text alone, but it means our structure reads
+  have never had guaranteed direction. `data_get_pine_labels` has a `verbose` option (unused so
+  far) that may expose label color, which would fix this properly -- untested.
 
 ## 4. Self-healing / reliability work done
 
@@ -495,6 +511,15 @@ Sources:
 
 ## 8. Changelog
 
+- 2026-07-25 — Received source for Cipher A and Smart Money Concepts (4 of 5 TV-native
+  indicators now have source; only Boom Hunter remains). Fixed a real bug: Cipher A's
+  `ribbonDirection()` was a guessed monotonic-8-EMA-stack heuristic, stricter than the
+  indicator's actual `ema8 < ema2` formula -- corrected and verified against live data.
+  Resolved the "order block color unverified" open item: SMC's box color is ABGR-packed, not
+  ARGB; decoded and confirmed exact matches to source for both a bullish and bearish box.
+  Found a new gap while reading the source: BOS/CHoCH label text alone never encoded direction
+  -- every prior "most recent structure" read this session inferred direction from price
+  context, which was the best available approach but not a guarantee. Noted, not yet fixed.
 - 2026-07-24 — Researched Bollinger Bands optimized settings + divergence (§7). One real
   academic paper found (pairs-trading focused, not directly applicable). Most useful data point:
   a community backtest across 4,032 parameter/pair/timeframe combos found only 46% profitable
