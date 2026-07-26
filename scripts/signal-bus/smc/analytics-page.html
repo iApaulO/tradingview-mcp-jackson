@@ -218,6 +218,24 @@
 
   <section>
     <div class="section-head">
+      <h2 class="serif">Liquidity zones</h2>
+      <div class="desc">EQH/EQL are the SMC liquidity concept — stops resting above equal highs, below equal lows. Does price sweep them, and does the sweep reverse?</div>
+    </div>
+    <div class="findings-grid">
+      <div class="finding-card">
+        <h3>Sweep rate — does price ever return and take the liquidity?</h3>
+        <div class="finding-bars" id="sweepRateFindings"></div>
+      </div>
+      <div class="finding-card">
+        <h3>Of swept levels: stop-hunt reversal vs. continuation</h3>
+        <div class="finding-bars" id="reversalRateFindings"></div>
+        <p class="finding-note" id="liquidityCaveat"></p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
       <h2 class="serif">One order block's life</h2>
       <div class="desc" id="narDesc"></div>
     </div>
@@ -239,6 +257,7 @@
         <div class="method-item"><span class="m-mark">－</span><span>One asset, one exchange proxy, one indicator's internal logic. Not tested on ETH or against realistic costs.</span></div>
         <div class="method-item"><span class="m-mark">－</span><span>The confluence pool is dense (structure events alone number in the tens of thousands), so a 97% "some confluence" rate is expected -- the informative signal is the DEGREE of confluence, not its presence.</span></div>
         <div class="method-item"><span class="m-mark">－</span><span>FVG and Premium/Discount zones are not part of this analysis -- FVG is off by default in the source, and Premium/Discount is a live single-state display, not a historical zone series.</span></div>
+        <div class="method-item"><span class="m-mark">－</span><span>The liquidity-sweep reversal rate (~81%) has NOT been significance-tested against a random baseline -- unlike the confluence finding above it, treat it as a lead, not a result.</span></div>
       </div>
     </div>
   </section>
@@ -251,7 +270,7 @@
 </div>
 
 <script>
-const DATA = {"meta":{"totalOrderBlocks":1323,"totalTouches":2407,"poolSize":86420,"rangeStart":1528848000,"rangeEnd":1735685400,"gitCommit":"ad893931ab7ef7f8a43f9cf61fbb66c3e7cd0d28","generatedAt":"2026-07-26T13:53:30.080Z"},"timeframes":[{"tf":"1w","label":"Weekly","structureEvents":8,"eqhEql":1,"orderBlocks":8},{"tf":"1d","label":"Daily","structureEvents":144,"eqhEql":40,"orderBlocks":115},{"tf":"4h","label":"4 Hour","structureEvents":929,"eqhEql":210,"orderBlocks":200},{"tf":"3h","label":"3 Hour","structureEvents":1202,"eqhEql":271,"orderBlocks":200},{"tf":"2h","label":"2 Hour","structureEvents":1881,"eqhEql":410,"orderBlocks":200},{"tf":"1h","label":"1 Hour","structureEvents":3861,"eqhEql":895,"orderBlocks":200},{"tf":"15m","label":"15 Min","structureEvents":15195,"eqhEql":3631,"orderBlocks":200},{"tf":"5m","label":"5 Min","structureEvents":45561,"eqhEql":10858,"orderBlocks":200}],"confluence":{"buckets":[{"count":1,"held":17,"broken":32},{"count":2,"held":74,"broken":95},{"count":3,"held":228,"broken":186},{"count":4,"held":140,"broken":163},{"count":5,"held":237,"broken":214},{"count":6,"held":333,"broken":233},{"count":7,"held":276,"broken":154},{"count":8,"held":17,"broken":8}],"significance":{"iterations":200000,"correlation":{"real":0.11630351309207115,"p":0},"gap":{"real":0.33306122448979597,"p":0.000765}}},"scopeSide":{"internal":{"bullish":{"held":377,"broken":288},"bearish":{"held":401,"broken":298}},"swing":{"bullish":{"held":279,"broken":233},"bearish":{"held":265,"broken":266}}},"narrative":{"barLow":9420,"barHigh":9749,"timeframe":"4h","scope":"swing","side":"bearish","confluenceCount":5,"createdTime":1573214400,"mitigatedTime":1580990400,"touches":[{"start":1580256000,"end":1580256000,"bars":1,"outcome":"held","approach":"below","penetrationPct":0.0024924012158045864},{"start":1580284800,"end":1580284800,"bars":1,"outcome":"held","approach":"below","penetrationPct":0.045410334346506105},{"start":1580328000,"end":1580328000,"bars":1,"outcome":"held","approach":"below","penetrationPct":0.08887537993920906},{"start":1580400000,"end":1580443200,"bars":4,"outcome":"held","approach":"below","penetrationPct":0.48024316109422494},{"start":1580500800,"end":1580544000,"bars":4,"outcome":"held","approach":"below","penetrationPct":0.13534954407295033},{"start":1580572800,"end":1580572800,"bars":1,"outcome":"held","approach":"below","penetrationPct":0.0029787234042539922},{"start":1580630400,"end":1580702400,"bars":6,"outcome":"held","approach":"below","penetrationPct":0.6042249240121607},{"start":1580889600,"end":1580990400,"bars":8,"outcome":"broken","approach":"below","penetrationPct":1.345197568389057}]}};
+const DATA = {"meta":{"totalOrderBlocks":1323,"totalTouches":2407,"poolSize":86420,"rangeStart":1528848000,"rangeEnd":1735685400,"gitCommit":"0024a798a73efb46cbe7cce914cf285a75e81567","generatedAt":"2026-07-26T14:11:31.820Z"},"timeframes":[{"tf":"1w","label":"Weekly","structureEvents":8,"eqhEql":1,"orderBlocks":8},{"tf":"1d","label":"Daily","structureEvents":144,"eqhEql":40,"orderBlocks":115},{"tf":"4h","label":"4 Hour","structureEvents":929,"eqhEql":210,"orderBlocks":200},{"tf":"3h","label":"3 Hour","structureEvents":1202,"eqhEql":271,"orderBlocks":200},{"tf":"2h","label":"2 Hour","structureEvents":1881,"eqhEql":410,"orderBlocks":200},{"tf":"1h","label":"1 Hour","structureEvents":3861,"eqhEql":895,"orderBlocks":200},{"tf":"15m","label":"15 Min","structureEvents":15195,"eqhEql":3631,"orderBlocks":200},{"tf":"5m","label":"5 Min","structureEvents":45561,"eqhEql":10858,"orderBlocks":200}],"confluence":{"buckets":[{"count":1,"held":17,"broken":32},{"count":2,"held":74,"broken":95},{"count":3,"held":228,"broken":186},{"count":4,"held":140,"broken":163},{"count":5,"held":237,"broken":214},{"count":6,"held":333,"broken":233},{"count":7,"held":276,"broken":154},{"count":8,"held":17,"broken":8}],"significance":{"iterations":200000,"correlation":{"real":0.11630351309207115,"p":0},"gap":{"real":0.33306122448979597,"p":0.000765}}},"scopeSide":{"internal":{"bullish":{"held":377,"broken":288},"bearish":{"held":401,"broken":298}},"swing":{"bullish":{"held":279,"broken":233},"bearish":{"held":265,"broken":266}}},"liquidity":{"eqh":{"unswept":2,"reversed":6849,"continued":1716},"eql":{"unswept":104,"reversed":6305,"continued":1340}},"narrative":{"barLow":9420,"barHigh":9749,"timeframe":"4h","scope":"swing","side":"bearish","confluenceCount":5,"createdTime":1573214400,"mitigatedTime":1580990400,"touches":[{"start":1580256000,"end":1580256000,"bars":1,"outcome":"held","approach":"below","penetrationPct":0.0024924012158045864},{"start":1580284800,"end":1580284800,"bars":1,"outcome":"held","approach":"below","penetrationPct":0.045410334346506105},{"start":1580328000,"end":1580328000,"bars":1,"outcome":"held","approach":"below","penetrationPct":0.08887537993920906},{"start":1580400000,"end":1580443200,"bars":4,"outcome":"held","approach":"below","penetrationPct":0.48024316109422494},{"start":1580500800,"end":1580544000,"bars":4,"outcome":"held","approach":"below","penetrationPct":0.13534954407295033},{"start":1580572800,"end":1580572800,"bars":1,"outcome":"held","approach":"below","penetrationPct":0.0029787234042539922},{"start":1580630400,"end":1580702400,"bars":6,"outcome":"held","approach":"below","penetrationPct":0.6042249240121607},{"start":1580889600,"end":1580990400,"bars":8,"outcome":"broken","approach":"below","penetrationPct":1.345197568389057}]}};
 
 const fmtUSD = (n) => "$" + n.toLocaleString(undefined, { maximumFractionDigits: 2 });
 const fmtDate = (unix) => new Date(unix * 1000).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
@@ -384,6 +403,20 @@ function renderBarFinding(elId, rows) {
     { label: "Internal", value: pct(s.internal.bearish.held, s.internal.bearish.broken), color: "var(--ob-bear)" },
     { label: "Swing", value: pct(s.swing.bearish.held, s.swing.bearish.broken), color: "var(--ob-bear)" },
   ]);
+})();
+
+(function renderLiquidity() {
+  const l = DATA.liquidity;
+  renderBarFinding("sweepRateFindings", [
+    { label: "EQH swept", value: (l.eqh.reversed + l.eqh.continued) / (l.eqh.unswept + l.eqh.reversed + l.eqh.continued) * 100, color: "var(--bear)" },
+    { label: "EQL swept", value: (l.eql.reversed + l.eql.continued) / (l.eql.unswept + l.eql.reversed + l.eql.continued) * 100, color: "var(--bull)" },
+  ]);
+  renderBarFinding("reversalRateFindings", [
+    { label: "EQH reversed", value: (l.eqh.reversed / (l.eqh.reversed + l.eqh.continued)) * 100, color: "var(--bear)" },
+    { label: "EQL reversed", value: (l.eql.reversed / (l.eql.reversed + l.eql.continued)) * 100, color: "var(--bull)" },
+  ]);
+  document.getElementById("liquidityCaveat").textContent =
+    "Not yet tested against a random baseline -- an arbitrary price level might show a similarly high \"closed back where it started within 10 bars\" rate from ordinary volatility alone. Consistent across all 8 timeframes, which is suggestive, not proof.";
 })();
 
 (function renderNarrative() {

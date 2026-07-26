@@ -218,6 +218,24 @@
 
   <section>
     <div class="section-head">
+      <h2 class="serif">Liquidity zones</h2>
+      <div class="desc">EQH/EQL are the SMC liquidity concept — stops resting above equal highs, below equal lows. Does price sweep them, and does the sweep reverse?</div>
+    </div>
+    <div class="findings-grid">
+      <div class="finding-card">
+        <h3>Sweep rate — does price ever return and take the liquidity?</h3>
+        <div class="finding-bars" id="sweepRateFindings"></div>
+      </div>
+      <div class="finding-card">
+        <h3>Of swept levels: stop-hunt reversal vs. continuation</h3>
+        <div class="finding-bars" id="reversalRateFindings"></div>
+        <p class="finding-note" id="liquidityCaveat"></p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
       <h2 class="serif">One order block's life</h2>
       <div class="desc" id="narDesc"></div>
     </div>
@@ -239,6 +257,7 @@
         <div class="method-item"><span class="m-mark">－</span><span>One asset, one exchange proxy, one indicator's internal logic. Not tested on ETH or against realistic costs.</span></div>
         <div class="method-item"><span class="m-mark">－</span><span>The confluence pool is dense (structure events alone number in the tens of thousands), so a 97% "some confluence" rate is expected -- the informative signal is the DEGREE of confluence, not its presence.</span></div>
         <div class="method-item"><span class="m-mark">－</span><span>FVG and Premium/Discount zones are not part of this analysis -- FVG is off by default in the source, and Premium/Discount is a live single-state display, not a historical zone series.</span></div>
+        <div class="method-item"><span class="m-mark">－</span><span>The liquidity-sweep reversal rate (~81%) has NOT been significance-tested against a random baseline -- unlike the confluence finding above it, treat it as a lead, not a result.</span></div>
       </div>
     </div>
   </section>
@@ -384,6 +403,20 @@ function renderBarFinding(elId, rows) {
     { label: "Internal", value: pct(s.internal.bearish.held, s.internal.bearish.broken), color: "var(--ob-bear)" },
     { label: "Swing", value: pct(s.swing.bearish.held, s.swing.bearish.broken), color: "var(--ob-bear)" },
   ]);
+})();
+
+(function renderLiquidity() {
+  const l = DATA.liquidity;
+  renderBarFinding("sweepRateFindings", [
+    { label: "EQH swept", value: (l.eqh.reversed + l.eqh.continued) / (l.eqh.unswept + l.eqh.reversed + l.eqh.continued) * 100, color: "var(--bear)" },
+    { label: "EQL swept", value: (l.eql.reversed + l.eql.continued) / (l.eql.unswept + l.eql.reversed + l.eql.continued) * 100, color: "var(--bull)" },
+  ]);
+  renderBarFinding("reversalRateFindings", [
+    { label: "EQH reversed", value: (l.eqh.reversed / (l.eqh.reversed + l.eqh.continued)) * 100, color: "var(--bear)" },
+    { label: "EQL reversed", value: (l.eql.reversed / (l.eql.reversed + l.eql.continued)) * 100, color: "var(--bull)" },
+  ]);
+  document.getElementById("liquidityCaveat").textContent =
+    "Not yet tested against a random baseline -- an arbitrary price level might show a similarly high \"closed back where it started within 10 bars\" rate from ordinary volatility alone. Consistent across all 8 timeframes, which is suggestive, not proof.";
 })();
 
 (function renderNarrative() {

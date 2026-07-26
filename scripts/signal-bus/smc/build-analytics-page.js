@@ -77,6 +77,15 @@ function main() {
   };
   for (const r of scopeSideRows) scopeSide[r.scope][r.side][r.outcome] = r.c;
 
+  const sweepRows = db.prepare("SELECT side, sweep_status, COUNT(*) c FROM eqh_eql_events GROUP BY side, sweep_status").all();
+  const liquidity = { eqh: { unswept: 0, reversed: 0, continued: 0 }, eql: { unswept: 0, reversed: 0, continued: 0 } };
+  for (const r of sweepRows) {
+    const key = r.side === "EQH" ? "eqh" : "eql";
+    if (r.sweep_status === "unswept") liquidity[key].unswept = r.c;
+    else if (r.sweep_status === "swept_reversed") liquidity[key].reversed = r.c;
+    else if (r.sweep_status === "swept_continued") liquidity[key].continued = r.c;
+  }
+
   const narrativeOb = db
     .prepare(
       `SELECT ob.*, COUNT(t.id) tc FROM order_blocks ob JOIN order_block_touches t ON t.order_block_id = ob.id
@@ -130,6 +139,7 @@ function main() {
       },
     },
     scopeSide,
+    liquidity,
     narrative,
   };
 
