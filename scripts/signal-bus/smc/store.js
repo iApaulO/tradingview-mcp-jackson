@@ -61,9 +61,11 @@ CREATE TABLE IF NOT EXISTS order_blocks (
   mitigated_bar_idx INTEGER,
   mitigated_time INTEGER,
   status TEXT NOT NULL,
-  color TEXT NOT NULL
+  color TEXT NOT NULL,
+  confluence_count INTEGER NOT NULL DEFAULT 1
 );
 CREATE INDEX IF NOT EXISTS idx_ob_tf ON order_blocks(timeframe);
+CREATE INDEX IF NOT EXISTS idx_ob_price ON order_blocks(bar_low, bar_high);
 
 CREATE TABLE IF NOT EXISTS order_block_touches (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -109,6 +111,68 @@ export function insertRun(db, { timeframe, candles, gitCommit }) {
   );
   const info = stmt.run(timeframe, candles.length, candles[0].t, candles[candles.length - 1].t, gitCommit, new Date().toISOString());
   return Number(info.lastInsertRowid);
+}
+
+// Loads every element across all timeframes, shaped for confluence.js's generic pool format.
+export function loadConfluencePool(db) {
+  const obs = db.prepare("SELECT id, timeframe, side, bar_low, bar_high, created_time, mitigated_time FROM order_blocks").all();
+  const eqhl = db.prepare("SELECT id, timeframe, side, level, confirm_time FROM eqh_eql_events").all();
+  const structure = db.prepare("SELECT id, timeframe, side, price, time FROM structure_events").all();
+
+  const pool = [
+    ...obs.map((o) => ({
+      type: "orderblock",
+      id: o.id,
+      timeframe: o.timeframe,
+      side: o.side,
+      priceLow: o.bar_low,
+      priceHigh: o.bar_high,
+      activeStart: o.created_time,
+      activeEnd: o.mitigated_time,
+    })),
+    ...eqhl.map((e) => ({
+      type: "eqhl",
+      id: e.id,
+      timeframe: e.timeframe,
+      side: e.side === "EQH" ? "bearish" : "bullish", // EQH is red/bearish-context, EQL green/bullish-context
+      price: e.level,
+      activeStart: e.confirm_time,
+    })),
+    ...structure.map((s) => ({
+      type: "structure",
+      id: s.id,
+      timeframe: s.timeframe,
+      side: s.side,
+      price: s.price,
+      activeStart: s.time,
+    })),
+  ];
+
+  // Order blocks reshaped for the "target" list confluence.js writes results onto (same rows as
+  // above, just without the type discriminant, since these are the ones being scored).
+  const targets = obs.map((o) => ({
+    id: o.id,
+    timeframe: o.timeframe,
+    side: o.side,
+    priceLow: o.bar_low,
+    priceHigh: o.bar_high,
+    activeStart: o.created_time,
+    activeEnd: o.mitigated_time,
+  }));
+
+  return { pool, targets };
+}
+
+export function updateConfluence(db, orderBlocks) {
+  db.exec("BEGIN");
+  try {
+    const stmt = db.prepare("UPDATE order_blocks SET confluence_count = ? WHERE id = ?");
+    for (const ob of orderBlocks) stmt.run(ob.confluenceCount, ob.id);
+    db.exec("COMMIT");
+  } catch (err) {
+    db.exec("ROLLBACK");
+    throw err;
+  }
 }
 
 export function insertAll(db, { runId, timeframe, structureEvents, eqhEqlEvents, orderBlocks }) {

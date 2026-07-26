@@ -1,0 +1,414 @@
+<title>SMC Cartography — Signal Bus Analytics</title>
+<style>
+  :root {
+    --ink: #f4f5f3;
+    --paper: #12161c;
+    --paper-raised: #171c23;
+    --paper-sunken: #0c0f13;
+    --line: #2b323c;
+    --line-soft: #1e242c;
+    --text: #e9ebe8;
+    --text-dim: #9aa3ad;
+    --text-faint: #626b76;
+    --accent: #d9a84e;
+    --accent-soft: rgba(217, 168, 78, 0.14);
+    --accent-text: #f0c878;
+    --bull: #089981;
+    --bull-soft: rgba(8, 153, 129, 0.16);
+    --bear: #F23645;
+    --bear-soft: rgba(242, 54, 69, 0.16);
+    --ob-bull: #3179f5;
+    --ob-bear: #f77c80;
+    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.28);
+  }
+  :root[data-theme="light"] {
+    --paper: #f3f4f1;
+    --paper-raised: #fbfbf9;
+    --paper-sunken: #eaebe7;
+    --line: #d8dad4;
+    --line-soft: #e4e5e0;
+    --text: #1b1f23;
+    --text-dim: #5a6167;
+    --text-faint: #8b9198;
+    --accent: #a97418;
+    --accent-soft: rgba(169, 116, 24, 0.10);
+    --accent-text: #8a5f14;
+    --bull: #067a67;
+    --bull-soft: rgba(6, 122, 103, 0.10);
+    --bear: #c62a3a;
+    --bear-soft: rgba(198, 42, 58, 0.10);
+    --ob-bull: #2461d6;
+    --ob-bear: #d65a63;
+    --shadow: 0 1px 2px rgba(20,20,10,0.06), 0 8px 24px rgba(20,20,10,0.06);
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --paper: #f3f4f1; --paper-raised: #fbfbf9; --paper-sunken: #eaebe7;
+      --line: #d8dad4; --line-soft: #e4e5e0;
+      --text: #1b1f23; --text-dim: #5a6167; --text-faint: #8b9198;
+      --accent: #a97418; --accent-soft: rgba(169, 116, 24, 0.10); --accent-text: #8a5f14;
+      --bull: #067a67; --bull-soft: rgba(6, 122, 103, 0.10);
+      --bear: #c62a3a; --bear-soft: rgba(198, 42, 58, 0.10);
+      --ob-bull: #2461d6; --ob-bear: #d65a63;
+      --shadow: 0 1px 2px rgba(20,20,10,0.06), 0 8px 24px rgba(20,20,10,0.06);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.5; -webkit-font-smoothing: antialiased; min-height: 100vh;
+  }
+  ::selection { background: var(--accent-soft); color: var(--accent-text); }
+  .serif { font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif; }
+  .mono { font-family: ui-monospace, "SF Mono", "Cascadia Code", "Consolas", "Roboto Mono", monospace; font-variant-numeric: tabular-nums; }
+  h1, h2, h3 { text-wrap: balance; margin: 0; }
+  a { color: var(--accent-text); }
+  .page { max-width: 1080px; margin: 0 auto; padding: 56px 28px 96px; }
+
+  .masthead { display: flex; justify-content: space-between; align-items: baseline; gap: 24px; padding-bottom: 28px; border-bottom: 1px solid var(--line); margin-bottom: 44px; flex-wrap: wrap; }
+  .masthead-title { font-size: 15px; letter-spacing: 0.02em; color: var(--text-dim); }
+  .masthead-title strong { color: var(--text); font-weight: 600; }
+  .masthead-meta { font-size: 12px; color: var(--text-faint); text-align: right; }
+
+  .thesis { margin-bottom: 56px; }
+  .thesis h1 { font-size: clamp(28px, 4vw, 40px); font-weight: 500; line-height: 1.2; max-width: 780px; margin-bottom: 10px; }
+  .thesis h1 em { font-style: italic; color: var(--accent-text); }
+  .thesis-sub { max-width: 640px; color: var(--text-dim); font-size: 15px; margin-bottom: 30px; }
+  .thesis-stats { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--paper-raised); box-shadow: var(--shadow); }
+  .thesis-stat { padding: 20px 22px; border-right: 1px solid var(--line); }
+  .thesis-stat:last-child { border-right: none; }
+  .thesis-stat .num { font-family: ui-monospace, monospace; font-variant-numeric: tabular-nums; font-size: 28px; font-weight: 600; color: var(--text); display: block; }
+  .thesis-stat .num.accent { color: var(--accent-text); }
+  .thesis-stat .lbl { font-size: 11.5px; color: var(--text-faint); margin-top: 4px; }
+
+  section { margin-bottom: 58px; }
+  .section-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
+  .section-head h2 { font-size: 20px; font-weight: 500; }
+  .section-head .desc { font-size: 13px; color: var(--text-faint); max-width: 440px; text-align: right; }
+
+  /* ---------- Color catalog ---------- */
+  .catalog { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .catalog-cell { background: var(--paper-raised); padding: 16px 18px; }
+  .catalog-cell .cc-name { font-size: 12.5px; color: var(--text-dim); margin-bottom: 10px; }
+  .swatch-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .swatch-row:last-child { margin-bottom: 0; }
+  .swatch { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+  .swatch-row .sw-label { font-size: 12px; color: var(--text-faint); }
+  .swatch-row .sw-hex { font-family: ui-monospace, monospace; font-size: 11px; color: var(--text-faint); margin-left: auto; }
+
+  .ladder { display: grid; grid-template-columns: repeat(8, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .ladder-cell { background: var(--paper-raised); padding: 14px 10px; display: flex; flex-direction: column; gap: 6px; }
+  .ladder-cell .tf-label { font-family: ui-monospace, monospace; font-size: 13px; font-weight: 600; color: var(--text); }
+  .ladder-cell .tf-sub { font-size: 10px; color: var(--text-faint); }
+  .ladder-cell .stat-line { font-size: 11px; color: var(--text-dim); }
+  .ladder-cell .stat-line b { color: var(--text); font-family: ui-monospace, monospace; }
+  @media (max-width: 760px) { .ladder { grid-template-columns: repeat(4, 1fr); } }
+
+  .confluence-wrap { border: 1px solid var(--line); border-radius: 10px; background: var(--paper-raised); padding: 24px 24px 18px; box-shadow: var(--shadow); }
+  canvas { display: block; width: 100%; }
+  .sig-box { margin-top: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .sig-cell { background: var(--paper-sunken); padding: 14px 18px; }
+  .sig-cell .sig-name { font-size: 11px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+  .sig-cell .sig-val { font-family: ui-monospace, monospace; font-size: 18px; font-weight: 600; }
+  .sig-cell .sig-p { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  .p-sig { color: var(--bull); }
+
+  .findings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 700px) { .findings-grid { grid-template-columns: 1fr; } }
+  .finding-card { border: 1px solid var(--line); border-radius: 10px; background: var(--paper-raised); padding: 20px 22px; }
+  .finding-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+  .finding-bars { display: flex; flex-direction: column; gap: 10px; }
+  .finding-bar-row { display: grid; grid-template-columns: 90px 1fr 52px; align-items: center; gap: 10px; }
+  .finding-bar-row .fb-label { font-size: 12px; color: var(--text-dim); }
+  .finding-bar-track { height: 8px; background: var(--paper-sunken); border-radius: 4px; overflow: hidden; }
+  .finding-bar-fill { height: 100%; border-radius: 4px; }
+  .finding-bar-row .fb-val { font-family: ui-monospace, monospace; font-size: 12.5px; text-align: right; color: var(--text); }
+  .finding-note { font-size: 12px; color: var(--text-faint); margin-top: 14px; line-height: 1.55; }
+
+  .narrative-box { border: 1px solid var(--line); border-radius: 10px; background: var(--paper-raised); padding: 22px 24px; }
+  .narrative-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; flex-wrap: wrap; gap: 8px; }
+  .narrative-head .price { font-family: ui-monospace, monospace; font-size: 20px; font-weight: 600; }
+  .narrative-head .side-tag { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; padding: 3px 9px; border-radius: 20px; }
+  .side-tag.bearish { background: var(--bear-soft); color: var(--ob-bear); }
+  .side-tag.bullish { background: var(--bull-soft); color: var(--ob-bull); }
+  .narrative-sub { font-size: 12px; color: var(--text-faint); margin-bottom: 20px; }
+  .timeline { display: flex; flex-direction: column; }
+  .touch-row { display: grid; grid-template-columns: 96px 20px 1fr auto; gap: 14px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line-soft); }
+  .touch-row:last-child { border-bottom: none; }
+  .touch-row .t-date { font-family: ui-monospace, monospace; font-size: 11.5px; color: var(--text-faint); }
+  .touch-node { width: 10px; height: 10px; border-radius: 50%; justify-self: center; }
+  .touch-node.held { background: var(--bull); }
+  .touch-node.broken { background: var(--bear); }
+  .touch-desc { font-size: 12.5px; color: var(--text-dim); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .touch-desc .outcome-word { font-weight: 600; }
+  .touch-desc .outcome-word.held { color: var(--bull); }
+  .touch-desc .outcome-word.broken { color: var(--bear); }
+  .touch-pen { font-family: ui-monospace, monospace; font-size: 11.5px; color: var(--text-faint); text-align: right; white-space: nowrap; }
+
+  .method-box { border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 6px; background: var(--paper-raised); padding: 22px 26px; }
+  .method-box h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); margin-bottom: 14px; }
+  .method-list { display: flex; flex-direction: column; gap: 10px; }
+  .method-item { display: grid; grid-template-columns: 18px 1fr; gap: 10px; font-size: 13px; color: var(--text-dim); line-height: 1.55; }
+  .method-item .m-mark { color: var(--accent-text); font-family: ui-monospace, monospace; }
+
+  footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--text-faint); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<div class="page">
+
+  <div class="masthead">
+    <div class="masthead-title"><strong>SMC Cartography</strong> — signal-bus analytics, Smart Money Concepts [LuxAlgo]</div>
+    <div class="masthead-meta mono" id="mastheadMeta"></div>
+  </div>
+
+  <div class="thesis">
+    <h1 class="serif">An order block that <em>eight</em> timeframes agree on holds twice as often as one only its own timeframe can see.</h1>
+    <p class="thesis-sub" id="thesisSub"></p>
+    <div class="thesis-stats" id="thesisStats"></div>
+  </div>
+
+  <section>
+    <div class="section-head">
+      <h2 class="serif">Not everything is green and red</h2>
+      <div class="desc">The exact colors the indicator itself defines — order blocks are blue/red-family, not green/red like structure and EQH/EQL.</div>
+    </div>
+    <div class="catalog" id="catalog"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2 class="serif">The timeframe ladder</h2>
+      <div class="desc">Structure and EQH/EQL scale with resolution; order blocks are capped at a rolling 100 per scope.</div>
+    </div>
+    <div class="ladder" id="ladder"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2 class="serif">Confluence &amp; hold rate</h2>
+      <div class="desc">Order blocks scored against every other SMC signal — other order blocks, EQH/EQL, structure breaks — across all 8 timeframes.</div>
+    </div>
+    <div class="confluence-wrap">
+      <canvas id="confluenceChart" width="1000" height="320"></canvas>
+      <div class="sig-box" id="sigBox"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2 class="serif">Internal vs. swing</h2>
+      <div class="desc">Fast (5-bar) structure vs. slow (50-bar) structure — a different reliability profile.</div>
+    </div>
+    <div class="findings-grid">
+      <div class="finding-card">
+        <h3>Bullish order block hold rate</h3>
+        <div class="finding-bars" id="scopeBullFindings"></div>
+      </div>
+      <div class="finding-card">
+        <h3>Bearish order block hold rate</h3>
+        <div class="finding-bars" id="scopeBearFindings"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2 class="serif">One order block's life</h2>
+      <div class="desc" id="narDesc"></div>
+    </div>
+    <div class="narrative-box">
+      <div class="narrative-head">
+        <span class="price mono" id="narPrice"></span>
+        <span class="side-tag" id="narSideTag"></span>
+      </div>
+      <div class="narrative-sub" id="narSub"></div>
+      <div class="timeline" id="narTimeline"></div>
+    </div>
+  </section>
+
+  <section style="margin-bottom: 0;">
+    <div class="method-box">
+      <h3>What this is, and isn't, evidence of</h3>
+      <div class="method-list">
+        <div class="method-item"><span class="m-mark">＋</span><span>The confluence-hold-rate relationship is real well past p&lt;0.0001, tested at the correct unit of analysis (order blocks, not touches).</span></div>
+        <div class="method-item"><span class="m-mark">－</span><span>One asset, one exchange proxy, one indicator's internal logic. Not tested on ETH or against realistic costs.</span></div>
+        <div class="method-item"><span class="m-mark">－</span><span>The confluence pool is dense (structure events alone number in the tens of thousands), so a 97% "some confluence" rate is expected -- the informative signal is the DEGREE of confluence, not its presence.</span></div>
+        <div class="method-item"><span class="m-mark">－</span><span>FVG and Premium/Discount zones are not part of this analysis -- FVG is off by default in the source, and Premium/Discount is a live single-state display, not a historical zone series.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>data/signal-bus/smc.db · scripts/signal-bus/smc/</span>
+    <span id="genFooter"></span>
+  </footer>
+
+</div>
+
+<script>
+const DATA = /*__DATA_JSON__*/;
+
+const fmtUSD = (n) => "$" + n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+const fmtDate = (unix) => new Date(unix * 1000).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+const pct = (held, broken) => (held + broken === 0 ? 0 : (held / (held + broken)) * 100);
+function css(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
+document.getElementById("genFooter").textContent = "generated " + DATA.meta.generatedAt.slice(0, 10) + " · commit " + DATA.meta.gitCommit.slice(0, 7);
+document.getElementById("mastheadMeta").innerHTML = `BINANCE:BTCUSD (spot proxy) · ${fmtDate(DATA.meta.rangeStart)} → ${fmtDate(DATA.meta.rangeEnd)}<br>W · D · 4H · 3H · 2H · 1H · 15m · 5m`;
+
+(function renderThesis() {
+  const b = DATA.confluence.buckets;
+  const lo = b[0], hi = b[b.length - 1];
+  const loPct = pct(lo.held, lo.broken), hiPct = pct(hi.held, hi.broken);
+  document.getElementById("thesisSub").textContent =
+    `${DATA.meta.totalOrderBlocks.toLocaleString()} order blocks, ${DATA.meta.totalTouches.toLocaleString()} touch events, tested against ${DATA.meta.poolSize.toLocaleString()} cross-timeframe SMC signals. The gradient below survives a ${DATA.confluence.significance.iterations.toLocaleString()}-iteration permutation test.`;
+  const stats = [
+    { num: loPct.toFixed(1) + "%", lbl: `hold rate, confluence=${lo.count} (isolated)` },
+    { num: hiPct.toFixed(1) + "%", lbl: `hold rate, confluence=${hi.count} (max)`, accent: true },
+    { num: "p<0.0001", lbl: "permutation test, both statistics", accent: true },
+    { num: DATA.meta.totalTouches.toLocaleString(), lbl: "order-block touch events" },
+  ];
+  document.getElementById("thesisStats").innerHTML = stats.map(s => `<div class="thesis-stat"><span class="num${s.accent ? " accent" : ""}">${s.num}</span><span class="lbl">${s.lbl}</span></div>`).join("");
+})();
+
+(function renderCatalog() {
+  const rows = [
+    { name: "EQH / EQL", items: [["EQL (bullish)", "#089981"], ["EQH (bearish)", "#F23645"]] },
+    { name: "Structure (BOS/CHoCH)", items: [["Bullish", "#089981"], ["Bearish", "#F23645"]] },
+    { name: "Order blocks — internal", items: [["Bullish", "#3179f5"], ["Bearish", "#f77c80"]] },
+    { name: "Order blocks — swing", items: [["Bullish", "#1848cc"], ["Bearish", "#b22833"]] },
+  ];
+  document.getElementById("catalog").innerHTML = rows.map(r => `
+    <div class="catalog-cell">
+      <div class="cc-name">${r.name}</div>
+      ${r.items.map(([label, hex]) => `<div class="swatch-row"><span class="swatch" style="background:${hex}"></span><span class="sw-label">${label}</span><span class="sw-hex">${hex}</span></div>`).join("")}
+    </div>`).join("");
+})();
+
+(function renderLadder() {
+  document.getElementById("ladder").innerHTML = DATA.timeframes.map(t => `
+    <div class="ladder-cell">
+      <div><div class="tf-label">${t.tf}</div><div class="tf-sub">${t.label}</div></div>
+      <div class="stat-line">structure <b>${t.structureEvents.toLocaleString()}</b></div>
+      <div class="stat-line">EQH/EQL <b>${t.eqhEql.toLocaleString()}</b></div>
+      <div class="stat-line">OBs <b>${t.orderBlocks.toLocaleString()}</b></div>
+    </div>`).join("");
+})();
+
+(function renderConfluenceChart() {
+  const canvas = document.getElementById("confluenceChart");
+  const ctx = canvas.getContext("2d");
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.clientWidth || 1000, H = 320;
+  canvas.width = W * dpr; canvas.height = H * dpr; ctx.scale(dpr, dpr);
+
+  const buckets = DATA.confluence.buckets;
+  const values = buckets.map(b => pct(b.held, b.broken));
+  const ns = buckets.map(b => b.held + b.broken);
+  const padL = 46, padR = 20, padT = 20, padB = 46;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const yMin = 0, yMax = 80;
+  const yToPx = v => padT + plotH - ((v - yMin) / (yMax - yMin)) * plotH;
+
+  const gridColor = css("--line-soft"), textFaint = css("--text-faint"), textDim = css("--text-dim"), accent = css("--accent");
+  ctx.strokeStyle = gridColor; ctx.lineWidth = 1; ctx.font = "11px ui-monospace, monospace"; ctx.fillStyle = textFaint;
+  for (let v = yMin; v <= yMax; v += 20) {
+    const y = yToPx(v);
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+    ctx.fillText(v + "%", 8, y + 4);
+  }
+
+  const colW = plotW / buckets.length;
+  buckets.forEach((b, i) => {
+    const cx = padL + colW * i + colW / 2;
+    const barW = Math.min(48, colW * 0.5);
+    const barTop = yToPx(values[i]), barBase = yToPx(yMin);
+    ctx.fillStyle = accent;
+    ctx.globalAlpha = 0.35 + 0.65 * (i / (buckets.length - 1));
+    ctx.beginPath();
+    const r = 3;
+    ctx.moveTo(cx - barW / 2, barBase);
+    ctx.lineTo(cx - barW / 2, barTop + r);
+    ctx.arcTo(cx - barW / 2, barTop, cx - barW / 2 + r, barTop, r);
+    ctx.lineTo(cx + barW / 2 - r, barTop);
+    ctx.arcTo(cx + barW / 2, barTop, cx + barW / 2, barTop + r, r);
+    ctx.lineTo(cx + barW / 2, barBase);
+    ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
+
+    ctx.fillStyle = css("--text"); ctx.font = "600 12px ui-monospace, monospace"; ctx.textAlign = "center";
+    ctx.fillText(values[i].toFixed(1) + "%", cx, barTop - 8);
+    ctx.fillStyle = textDim; ctx.font = "11px -apple-system, sans-serif";
+    ctx.fillText("cc=" + b.count, cx, H - padB + 20);
+    ctx.fillStyle = textFaint; ctx.font = "10px ui-monospace, monospace";
+    ctx.fillText("n=" + ns[i].toLocaleString(), cx, H - padB + 33);
+    ctx.textAlign = "left";
+  });
+})();
+
+(function renderSig() {
+  const s = DATA.confluence.significance;
+  document.getElementById("sigBox").innerHTML = `
+    <div class="sig-cell">
+      <div class="sig-name">Point-biserial correlation</div>
+      <div class="sig-val mono">r = ${s.correlation.real.toFixed(4)}</div>
+      <div class="sig-p">p ${s.correlation.p === 0 ? "&lt; " + (1 / s.iterations).toFixed(5) : "= " + s.correlation.p.toFixed(4)} <span class="p-sig">— ${s.iterations.toLocaleString()} order-block-level permutations</span></div>
+    </div>
+    <div class="sig-cell">
+      <div class="sig-name">Max vs. isolated-bucket gap</div>
+      <div class="sig-val mono">+${s.gap.real.toFixed(1)} pts</div>
+      <div class="sig-p">p = ${s.gap.p.toFixed(4)} <span class="p-sig">— order-block-level shuffle</span></div>
+    </div>`;
+})();
+
+function renderBarFinding(elId, rows) {
+  const max = Math.max(...rows.map(r => r.value), 1);
+  document.getElementById(elId).innerHTML = rows.map(r => `
+    <div class="finding-bar-row">
+      <div class="fb-label">${r.label}</div>
+      <div class="finding-bar-track"><div class="finding-bar-fill" style="width:${(r.value / max) * 100}%;background:${r.color}"></div></div>
+      <div class="fb-val">${r.value.toFixed(1)}%</div>
+    </div>`).join("");
+}
+(function () {
+  const s = DATA.scopeSide;
+  renderBarFinding("scopeBullFindings", [
+    { label: "Internal", value: pct(s.internal.bullish.held, s.internal.bullish.broken), color: "var(--ob-bull)" },
+    { label: "Swing", value: pct(s.swing.bullish.held, s.swing.bullish.broken), color: "var(--ob-bull)" },
+  ]);
+  renderBarFinding("scopeBearFindings", [
+    { label: "Internal", value: pct(s.internal.bearish.held, s.internal.bearish.broken), color: "var(--ob-bear)" },
+    { label: "Swing", value: pct(s.swing.bearish.held, s.swing.bearish.broken), color: "var(--ob-bear)" },
+  ]);
+})();
+
+(function renderNarrative() {
+  const n = DATA.narrative;
+  document.getElementById("narPrice").textContent = `${fmtUSD(n.barLow)} – ${fmtUSD(n.barHigh)}`;
+  const tag = document.getElementById("narSideTag");
+  tag.textContent = n.side === "bearish" ? "Supply block" : "Demand block";
+  tag.className = "side-tag " + n.side;
+  document.getElementById("narDesc").textContent = `${n.timeframe.toUpperCase()} ${n.scope} ${n.side} order block, confluence=${n.confluenceCount}.`;
+  document.getElementById("narSub").textContent =
+    `Created ${fmtDate(n.createdTime)} · ${n.mitigatedTime ? "mitigated " + fmtDate(n.mitigatedTime) : "still active"} · ${n.touches.length} distinct tests`;
+  document.getElementById("narTimeline").innerHTML = n.touches.map((t, i) => {
+    const durTxt = t.bars === 1 ? "1 bar" : t.bars + " bars";
+    const dirTxt = t.approach === "above" ? "from above" : t.approach === "below" ? "from below" : "already inside";
+    return `<div class="touch-row">
+      <span class="t-date">${fmtDate(t.start)}</span>
+      <span class="touch-node ${t.outcome}"></span>
+      <span class="touch-desc">
+        Test ${i + 1}, ${durTxt}, approached ${dirTxt}, penetrated ${(t.penetrationPct * 100).toFixed(0)}% of the box —
+        <span class="outcome-word ${t.outcome}">${t.outcome}</span>
+      </span>
+      <span class="touch-pen"></span>
+    </div>`;
+  }).join("");
+})();
+
+new MutationObserver(() => location.reload()).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+</script>
