@@ -82,23 +82,22 @@ function bucket3vs1Gap(confluenceCounts, outcomes) {
   return held3 / n3 - held1 / n1;
 }
 
-function main() {
-  const db = new DatabaseSync(DB_PATH, { readOnly: true });
+// Exported so other scripts (e.g. build-analytics-page.js) can get fresh significance numbers
+// straight from the DB instead of hardcoding a snapshot of a prior run's output.
+export function runConfluenceSignificanceTest({ iterations = 5000, seed = 42, dbPath = DB_PATH } = {}) {
+  const db = new DatabaseSync(dbPath, { readOnly: true });
   const rows = db.prepare(
     `SELECT z.id as zone_id, z.confluence_count, t.outcome
      FROM touches t JOIN zones z ON z.id = t.zone_id`,
   ).all();
   db.close();
 
-  // Group touches by zone (need each zone's real confluence_count and its list of touch outcomes,
-  // so a permutation can reassign the LABEL while keeping the zone's real outcomes attached).
   const zoneMap = new Map();
   for (const r of rows) {
     if (!zoneMap.has(r.zone_id)) zoneMap.set(r.zone_id, { confluenceCount: r.confluence_count, outcomes: [] });
     zoneMap.get(r.zone_id).outcomes.push(r.outcome === "held" ? 1 : 0);
   }
   const zones = [...zoneMap.values()];
-  console.log(`Loaded ${zones.length} zones with touches, ${rows.length} total touches.`);
 
   const realLabels = zones.map((z) => z.confluenceCount);
   const realConfluencePerTouch = [];
@@ -112,13 +111,11 @@ function main() {
 
   const realR = pointBiserial(realConfluencePerTouch, realOutcomePerTouch);
   const realGap = bucket3vs1Gap(realConfluencePerTouch, realOutcomePerTouch);
-  console.log(`\nReal point-biserial correlation (confluence_count vs held/broken): r = ${realR.toFixed(4)}`);
-  console.log(`Real bucket gap (3-way hold% - isolated hold%): ${(realGap * 100).toFixed(2)} points`);
 
-  const rng = mulberry32(SEED);
+  const rng = mulberry32(seed);
   const permutedR = [];
   const permutedGaps = [];
-  for (let iter = 0; iter < ITERATIONS; iter++) {
+  for (let iter = 0; iter < iterations; iter++) {
     const shuffledLabels = shuffle(realLabels, rng);
     const confPerTouch = [];
     const outPerTouch = [];
@@ -139,15 +136,45 @@ function main() {
   const pR = permutedR.filter((r) => r >= realR).length / permutedR.length;
   const pGap = permutedGaps.filter((g) => g >= realGap).length / permutedGaps.length;
 
-  console.log(`\n--- Permutation test (${ITERATIONS} iterations, zone-level shuffle, seed=${SEED}) ---`);
-  console.log(`Correlation: permuted r mean=${(permutedR.reduce((s, x) => s + x, 0) / permutedR.length).toFixed(4)}, range=[${permutedR[0].toFixed(4)}, ${permutedR[permutedR.length - 1].toFixed(4)}]`);
-  console.log(`  p-value (fraction of permuted r >= real r): ${pR.toFixed(4)} ${pR < 0.05 ? "(significant at 5%)" : "(NOT significant at 5%)"}`);
-  console.log(`Bucket gap: permuted mean=${((permutedGaps.reduce((s, x) => s + x, 0) / permutedGaps.length) * 100).toFixed(2)} pts, range=[${(permutedGaps[0] * 100).toFixed(2)}, ${(permutedGaps[permutedGaps.length - 1] * 100).toFixed(2)}]`);
-  console.log(`  p-value (fraction of permuted gap >= real gap): ${pGap.toFixed(4)} ${pGap < 0.05 ? "(significant at 5%)" : "(NOT significant at 5%)"}`);
+  return {
+    zoneCount: zones.length,
+    touchCount: rows.length,
+    iterations,
+    seed,
+    correlation: {
+      real: realR,
+      p: pR,
+      permutedMean: permutedR.reduce((s, x) => s + x, 0) / permutedR.length,
+      permutedRange: [permutedR[0], permutedR[permutedR.length - 1]],
+    },
+    gap: {
+      real: realGap,
+      p: pGap,
+      permutedMean: permutedGaps.reduce((s, x) => s + x, 0) / permutedGaps.length,
+      permutedRange: [permutedGaps[0], permutedGaps[permutedGaps.length - 1]],
+    },
+  };
+}
 
+function main() {
+  const result = runConfluenceSignificanceTest({ iterations: ITERATIONS, seed: SEED });
+  console.log(`Loaded ${result.zoneCount} zones with touches, ${result.touchCount} total touches.`);
+  console.log(`\nReal point-biserial correlation (confluence_count vs held/broken): r = ${result.correlation.real.toFixed(4)}`);
+  console.log(`Real bucket gap (3-way hold% - isolated hold%): ${(result.gap.real * 100).toFixed(2)} points`);
+
+  console.log(`\n--- Permutation test (${ITERATIONS} iterations, zone-level shuffle, seed=${SEED}) ---`);
+  console.log(`Correlation: permuted r mean=${result.correlation.permutedMean.toFixed(4)}, range=[${result.correlation.permutedRange[0].toFixed(4)}, ${result.correlation.permutedRange[1].toFixed(4)}]`);
+  console.log(`  p-value (fraction of permuted r >= real r): ${result.correlation.p.toFixed(4)} ${result.correlation.p < 0.05 ? "(significant at 5%)" : "(NOT significant at 5%)"}`);
+  console.log(`Bucket gap: permuted mean=${(result.gap.permutedMean * 100).toFixed(2)} pts, range=[${(result.gap.permutedRange[0] * 100).toFixed(2)}, ${(result.gap.permutedRange[1] * 100).toFixed(2)}]`);
+  console.log(`  p-value (fraction of permuted gap >= real gap): ${result.gap.p.toFixed(4)} ${result.gap.p < 0.05 ? "(significant at 5%)" : "(NOT significant at 5%)"}`);
+
+  const pR = result.correlation.p, pGap = result.gap.p;
   console.log(
     `\nVerdict: ${pR < 0.05 && pGap < 0.05 ? "Both statistics clear 5% -- the confluence effect looks real, not a labeling artifact." : pR < 0.05 || pGap < 0.05 ? "Mixed -- one statistic clears 5%, the other doesn't. Treat as unresolved, not confirmed." : "Neither statistic clears 5% -- the observed gradient is NOT distinguishable from randomly relabeling zones. This does not survive the test."}`,
   );
 }
 
-main();
+// Only run as CLI when invoked directly -- build-analytics-page.js imports runConfluenceSignificanceTest instead.
+if (import.meta.url === `file://${process.argv[1].replace(/\\/g, "/")}` || import.meta.url === `file:///${process.argv[1].replace(/\\/g, "/")}`) {
+  main();
+}

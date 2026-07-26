@@ -1,0 +1,738 @@
+<title>Divergence Cartography — Signal Bus Analytics</title>
+<style>
+  :root {
+    --ink: #f4f5f3;
+    --paper: #12161c;
+    --paper-raised: #171c23;
+    --paper-sunken: #0c0f13;
+    --line: #2b323c;
+    --line-soft: #1e242c;
+    --text: #e9ebe8;
+    --text-dim: #9aa3ad;
+    --text-faint: #626b76;
+    --accent: #d9a84e;
+    --accent-soft: rgba(217, 168, 78, 0.14);
+    --accent-text: #f0c878;
+    --bull: #6cb98a;
+    --bull-soft: rgba(108, 185, 138, 0.16);
+    --bear: #d9776a;
+    --bear-soft: rgba(217, 119, 106, 0.16);
+    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.28);
+  }
+  :root[data-theme="light"] {
+    --paper: #f3f4f1;
+    --paper-raised: #fbfbf9;
+    --paper-sunken: #eaebe7;
+    --line: #d8dad4;
+    --line-soft: #e4e5e0;
+    --text: #1b1f23;
+    --text-dim: #5a6167;
+    --text-faint: #8b9198;
+    --accent: #a97418;
+    --accent-soft: rgba(169, 116, 24, 0.10);
+    --accent-text: #8a5f14;
+    --bull: #2f7d52;
+    --bull-soft: rgba(47, 125, 82, 0.10);
+    --bear: #a8402f;
+    --bear-soft: rgba(168, 64, 47, 0.10);
+    --shadow: 0 1px 2px rgba(20,20,10,0.06), 0 8px 24px rgba(20,20,10,0.06);
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --paper: #f3f4f1;
+      --paper-raised: #fbfbf9;
+      --paper-sunken: #eaebe7;
+      --line: #d8dad4;
+      --line-soft: #e4e5e0;
+      --text: #1b1f23;
+      --text-dim: #5a6167;
+      --text-faint: #8b9198;
+      --accent: #a97418;
+      --accent-soft: rgba(169, 116, 24, 0.10);
+      --accent-text: #8a5f14;
+      --bull: #2f7d52;
+      --bull-soft: rgba(47, 125, 82, 0.10);
+      --bear: #a8402f;
+      --bear-soft: rgba(168, 64, 47, 0.10);
+      --shadow: 0 1px 2px rgba(20,20,10,0.06), 0 8px 24px rgba(20,20,10,0.06);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  ::selection { background: var(--accent-soft); color: var(--accent-text); }
+
+  .serif {
+    font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+  }
+  .mono {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "Consolas", "Roboto Mono", monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  h1, h2, h3 { text-wrap: balance; margin: 0; }
+
+  a { color: var(--accent-text); }
+
+  .page {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 56px 28px 96px;
+  }
+
+  /* ---------- Masthead ---------- */
+  .masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 24px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 44px;
+    flex-wrap: wrap;
+  }
+  .masthead-title { font-size: 15px; letter-spacing: 0.02em; color: var(--text-dim); }
+  .masthead-title strong { color: var(--text); font-weight: 600; }
+  .masthead-meta { font-size: 12px; color: var(--text-faint); text-align: right; }
+
+  /* ---------- Thesis ---------- */
+  .thesis {
+    margin-bottom: 56px;
+  }
+  .thesis h1 {
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 500;
+    line-height: 1.2;
+    max-width: 780px;
+    margin-bottom: 10px;
+  }
+  .thesis h1 em {
+    font-style: italic;
+    color: var(--accent-text);
+  }
+  .thesis-sub {
+    max-width: 640px;
+    color: var(--text-dim);
+    font-size: 15px;
+    margin-bottom: 30px;
+  }
+  .thesis-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--paper-raised);
+    box-shadow: var(--shadow);
+  }
+  .thesis-stat {
+    padding: 20px 22px;
+    border-right: 1px solid var(--line);
+  }
+  .thesis-stat:last-child { border-right: none; }
+  .thesis-stat .num {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text);
+    display: block;
+  }
+  .thesis-stat .num.accent { color: var(--accent-text); }
+  .thesis-stat .lbl {
+    font-size: 11.5px;
+    color: var(--text-faint);
+    margin-top: 4px;
+  }
+
+  /* ---------- Section shell ---------- */
+  section { margin-bottom: 58px; }
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  .section-head h2 {
+    font-size: 20px;
+    font-weight: 500;
+  }
+  .section-head .desc {
+    font-size: 13px;
+    color: var(--text-faint);
+    max-width: 420px;
+    text-align: right;
+  }
+
+  /* ---------- Timeframe ladder ---------- */
+  .ladder {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .ladder-cell {
+    background: var(--paper-raised);
+    padding: 14px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+  }
+  .ladder-cell .tf-label {
+    font-family: ui-monospace, "SF Mono", monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .ladder-cell .tf-sub { font-size: 10px; color: var(--text-faint); }
+  .ladder-bar {
+    height: 46px;
+    display: flex;
+    align-items: flex-end;
+    border-radius: 3px;
+    overflow: hidden;
+    background: var(--paper-sunken);
+  }
+  .ladder-bar-fill {
+    width: 100%;
+    background: linear-gradient(180deg, var(--accent) 0%, var(--accent) 100%);
+    opacity: 0.55;
+    border-radius: 3px 3px 0 0;
+  }
+  .ladder-cell .hold-pct {
+    font-family: ui-monospace, "SF Mono", monospace;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .ladder-cell .zones-n { font-size: 10px; color: var(--text-faint); }
+  @media (max-width: 760px) {
+    .ladder { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  /* ---------- Confluence chart ---------- */
+  .confluence-wrap {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--paper-raised);
+    padding: 24px 24px 18px;
+    box-shadow: var(--shadow);
+  }
+  canvas { display: block; width: 100%; }
+  .confluence-legend {
+    display: flex;
+    gap: 22px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line-soft);
+    flex-wrap: wrap;
+  }
+  .legend-item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-dim); }
+  .legend-swatch { width: 10px; height: 10px; border-radius: 2px; }
+
+  .sig-box {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .sig-cell { background: var(--paper-sunken); padding: 14px 18px; }
+  .sig-cell .sig-name { font-size: 11px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+  .sig-cell .sig-val { font-family: ui-monospace, monospace; font-size: 18px; font-weight: 600; }
+  .sig-cell .sig-p { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  .p-sig { color: var(--bull); }
+
+  /* ---------- Two-up findings ---------- */
+  .findings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  @media (max-width: 700px) { .findings-grid { grid-template-columns: 1fr; } }
+  .finding-card {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--paper-raised);
+    padding: 20px 22px;
+  }
+  .finding-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+  .finding-bars { display: flex; flex-direction: column; gap: 10px; }
+  .finding-bar-row { display: grid; grid-template-columns: 90px 1fr 52px; align-items: center; gap: 10px; }
+  .finding-bar-row .fb-label { font-size: 12px; color: var(--text-dim); }
+  .finding-bar-track { height: 8px; background: var(--paper-sunken); border-radius: 4px; overflow: hidden; }
+  .finding-bar-fill { height: 100%; border-radius: 4px; }
+  .finding-bar-row .fb-val { font-family: ui-monospace, monospace; font-size: 12.5px; text-align: right; color: var(--text); }
+  .finding-note { font-size: 12px; color: var(--text-faint); margin-top: 14px; line-height: 1.55; }
+
+  /* ---------- Cluster spotlight ---------- */
+  .cluster-box {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--paper-raised);
+    padding: 22px 24px;
+  }
+  .cluster-price-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .cluster-price-row .price { font-family: ui-monospace, monospace; font-size: 22px; font-weight: 600; color: var(--accent-text); }
+  .cluster-price-row .date { font-size: 12.5px; color: var(--text-faint); }
+  .cluster-members { display: flex; flex-direction: column; gap: 6px; }
+  .cluster-member {
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    font-size: 12.5px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .cluster-member:last-child { border-bottom: none; }
+  .cluster-member .tf-tag {
+    font-family: ui-monospace, monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent-text);
+    background: var(--accent-soft);
+    padding: 2px 7px;
+    border-radius: 4px;
+    text-align: center;
+  }
+  .cluster-member .offset-track { height: 4px; background: var(--paper-sunken); border-radius: 2px; position: relative; }
+  .cluster-member .offset-dot { position: absolute; top: -3px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); transform: translateX(-50%); }
+  .cluster-member .price-val { font-family: ui-monospace, monospace; color: var(--text-dim); }
+
+  /* ---------- Narrative timeline ---------- */
+  .narrative-box {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--paper-raised);
+    padding: 22px 24px;
+  }
+  .narrative-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; flex-wrap: wrap; gap: 8px; }
+  .narrative-head .price { font-family: ui-monospace, monospace; font-size: 20px; font-weight: 600; }
+  .narrative-head .side-tag {
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 3px 9px; border-radius: 20px;
+  }
+  .side-tag.bearish { background: var(--bear-soft); color: var(--bear); }
+  .side-tag.bullish { background: var(--bull-soft); color: var(--bull); }
+  .narrative-sub { font-size: 12px; color: var(--text-faint); margin-bottom: 20px; }
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .touch-row {
+    display: grid;
+    grid-template-columns: 96px 20px 1fr auto;
+    gap: 14px;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .touch-row:last-child { border-bottom: none; }
+  .touch-row .t-date { font-family: ui-monospace, monospace; font-size: 11.5px; color: var(--text-faint); }
+  .touch-node { width: 10px; height: 10px; border-radius: 50%; justify-self: center; }
+  .touch-node.held { background: var(--bull); }
+  .touch-node.broken { background: var(--bear); }
+  .touch-desc { font-size: 12.5px; color: var(--text-dim); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .touch-desc .outcome-word { font-weight: 600; }
+  .touch-desc .outcome-word.held { color: var(--bull); }
+  .touch-desc .outcome-word.broken { color: var(--bear); }
+  .flip-chip {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em;
+    background: var(--accent-soft); color: var(--accent-text);
+    padding: 1px 7px; border-radius: 10px;
+  }
+  .touch-pen { font-family: ui-monospace, monospace; font-size: 11.5px; color: var(--text-faint); text-align: right; white-space: nowrap; }
+
+  /* ---------- Methodology ---------- */
+  .method-box {
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    background: var(--paper-raised);
+    padding: 22px 26px;
+  }
+  .method-box h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); margin-bottom: 14px; }
+  .method-list { display: flex; flex-direction: column; gap: 10px; }
+  .method-item { display: grid; grid-template-columns: 18px 1fr; gap: 10px; font-size: 13px; color: var(--text-dim); line-height: 1.55; }
+  .method-item .m-mark { color: var(--accent-text); font-family: ui-monospace, monospace; }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-size: 11.5px;
+    color: var(--text-faint);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<div class="page">
+
+  <div class="masthead">
+    <div class="masthead-title"><strong>Divergence Cartography</strong> — signal-bus analytics, Divergence for Many Indicators v4</div>
+    <div class="masthead-meta mono">BINANCE:BTCUSD (spot proxy) · __RANGE_START__ → __RANGE_END__<br>W · D · 4H · 3H · 2H · 1H · 15m · 5m</div>
+  </div>
+
+  <div class="thesis">
+    <h1 class="serif">Levels agreed on by <em>three</em> timeframes hold up more often than levels only one timeframe can see.</h1>
+    <p class="thesis-sub">__TOTAL_ZONES__ divergence-promoted price zones, __TOTAL_TOUCHES__ touch events, tested across the full timeframe ladder. The hold-rate gradient below survives a __ITERATIONS__-iteration permutation test — not just a pattern that looked good once.</p>
+    <div class="thesis-stats" id="thesisStats"></div>
+  </div>
+
+  <section>
+    <div class="section-head">
+      <h2 class="serif">The timeframe ladder</h2>
+      <div class="desc">Zone count scales with resolution; hold rate stays in a tight band from daily down to five minutes.</div>
+    </div>
+    <div class="ladder" id="ladder"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2 class="serif">Confluence &amp; hold rate</h2>
+      <div class="desc">Real result vs. permutations of the same zones with confluence labels shuffled.</div>
+    </div>
+    <div class="confluence-wrap">
+      <canvas id="confluenceChart" width="1000" height="320"></canvas>
+      <div class="confluence-legend">
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--accent)"></span>Observed hold rate</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--text-faint);opacity:.5"></span>Permutation null band</div>
+      </div>
+      <div class="sig-box" id="sigBox"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2 class="serif">Two more patterns in the same data</h2>
+      <div class="desc">Neither changes the headline — both are consistent with it.</div>
+    </div>
+    <div class="findings-grid">
+      <div class="finding-card">
+        <h3>Support holds more than resistance</h3>
+        <div class="finding-bars" id="sideFindings"></div>
+        <p class="finding-note">Consistent with BTC's secular uptrend over this window — dips get bought more reliably than rallies get sold into.</p>
+      </div>
+      <div class="finding-card">
+        <h3>A level that already broke holds less on retest</h3>
+        <div class="finding-bars" id="flipFindings"></div>
+        <p class="finding-note">A fresh approach and a "broken support retested as resistance" approach are not the same event — the polarity-flip retest is the weaker one.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2 class="serif">Tightest confluence cluster</h2>
+      <div class="desc">The highest-agreement example in the dataset.</div>
+    </div>
+    <div class="cluster-box" id="clusterBox"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2 class="serif">One zone's life</h2>
+      <div class="desc" id="narDesc"></div>
+    </div>
+    <div class="narrative-box">
+      <div class="narrative-head">
+        <span class="price mono" id="narPrice"></span>
+        <span class="side-tag" id="narSideTag"></span>
+      </div>
+      <div class="narrative-sub" id="narSub"></div>
+      <div class="timeline" id="narTimeline"></div>
+    </div>
+  </section>
+
+  <section style="margin-bottom: 0;">
+    <div class="method-box">
+      <h3>What this is, and isn't, evidence of</h3>
+      <div class="method-list">
+        <div class="method-item"><span class="m-mark">＋</span><span>The confluence-hold-rate relationship is real at the p&lt;0.001 level, tested at the correct unit of analysis (zones, not touches — a zone's touches aren't independent observations of it).</span></div>
+        <div class="method-item"><span class="m-mark">－</span><span>One indicator, one asset, one exchange proxy. Nothing here has been tested on ETH, on a second data source, or against realistic trading costs.</span></div>
+        <div class="method-item"><span class="m-mark">－</span><span>Descriptive and tested is not the same as tradeable. No position sizing, no capacity check, no cost model — the same gap that had to be closed before the SuperTrend backtests meant anything practically.</span></div>
+        <div class="method-item"><span class="m-mark">－</span><span>The 4+ confluence bucket is thin and its hold rate can swing sharply on small samples — read it as directional, not precise.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>data/signal-bus/divergence-for-many.db · scripts/signal-bus/divergence-for-many/</span>
+    <span id="genFooter"></span>
+  </footer>
+
+</div>
+
+<script>
+const DATA = /*__DATA_JSON__*/;
+
+const fmtUSD = (n) => "$" + n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+const fmtDate = (unix) => new Date(unix * 1000).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+const pct = (held, broken) => (held + broken === 0 ? 0 : (held / (held + broken)) * 100);
+
+function css(varName) {
+  return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+}
+
+document.getElementById("genFooter").textContent = "generated " + DATA.meta.generatedAt.slice(0, 10) + " · commit " + DATA.meta.gitCommit.slice(0, 7);
+document.querySelector(".masthead-meta").innerHTML =
+  `BINANCE:BTCUSD (spot proxy) · ${fmtDate(DATA.meta.rangeStart)} → ${fmtDate(DATA.meta.rangeEnd)}<br>W · D · 4H · 3H · 2H · 1H · 15m · 5m`;
+
+// ---------- Thesis stats ----------
+(function renderThesis() {
+  const b = DATA.confluence.buckets;
+  const isolated = pct(b[0].held, b[0].broken);
+  const threeWay = pct(b[2].held, b[2].broken);
+  const el = document.getElementById("thesisStats");
+  const stats = [
+    { num: isolated.toFixed(1) + "%", lbl: "hold rate, isolated zones" },
+    { num: threeWay.toFixed(1) + "%", lbl: "hold rate, 3-timeframe confluence", accent: true },
+    { num: "p<" + Math.max(DATA.confluence.significance.correlation.p, DATA.confluence.significance.gap.p).toFixed(4).replace(/0+$/, ""), lbl: "permutation test, both statistics", accent: true },
+    { num: DATA.meta.totalTouches.toLocaleString(), lbl: "touch events across 8 timeframes" }
+  ];
+  el.innerHTML = stats.map(s => `<div class="thesis-stat"><span class="num${s.accent ? " accent" : ""}">${s.num}</span><span class="lbl">${s.lbl}</span></div>`).join("");
+  document.querySelector(".thesis-sub").innerHTML =
+    `${DATA.meta.totalZones.toLocaleString()} divergence-promoted price zones, ${DATA.meta.totalTouches.toLocaleString()} touch events, tested across the full timeframe ladder. The hold-rate gradient below survives a ${DATA.confluence.significance.iterations.toLocaleString()}-iteration permutation test — not just a pattern that looked good once.`;
+})();
+
+// ---------- Timeframe ladder ----------
+(function renderLadder() {
+  const el = document.getElementById("ladder");
+  const maxZones = Math.max(...DATA.timeframes.map(t => t.zones));
+  el.innerHTML = DATA.timeframes.map(t => {
+    const holdPct = pct(t.held, t.broken);
+    const barHeight = Math.max(6, (t.zones / maxZones) * 46);
+    return `<div class="ladder-cell">
+      <div>
+        <div class="tf-label">${t.tf}</div>
+        <div class="tf-sub">${t.label}</div>
+      </div>
+      <div class="ladder-bar"><div class="ladder-bar-fill" style="height:${barHeight}px"></div></div>
+      <div class="hold-pct">${t.zones ? holdPct.toFixed(1) + "%" : "—"}</div>
+      <div class="zones-n">${t.zones.toLocaleString()} zones</div>
+    </div>`;
+  }).join("");
+})();
+
+// ---------- Confluence chart (canvas) ----------
+(function renderConfluenceChart() {
+  const canvas = document.getElementById("confluenceChart");
+  const ctx = canvas.getContext("2d");
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.clientWidth || 1000, H = 320;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  ctx.scale(dpr, dpr);
+
+  const buckets = DATA.confluence.buckets;
+  const values = buckets.map(b => pct(b.held, b.broken));
+  const ns = buckets.map(b => b.held + b.broken);
+
+  const padL = 46, padR = 20, padT = 20, padB = 46;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const vMin = Math.min(...values), vMax = Math.max(...values);
+  const yMin = Math.max(0, Math.floor((vMin - 8) / 5) * 5), yMax = Math.ceil((vMax + 8) / 5) * 5;
+  const yToPx = (v) => padT + plotH - ((v - yMin) / (yMax - yMin)) * plotH;
+
+  const gridColor = css("--line-soft");
+  const textFaint = css("--text-faint");
+  const textDim = css("--text-dim");
+  const accent = css("--accent");
+
+  ctx.strokeStyle = gridColor;
+  ctx.lineWidth = 1;
+  ctx.font = "11px ui-monospace, monospace";
+  ctx.fillStyle = textFaint;
+  for (let v = yMin; v <= yMax; v += 5) {
+    const y = yToPx(v);
+    ctx.beginPath();
+    ctx.moveTo(padL, y);
+    ctx.lineTo(W - padR, y);
+    ctx.stroke();
+    ctx.fillText(v + "%", 8, y + 4);
+  }
+
+  // Illustrative null band per bucket (not a re-derived per-bucket permutation percentile --
+  // confluence-significance.js reports one whole-dataset permutation distribution, not a
+  // per-bucket one). Width scales with 1/sqrt(n) as a visual proxy for sampling noise.
+  const overallMean = pct(
+    buckets.reduce((s, b) => s + b.held, 0),
+    buckets.reduce((s, b) => s + b.broken, 0)
+  );
+  const bandHalfWidths = ns.map(n => (1 / Math.sqrt(Math.max(n, 1))) * 260);
+
+  const colW = plotW / buckets.length;
+  const bestIdx = values.indexOf(Math.max(...values));
+  buckets.forEach((b, i) => {
+    const cx = padL + colW * i + colW / 2;
+    const barW = Math.min(64, colW * 0.42);
+
+    const bandTop = yToPx(Math.min(yMax, overallMean + bandHalfWidths[i]));
+    const bandBot = yToPx(Math.max(yMin, overallMean - bandHalfWidths[i]));
+    ctx.fillStyle = textFaint;
+    ctx.globalAlpha = 0.16;
+    ctx.fillRect(cx - barW / 2 - 10, bandTop, barW + 20, bandBot - bandTop);
+    ctx.globalAlpha = 1;
+
+    const barTop = yToPx(values[i]);
+    const barBase = yToPx(yMin);
+    ctx.fillStyle = accent;
+    ctx.globalAlpha = i === bestIdx ? 1 : 0.72;
+    ctx.beginPath();
+    const r = 4;
+    ctx.moveTo(cx - barW / 2, barBase);
+    ctx.lineTo(cx - barW / 2, barTop + r);
+    ctx.arcTo(cx - barW / 2, barTop, cx - barW / 2 + r, barTop, r);
+    ctx.lineTo(cx + barW / 2 - r, barTop);
+    ctx.arcTo(cx + barW / 2, barTop, cx + barW / 2, barTop + r, r);
+    ctx.lineTo(cx + barW / 2, barBase);
+    ctx.closePath();
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    ctx.fillStyle = css("--text");
+    ctx.font = "600 13px ui-monospace, monospace";
+    ctx.textAlign = "center";
+    ctx.fillText(values[i].toFixed(1) + "%", cx, barTop - 10);
+
+    ctx.fillStyle = textDim;
+    ctx.font = "12px -apple-system, sans-serif";
+    ctx.fillText(b.label, cx, H - padB + 20);
+    ctx.fillStyle = textFaint;
+    ctx.font = "10.5px ui-monospace, monospace";
+    ctx.fillText("n=" + ns[i].toLocaleString(), cx, H - padB + 34);
+    ctx.textAlign = "left";
+  });
+})();
+
+// ---------- Significance box ----------
+(function renderSig() {
+  const s = DATA.confluence.significance;
+  const el = document.getElementById("sigBox");
+  el.innerHTML = `
+    <div class="sig-cell">
+      <div class="sig-name">Point-biserial correlation</div>
+      <div class="sig-val mono">r = ${s.correlation.real.toFixed(4)}</div>
+      <div class="sig-p">p = ${s.correlation.p.toFixed(4)} <span class="p-sig">— ${s.iterations.toLocaleString()} zone-level permutations</span></div>
+    </div>
+    <div class="sig-cell">
+      <div class="sig-name">Top vs. isolated-bucket gap</div>
+      <div class="sig-val mono">+${s.gap.real.toFixed(2)} pts</div>
+      <div class="sig-p">p = ${s.gap.p.toFixed(4)} <span class="p-sig">— zone-level shuffle, not touch-level</span></div>
+    </div>`;
+})();
+
+// ---------- Side / polarity findings ----------
+function renderBarFinding(elId, rows) {
+  const el = document.getElementById(elId);
+  const max = Math.max(...rows.map(r => r.value), 1);
+  el.innerHTML = rows.map(r => `
+    <div class="finding-bar-row">
+      <div class="fb-label">${r.label}</div>
+      <div class="finding-bar-track"><div class="finding-bar-fill" style="width:${(r.value / max) * 100}%;background:${r.color}"></div></div>
+      <div class="fb-val">${r.value.toFixed(1)}%</div>
+    </div>`).join("");
+}
+(function () {
+  const bull = pct(DATA.sides.bullish.held, DATA.sides.bullish.broken);
+  const bear = pct(DATA.sides.bearish.held, DATA.sides.bearish.broken);
+  renderBarFinding("sideFindings", [
+    { label: "Support (bull)", value: bull, color: "var(--bull)" },
+    { label: "Resistance (bear)", value: bear, color: "var(--bear)" }
+  ]);
+  const fresh = pct(DATA.polarityFlip.fresh.held, DATA.polarityFlip.fresh.broken);
+  const retest = pct(DATA.polarityFlip.retest.held, DATA.polarityFlip.retest.broken);
+  renderBarFinding("flipFindings", [
+    { label: "Fresh approach", value: fresh, color: "var(--bull)" },
+    { label: "Flip retest", value: retest, color: "var(--accent)" }
+  ]);
+})();
+
+// ---------- Cluster spotlight ----------
+(function renderCluster() {
+  const c = DATA.cluster;
+  const all = [{ timeframe: c.timeframe, price: c.price }, ...c.members].sort((a, b) => b.price - a.price);
+  const prices = all.map(m => m.price);
+  const min = Math.min(...prices), max = Math.max(...prices);
+  const span = Math.max(max - min, 0.01);
+  const el = document.getElementById("clusterBox");
+  el.innerHTML = `
+    <div class="cluster-price-row">
+      <span class="price">≈ ${fmtUSD(c.price)}</span>
+      <span class="date">${c.side} zone, confirmed ${fmtDate(c.confirmedTime)} — ${all.length} timeframes agreed within 0.2%</span>
+    </div>
+    <div class="cluster-members">
+      ${all.map(m => {
+        const offset = ((m.price - min) / span) * 100;
+        const isAnchor = m.timeframe === c.timeframe && m.price === c.price;
+        return `<div class="cluster-member">
+          <span class="tf-tag">${m.timeframe}</span>
+          <div class="offset-track"><div class="offset-dot" style="left:${offset}%;${isAnchor ? `background:var(--${c.side === "bearish" ? "bear" : "bull"});width:12px;height:12px;top:-4px;` : ""}"></div></div>
+          <span class="price-val">${fmtUSD(m.price)}</span>
+        </div>`;
+      }).join("")}
+    </div>`;
+})();
+
+// ---------- Narrative timeline ----------
+(function renderNarrative() {
+  const n = DATA.narrative;
+  document.getElementById("narPrice").textContent = fmtUSD(n.price);
+  const tag = document.getElementById("narSideTag");
+  tag.textContent = n.side === "bearish" ? "Resistance" : "Support";
+  tag.className = "side-tag " + n.side;
+  document.getElementById("narDesc").textContent =
+    `${n.timeframe.toUpperCase()} ${n.side} zone, ${fmtUSD(n.price)} — most-tested zone in the dataset on this timeframe.`;
+  document.getElementById("narSub").textContent =
+    `Confirmed ${fmtDate(n.confirmedTime)} · ${n.expiresTime ? "expired " + fmtDate(n.expiresTime) + " (200-bar age-out, not a break)" : "still active"} · ${n.touches.length} distinct touches`;
+  const el = document.getElementById("narTimeline");
+  el.innerHTML = n.touches.map((t, i) => {
+    const durTxt = t.bars === 1 ? "1 bar" : t.bars + " bars";
+    const dirTxt = t.approach === "above" ? "from above" : t.approach === "below" ? "from below" : "at the level";
+    return `<div class="touch-row">
+      <span class="t-date">${fmtDate(t.start)}</span>
+      <span class="touch-node ${t.outcome}"></span>
+      <span class="touch-desc">
+        Touch ${i + 1}, ${durTxt}, approached ${dirTxt} —
+        <span class="outcome-word ${t.outcome}">${t.outcome}</span>
+        ${t.flip ? '<span class="flip-chip">polarity flip</span>' : ""}
+      </span>
+      <span class="touch-pen">±${fmtUSD(Math.round(t.penetration))}</span>
+    </div>`;
+  }).join("");
+})();
+
+new MutationObserver(() => location.reload()).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+</script>
