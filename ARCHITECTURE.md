@@ -901,3 +901,27 @@ structure events alone in the pool) — the informative signal is confluence *de
 **Deferred, same as Divergence for Many:** cost/capacity testing, a second asset — descriptive and
 tested is not yet tradeable. FVG (off by default in the source) and Premium/Discount zones (a live
 single-state display, not a historical zone series) remain out of scope for this pattern entirely.
+
+**Liquidity zones (EQH/EQL) — added, then tested, then correctly downgraded — 2026-07-26.**
+Flagged directly by iapaulo: EQH/EQL *is* the SMC/ICT liquidity concept (resting stops above
+equal highs, below equal lows), but had only ever been used as a confluence input, never analyzed
+on its own terms. Added `liquidity.js` (sweep + reversal detection, provably can't trigger before
+or on the confirming bar by construction of the pivot logic) — first pass showed a striking ~81%
+aggregate reversal-after-sweep rate, consistent across all 8 timeframes, matching the classic ICT
+"stop-hunt precedes reversal" story.
+
+**That number did not survive testing, and the result changed the conclusion, not just refined it.**
+Built `liquidity-significance.js`: for every real swept EQH/EQL, draws a random bar from the same
+timeframe's series and runs the identical two-stage sweep-then-reversal check against an
+unvalidated level, to isolate whether being a genuine pivot-confirmed liquidity level matters
+beyond "being some bar's high or low." First version of that test had its own bug (checked
+reversal starting from the same bar that defined the level, which trivially passes for almost any
+non-doji candle — produced a nonsensical 99.55% null rate, caught before trusting it). Fixed to
+mirror the real algorithm's actual two-stage structure. Corrected result at 3,000 iterations: real
+rate 81.15% sits **below the entire null range** ([83.81%, 85.98%]) — arbitrary price-level
+crossings reverse *more* reliably than genuine liquidity sweeps, not less. p=1.0000. **The
+"liquidity sweep precedes reversal" narrative does not hold up here.** Reported on the analytics
+page as a tested negative result, not omitted or left as an unresolved lead — the third time this
+session a dramatic-looking raw number was checked properly and didn't survive (after the 82-88%
+Divergence-for-Many hold-rate bug and the backtest program's uncorrected p-values), and each time
+the correction was the point, not a failure of the exercise.

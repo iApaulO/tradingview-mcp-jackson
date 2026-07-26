@@ -230,6 +230,7 @@
         <h3>Of swept levels: stop-hunt reversal vs. continuation</h3>
         <div class="finding-bars" id="reversalRateFindings"></div>
         <p class="finding-note" id="liquidityCaveat"></p>
+        <p class="finding-note" id="liquiditySig" style="margin-top:8px;"></p>
       </div>
     </div>
   </section>
@@ -257,7 +258,7 @@
         <div class="method-item"><span class="m-mark">－</span><span>One asset, one exchange proxy, one indicator's internal logic. Not tested on ETH or against realistic costs.</span></div>
         <div class="method-item"><span class="m-mark">－</span><span>The confluence pool is dense (structure events alone number in the tens of thousands), so a 97% "some confluence" rate is expected -- the informative signal is the DEGREE of confluence, not its presence.</span></div>
         <div class="method-item"><span class="m-mark">－</span><span>FVG and Premium/Discount zones are not part of this analysis -- FVG is off by default in the source, and Premium/Discount is a live single-state display, not a historical zone series.</span></div>
-        <div class="method-item"><span class="m-mark">－</span><span>The liquidity-sweep reversal rate (~81%) has NOT been significance-tested against a random baseline -- unlike the confluence finding above it, treat it as a lead, not a result.</span></div>
+        <div class="method-item"><span class="m-mark">－</span><span>The liquidity-sweep reversal rate (~81%) LOOKED like a real stop-hunt pattern but did not survive testing against a random-level baseline -- arbitrary bar highs/lows reverse at least as often. Reported honestly as a negative result, not omitted.</span></div>
       </div>
     </div>
   </section>
@@ -416,7 +417,13 @@ function renderBarFinding(elId, rows) {
     { label: "EQL reversed", value: (l.eql.reversed / (l.eql.reversed + l.eql.continued)) * 100, color: "var(--bull)" },
   ]);
   document.getElementById("liquidityCaveat").textContent =
-    "Not yet tested against a random baseline -- an arbitrary price level might show a similarly high \"closed back where it started within 10 bars\" rate from ordinary volatility alone. Consistent across all 8 timeframes, which is suggestive, not proof.";
+    "Consistent across all 8 timeframes, which looked suggestive of a real \"stop-hunt\" pattern.";
+  const sig = DATA.liquiditySignificance;
+  document.getElementById("liquiditySig").innerHTML =
+    `<strong>Tested against a random-level baseline (${sig.iterations.toLocaleString()} draws) — does NOT hold up.</strong> ` +
+    `Arbitrary bar highs/lows reverse within 10 bars ${(sig.nullMean * 100).toFixed(1)}% of the time on average (range ${(sig.nullRange[0] * 100).toFixed(1)}–${(sig.nullRange[1] * 100).toFixed(1)}%) — the real EQH/EQL rate (${(sig.realRate * 100).toFixed(1)}%) sits ` +
+    `${sig.realRate < sig.nullRange[0] ? "below the entire null range" : "within the null range"}, p=${sig.pValue.toFixed(4)}. ` +
+    `The classic "liquidity sweep precedes reversal" story doesn't survive here — if anything, arbitrary levels revert slightly more reliably than validated liquidity sweeps do.`;
 })();
 
 (function renderNarrative() {

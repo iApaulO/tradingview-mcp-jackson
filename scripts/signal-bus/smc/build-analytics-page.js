@@ -8,6 +8,7 @@ import { DatabaseSync } from "node:sqlite";
 import { readFileSync, writeFileSync } from "fs";
 import { execSync } from "child_process";
 import { runSMCConfluenceSignificanceTest } from "./confluence-significance.js";
+import { runLiquiditySignificanceTest } from "./liquidity-significance.js";
 
 const DB_PATH = new URL("../../../data/signal-bus/smc.db", import.meta.url);
 const TEMPLATE_PATH = new URL("analytics-page-template.html", import.meta.url);
@@ -29,7 +30,7 @@ function gitCommit() {
   }
 }
 
-function main() {
+async function main() {
   const db = new DatabaseSync(DB_PATH, { readOnly: true });
 
   const meta = db.prepare("SELECT COUNT(*) c, MIN(created_time) rangeStart, MAX(created_time) rangeEnd FROM order_blocks").get();
@@ -115,9 +116,14 @@ function main() {
 
   db.close();
 
-  console.log(`Running significance test (${ITERATIONS} iterations) ...`);
+  console.log(`Running confluence significance test (${ITERATIONS} iterations) ...`);
   const sig = runSMCConfluenceSignificanceTest({ iterations: ITERATIONS });
   console.log(`  r=${sig.correlation.real.toFixed(4)} p=${sig.correlation.p.toFixed(5)} | gap=${(sig.gap.real * 100).toFixed(2)}pts p=${sig.gap.p.toFixed(5)}`);
+
+  const LIQUIDITY_ITERATIONS = parseInt(args["liquidity-iterations"] || "3000", 10);
+  console.log(`Running liquidity-sweep significance test (${LIQUIDITY_ITERATIONS} iterations) ...`);
+  const liqSig = await runLiquiditySignificanceTest({ iterations: LIQUIDITY_ITERATIONS });
+  console.log(`  real=${(liqSig.realRate * 100).toFixed(2)}% null_mean=${(liqSig.nullMean * 100).toFixed(2)}% p=${liqSig.pValue.toFixed(4)}`);
 
   const DATA = {
     meta: {
@@ -140,6 +146,13 @@ function main() {
     },
     scopeSide,
     liquidity,
+    liquiditySignificance: {
+      iterations: liqSig.iterations,
+      realRate: liqSig.realRate,
+      nullMean: liqSig.nullMean,
+      nullRange: liqSig.nullRange,
+      pValue: liqSig.pValue,
+    },
     narrative,
   };
 
