@@ -802,3 +802,60 @@ Sources:
 - 2026-07-24 — added empirical research log (§7): no public validation exists for either
   AlgoAlpha's ML Adaptive SuperTrend or LuxAlgo's SMC specifically; SMC/ICT as a methodology has
   genuine, unresolved controversy (not just an absence of data). Raised backtesting path priority.
+
+## 9. Per-indicator signal bus (Divergence for Many) — 2026-07-25
+
+Started under the architecture decision (2026-07-25): each indicator gets its own signal bus +
+lab page, not a shared generic schema — the signal shapes differ too much (event-only, zone-only,
+mixed) to force into one model. Divergence for Many is the first one built, end to end, prompted
+by a live observation: 4H showed no divergence badge while 2H/3H had active promoted zones price
+was interacting with — different resolutions genuinely compute different structure, not just
+noisier/cleaner views of the same thing.
+
+**Pipeline** (`scripts/signal-bus/divergence-for-many/`):
+- `calc.js` — faithful JS port of the Commander-default promoted-glow-level logic (pivot
+  detection, regular-divergence "virtual line" check, ATR dedup, capacity eviction, bar-count
+  expiry). Verified against real BTC history (correct price levels at known dates, e.g. the Dec
+  2017 top, Dec 2024 near-ATH). Extended to support any of 10 implementable indicators (Commander
+  default uses 4: MACD, MACD Histogram, RSI, Stochastic) via an `enabledIndicators` option,
+  default-preserving.
+- `touches.js` — interaction detection: maximal runs of consecutive bars touching a zone, with
+  outcome (held/broken), penetration depth, approach direction, and a `polarityFlipRetest` flag
+  (a level tested from the side opposite its creation side — added after a direct question
+  surfaced it wasn't being distinguished from a fresh test).
+- `confluence.js` — one algorithm for both same-timeframe tight clustering and cross-timeframe
+  hierarchical confluence (price-close + time-overlapping + same-side zones, regardless of
+  whether the matched pair shares a timeframe).
+- `store.js` — own SQLite DB (`data/signal-bus/divergence-for-many.db`, gitignored/regenerable).
+- `build-historical.js` — full W/D/4H/3H/2H/1H/15m/5m rebuild in under 2 seconds (offline, no
+  TradingView connection needed — the payoff of the backdata-first decision).
+- `indicator-sweep.js` — exploratory, read-only: does enabling the 6 disabled indicators help?
+  Answer: mostly just increases frequency, not quality (individual additions swing hold rate by
+  only ~±1 point); the fixed showlimit=3 threshold matters more in relative terms as the pool
+  grows (confirmed: proportionally scaling it to 7 for 10 indicators collapses zone count without
+  a clear quality gain). One modest lead (all 10 enabled, threshold unchanged) not yet tested.
+- `confluence-significance.js` — permutation significance test, see result below.
+
+**Real bugs caught by testing against real data, not assumed correct:**
+1. Touch detection initially only checked one side of the price (`low <= price` alone for a
+   bullish zone), which is also true for bars fully past the level and drifting further away —
+   silently merged "broke and drifted for 100+ bars" into one interaction. Caught by asking what
+   should happen on a from-below retest: 0 polarity-flip retests out of 17,037 touches was the
+   implausible tell. Fixed to require the level fall within the bar's actual range.
+2. First confluence tolerance (max of each zone's own ATR-derived tolerance) let a weekly zone's
+   naturally huge ATR reach out thousands of dollars, sweeping in zones nowhere near a real
+   cluster (caught by inspecting the max-confluence example: pairs $2,900–$8,400 apart). Fixed to
+   a flat 0.2%-of-price tolerance (a starting assumption, not validated).
+
+**Headline result — the confluence-vs-hold-rate finding survives significance testing:**
+53.4% (isolated) → 55.6% (2-way) → 60.6% (3-way) hold rate, tested via zone-level permutation
+(shuffle confluence-count labels across zones, keep each zone's real touch outcomes, 50,000
+iterations) rather than a touch-level shuffle that would pseudo-replicate and understate the true
+null variance. **p=0.0002 (point-biserial correlation), p=0.0001 (3-way vs. isolated gap)** — both
+real statistics sit past roughly the 99.98th percentile of the permuted null. This is the first
+result in the whole cartographic/hierarchical thread to survive the same rigor the backtest
+program's strategies were held to (the 82–88% hold rate claim earlier this session did NOT
+survive — it was a bug; this one does). Still not decision-grade on its own: one indicator, one
+asset (BTC), 4+ confluence bucket too thin (n=171) to read, and this tests "does the pattern
+exist" not "is it tradeable" (no cost model, no capacity check — the same gap the backtest
+program's strategies needed filled before anything about them was actionable).
