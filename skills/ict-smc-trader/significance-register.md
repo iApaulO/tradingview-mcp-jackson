@@ -1,0 +1,37 @@
+# Significance Register — Living Document
+
+Read this before grading any live setup. Full audit trail (what was tested, how, exact numbers,
+source files) is in `PRIOR_ART.md`. This file is the fast-lookup version for scoring decisions.
+
+**Update this file, don't let it drift** — the moment a new signal-bus test runs (a new
+indicator, a new cost/capacity test, a corrected bug), add or update a row here and in
+`PRIOR_ART.md` together. A stale register is worse than no register.
+
+Labels: `descriptive-significant` · `trade-construction-blocked` · `falsified` ·
+`engineering-complete` · `stub/outdated` · `unknown/untested`
+
+| # | Finding | Label | Scoring rule |
+|---|---|---|---|
+| 1 | SMC order-block confluence degree ↔ hold rate (34.7%→68.0%, p<0.00001) | **descriptive-significant** | Use confluence degree to weight structure-layer order block score up/down (decision-policy.md). Do not present as a standalone edge. |
+| 2 | SMC order-block confluence, naive zone-edge-to-zone-edge trade construction | **trade-construction-blocked** | Never present a high-confluence order block as a ready-made entry/exit on its own. Confluence informs bias/confidence only, per veto #4 in decision-policy.md. |
+| 3 | EQH/EQL liquidity-sweep → reversal (~81%, tested against random-level baseline, real rate below the entire null range, p=1.0000) | **FALSIFIED** | Structural exclusion — never a scoring input, either direction. See hard refusal in SKILL.md. |
+| 4 | Divergence-for-Many confluence-vs-hold-rate (53.4%→60.6%, p<0.001) | **descriptive-significant** | Weight divergence-zone score up for 3+ TF confluence (decision-policy.md structure layer). Not cost/capacity tested — do not imply the same trust level as #1 without that caveat, and do not imply the same trust level as #2's negative result either — this one simply hasn't been tried yet. |
+| 5 | Divergence-for-Many hold rate by timeframe (~50–55%, stable band) | descriptive-significant | Background baseline only, not a scoring input by itself. |
+| 6 | Support (bullish zone) > resistance (bearish zone) hold-rate asymmetry, both indicators | descriptive-significant | Minor directional footnote; consistent with a secular uptrend window, not assumed to generalize to a down-trend regime. |
+| 7 | Polarity-flip retest weaker than fresh approach (Divergence-for-Many) | descriptive-significant | If grading a level that already broke and is being retested from the far side, treat as weaker than a fresh test — don't score it the same. |
+| 8 | Internal vs. swing order block reliability split (internal ~56–57%, swing ~50–54%) | unknown/untested (observational) | Reportable as color, not a scoring input with the same confidence as #1. |
+| 9 | Divergence-for-Many indicator-sweep (6 disabled indicators) | unknown/untested (hypothesis) | Do not recommend enabling CCI/Momentum/OBV/VW-MACD/CMF/MFI as validated — 16 comparisons, zero multiple-testing correction applied. |
+| 10 | SuperTrend flip (long-short, 4H), costed | Net-profitable at confirmed real costs | Background only — see #11, this doesn't survive the next test. |
+| 11 | SuperTrend flip, same finding, multiple-testing corrected (5 variants tested) | **falsified as a standalone significant claim** (downgraded Supported→Hypothesized) | **Anchor headline: nothing in the backtest lab currently clears a real, costed, family-wise-corrected edge.** Use SuperTrend flip as a trigger-layer confirmation/veto candidate only (decision-policy.md), never as the deciding signal. |
+| 12 | Bollinger Bands as SuperTrend trend-filter | falsified/negative | Not part of the house stack's scoring — redundant, changes ~nothing. |
+| 13 | Bollinger Bands as mean-reversion trigger (SuperTrend-gated) | falsified/negative | Not part of the house stack's scoring — actively harmful when tested, worse than random. |
+| 14 | Cipher A ribbon direction formula (`ema8 < ema2`) | engineering-complete (verified extraction, not an edge claim) | Safe to use as a bias input at face value. |
+| 15 | SMC BOS/CHoCH direction, offline reimplementation | engineering-complete | Trust the offline `scripts/signal-bus/smc/calc.js` reads; do NOT trust live `signal-grid.js` label-text reads for direction (see #16). |
+| 16 | SMC BOS/CHoCH direction, live extraction (`signal-grid.js`) | **stub/outdated (known unfixed bug)** | Live label text never encodes direction. Must infer from price context or flag as ambiguous — apply the soft-downgrade rule in decision-policy.md. |
+| 17 | Order block ABGR color decoding | engineering-complete (offline) / stub/outdated (not wired into live extraction) | Colors are correct as documented in grammar.md; the live tool doesn't surface a bias field from them yet. |
+| 18 | `signal-grid.js` timeframe ladder (5 of the required 8 TFs) | **stub/outdated** | If working from a live sweep, explicitly state which of the 8 timeframes are actually covered (15m/1H/4H/1D/1W only, missing 3H/2H/5m) rather than implying full-board coverage. |
+| 19 | Boom Hunter `exit_warning_ambiguous` / `break_ambiguous` | unknown/untested | Soft-downgrade only if firing in the setup's favor, per decision-policy.md — never a hard veto or hard confirmation given the extraction itself is unverified. |
+| 20 | Boom Hunter Long gray/yellow/blue/Lime | engineering-complete (verified extraction) | Safe to use at face value, tiered per decision-policy.md's trigger-layer weights. |
+| 21 | `rules.json` current `bias_criteria` | **stub/outdated** | Does not encode this house's stack. Flag every time it's read live; use `decision-policy.md` as the real policy until the file is updated (see output-contracts.md §D for the proposal format). |
+| 22 | Cost/capacity model (confirmed Coinbase Advanced 1 tier, 0.070%/0.065%; hourly funding mechanism confirmed, magnitude unconfirmed) | engineering-complete | Reuse for any future cost test on a house-stack finding — don't re-derive costs from scratch. |
+| 23 | ICT/SMC methodology, wider public literature (ARCHITECTURE.md §7, PRIOR_ART.md §2a) — unfalsifiability critique, 5M-path Monte Carlo showing chance alone produces "success stories," sparse peer-reviewed literature | **contested/unknown (external, not a house test)** | State plainly if asked whether ICT/SMC "works" in general — genuinely disputed outside this house's own results, don't imply the broader framework is settled just because some house-specific findings survived testing. |
