@@ -103,6 +103,118 @@ function stochSma3(candles) {
   return out;
 }
 
+// ── Additional oscillators (Commander default profile disables these 6; added 2026-07-25 for the
+// "what if the remaining indicators were enabled" exploratory pass -- NOT wired into the default
+// export path, opt-in via computeDivergenceForMany's `enabledIndicators` option). "External" (the
+// 11th slot) is skipped -- its source is user-configurable in Pine with no fixed default meaning,
+// so there's nothing faithful to port. ────────────────────────────────────────────────────────
+
+// ta.cci(source, length) = (source - sma(source,length)) / (0.015 * meanAbsDev(source,length))
+function cci(closes, length) {
+  const out = new Array(closes.length).fill(NaN);
+  for (let i = length - 1; i < closes.length; i++) {
+    let sum = 0;
+    for (let j = i - length + 1; j <= i; j++) sum += closes[j];
+    const mean = sum / length;
+    let devSum = 0;
+    for (let j = i - length + 1; j <= i; j++) devSum += Math.abs(closes[j] - mean);
+    const meanDev = devSum / length;
+    out[i] = meanDev === 0 ? 0 : (closes[i] - mean) / (0.015 * meanDev);
+  }
+  return out;
+}
+
+// mom(close, length) = close[i] - close[i-length]
+function momentum(closes, length) {
+  const out = new Array(closes.length).fill(NaN);
+  for (let i = length; i < closes.length; i++) out[i] = closes[i] - closes[i - length];
+  return out;
+}
+
+// Cumulative On-Balance Volume
+function obv(candles) {
+  const out = new Array(candles.length).fill(NaN);
+  out[0] = 0;
+  for (let i = 1; i < candles.length; i++) {
+    const chg = candles[i].c - candles[i - 1].c;
+    out[i] = out[i - 1] + (chg > 0 ? candles[i].v : chg < 0 ? -candles[i].v : 0);
+  }
+  return out;
+}
+
+function vwma(candles, length) {
+  const out = new Array(candles.length).fill(NaN);
+  for (let i = length - 1; i < candles.length; i++) {
+    let pv = 0, vsum = 0;
+    for (let j = i - length + 1; j <= i; j++) {
+      pv += candles[j].c * candles[j].v;
+      vsum += candles[j].v;
+    }
+    out[i] = vsum === 0 ? NaN : pv / vsum;
+  }
+  return out;
+}
+
+// vwmacd = vwma(close,12) - vwma(close,26)
+function vwmacd(candles) {
+  const fast = vwma(candles, 12);
+  const slow = vwma(candles, 26);
+  return candles.map((_, i) => (Number.isNaN(fast[i]) || Number.isNaN(slow[i]) ? NaN : fast[i] - slow[i]));
+}
+
+// Chaikin Money Flow. Source computes sma(moneyFlowVolume,21)/sma(volume,21), which is
+// mathematically identical to sum(moneyFlowVolume,21)/sum(volume,21) (the /21 cancels) -- simpler
+// to implement as the sum ratio directly.
+function cmf(candles, length = 21) {
+  const out = new Array(candles.length).fill(NaN);
+  const mfv = candles.map((c) => (c.h === c.l ? 0 : (((c.c - c.l) - (c.h - c.c)) / (c.h - c.l)) * c.v));
+  for (let i = length - 1; i < candles.length; i++) {
+    let mfvSum = 0, vSum = 0;
+    for (let j = i - length + 1; j <= i; j++) {
+      mfvSum += mfv[j];
+      vSum += candles[j].v;
+    }
+    out[i] = vSum === 0 ? NaN : mfvSum / vSum;
+  }
+  return out;
+}
+
+// ta.mfi(source, length) generalized definition (source = close here, not the typical-price
+// textbook MFI): positive/negative money flow classified by source-over-source change, weighted
+// by volume*source, not the standard hlc3-based textbook formula.
+function mfi(closes, candles, length) {
+  const out = new Array(closes.length).fill(NaN);
+  for (let i = length; i < closes.length; i++) {
+    let posFlow = 0, negFlow = 0;
+    for (let j = i - length + 1; j <= i; j++) {
+      const chg = closes[j] - closes[j - 1];
+      const flow = closes[j] * candles[j].v;
+      if (chg > 0) posFlow += flow;
+      else if (chg < 0) negFlow += flow;
+    }
+    out[i] = negFlow === 0 ? 100 : 100 - 100 / (1 + posFlow / negFlow);
+  }
+  return out;
+}
+
+// Registry of every implementable indicator -- computeDivergenceForMany's `enabledIndicators`
+// option selects a subset by name (default: the Commander 4). Some need the full candle array
+// (volume-dependent), not just closes -- builder takes ({closes, candles}) uniformly.
+export const INDICATOR_REGISTRY = {
+  macd: ({ closes }) => macdLineOnly(closes),
+  macd_hist: ({ closes }) => macdHistogram(closes),
+  rsi: ({ closes }) => rsi(closes, 14),
+  stoch: ({ candles }) => stochSma3(candles),
+  cci: ({ closes }) => cci(closes, 10),
+  momentum: ({ closes }) => momentum(closes, 10),
+  obv: ({ candles }) => obv(candles),
+  vwmacd: ({ candles }) => vwmacd(candles),
+  cmf: ({ candles }) => cmf(candles, 21),
+  mfi: ({ closes, candles }) => mfi(closes, candles, 14),
+};
+export const COMMANDER_DEFAULT_INDICATORS = ["macd", "macd_hist", "rsi", "stoch"];
+export const ALL_IMPLEMENTED_INDICATORS = Object.keys(INDICATOR_REGISTRY);
+
 // ── Pivot detection (source = "Close", per Commander default) ──────────────
 // Returns arrays of {barIdx, confirmBarIdx, val} in chronological order. confirmBarIdx = barIdx +
 // PRD, matching Pine's ph_positions/pl_positions which store the CONFIRMATION bar, not the pivot
@@ -182,22 +294,26 @@ function checkRegularDivergence(osc, closes, i, recentPivots, direction) {
 //     confirmedTime, expiresBarIdx, expiresTime, status: "active"|"expired"|"evicted_by_capacity" }
 //     -- status/expiresTime reflect the FULL lifecycle as simulated forward through the whole
 //     series (this is an offline batch computation, so we know the outcome, unlike live Pine).
-export function computeDivergenceForMany(candles) {
+// options: { enabledIndicators, showlimit, minRegDivs } -- all default to the exact Commander
+// profile, so existing callers (build-historical.js) are unaffected. Added 2026-07-25 to support
+// the exploratory "what if the other indicators were enabled" pass without touching the live
+// chart's actual settings -- this is a read-only analysis path, not a config change.
+export function computeDivergenceForMany(candles, options = {}) {
+  const enabledIndicators = options.enabledIndicators || COMMANDER_DEFAULT_INDICATORS;
+  const showlimit = options.showlimit ?? SHOWLIMIT;
+  const minRegDivs = options.minRegDivs ?? BADGEGLOW_MIN_REG_DIVS;
+
   const n = candles.length;
   const closes = candles.map((c) => c.c);
   const highs = candles.map((c) => c.h);
   const lows = candles.map((c) => c.l);
 
-  const rsiSeries = rsi(closes, 14);
-  const macdLine = macdLineOnly(closes);
-  const macdHist = macdHistogram(closes);
-  const stoch = stochSma3(candles);
-  const oscillators = [
-    { name: "macd", series: macdLine },
-    { name: "macd_hist", series: macdHist },
-    { name: "rsi", series: rsiSeries },
-    { name: "stoch", series: stoch },
-  ];
+  const ctx = { closes, candles };
+  const oscillators = enabledIndicators.map((name) => {
+    const build = INDICATOR_REGISTRY[name];
+    if (!build) throw new Error(`Unknown indicator "${name}" -- expected one of: ${ALL_IMPLEMENTED_INDICATORS.join(", ")}`);
+    return { name, series: build(ctx) };
+  });
 
   const { highs: pivotHighsAll, lows: pivotLowsAll } = findPivots(closes);
   // ATR for the dedup tolerance
@@ -265,7 +381,7 @@ export function computeDivergenceForMany(candles) {
       if (checkRegularDivergence(series, closes, i, recentHighs, "negative") > 0) negCount++;
     }
     const totalDiv = posCount + negCount; // showlimit gate (Regular-only, matches source under Commander defaults)
-    if (totalDiv < SHOWLIMIT) continue;
+    if (totalDiv < showlimit) continue;
 
     if (negCount > 0) badges.push({ barIdx: i, time: candles[i].t, side: "bearish", count: negCount });
     if (posCount > 0) badges.push({ barIdx: i, time: candles[i].t, side: "bullish", count: posCount });
@@ -273,7 +389,7 @@ export function computeDivergenceForMany(candles) {
     const tol = atrSeries[i] * BADGEGLOW_ATR_MULT;
     if (Number.isNaN(tol)) continue;
 
-    if (negCount >= BADGEGLOW_MIN_REG_DIVS) {
+    if (negCount >= minRegDivs) {
       const level = highs[i - startpoint];
       const nearExisting = activeBear.some((idx) => Math.abs(zones[idx].price - level) <= tol);
       if (!nearExisting) {
@@ -299,7 +415,7 @@ export function computeDivergenceForMany(candles) {
         }
       }
     }
-    if (posCount >= BADGEGLOW_MIN_REG_DIVS) {
+    if (posCount >= minRegDivs) {
       const level = lows[i - startpoint];
       const nearExisting = activeBull.some((idx) => Math.abs(zones[idx].price - level) <= tol);
       if (!nearExisting) {
