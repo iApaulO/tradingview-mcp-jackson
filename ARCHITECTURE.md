@@ -860,3 +860,44 @@ survive — it was a bug; this one does). Still not decision-grade on its own: o
 asset (BTC), 4+ confluence bucket too thin (n=171) to read, and this tests "does the pattern
 exist" not "is it tradeable" (no cost model, no capacity check — the same gap the backtest
 program's strategies needed filled before anything about them was actionable).
+
+## 10. Per-indicator signal bus (SMC) — 2026-07-25/26
+
+Second indicator on the pattern, prompted by a direct question about whether directional colors
+(EQH/EQL specifically) are faithfully observable in our own output, not just documented. Answer:
+yes, and it surfaced something not everyone would assume — order blocks are **blue/red-family**
+(`#3179f5`/`#1848cc` bullish, `#f77c80`/`#b22833` bearish), not green/red like structure and
+EQH/EQL (`#089981`/`#F23645`), confirmed directly from `pine/smart-money-concepts-luxalgo.pine`
+before writing any code, not assumed.
+
+**Pipeline** (`scripts/signal-bus/smc/`): `calc.js` (leg-based pivot detection — separate
+persistent leg trackers per size, matching Pine's per-call-site `var` state; BOS/CHoCH for both
+internal size-5 and swing size-50 scopes, with the internal/swing duplicate-pivot suppression the
+source itself applies; EQH/EQL; order blocks via parsed-high/low extremes with the ATR
+high-volatility-bar swap filter and HIGHLOW-source mitigation) → `touches.js` (order-block touch
+tracking — ranges, not lines, so a touch means the bar's range overlapping the box; "broken" ties
+directly to the block's own precise mitigation event rather than a heuristic, since mitigation is
+already terminal and exact) → `store.js`/`build-historical.js` (own DB, same 8-timeframe ladder) →
+`confluence.js` (order blocks scored against a combined pool of other order blocks + EQH/EQL +
+structure breaks, price-tolerance-matched and time-window-overlapped) → `confluence-significance.js`
+(order-block-level permutation test) → `analytics-page-template.html`/`build-analytics-page.js`.
+
+**Verified against real data:** real, historically accurate price levels at every date spot-checked
+(Dec 2024's run through $100k, Jan 2018's crash); a "broken interaction must show ~100%+ box
+penetration" invariant held with zero violations; a real example — a $18,626–$19,980 demand block
+from the July 2022 lows survived six tests (up to 79% penetration) over two months before finally
+failing on the seventh.
+
+**Headline result — larger effect, more scrutiny applied, not less:** hold rate by confluence
+degree runs 34.7% (confluence=1, isolated) up to 68.0% (confluence=8, all timeframes agreeing) —
+a much bigger gradient than Divergence for Many's (53.4%→60.6%). A dramatic-looking result is
+reason for *more* caution given the 82–88% bug earlier this session looked dramatic too and was
+wrong — so this was pushed to 200,000 permutation iterations rather than stopping at the first
+clean-looking p-value. Result held: **r=0.1163, the null never approaches it even at 200,000 draws
+(max permuted 0.094) — p<0.00001**, the strongest-tested finding in the signal-bus project so far.
+Confluence pool density means 97% of order blocks show *some* confluence (expected, given 68,781
+structure events alone in the pool) — the informative signal is confluence *degree*, not presence.
+
+**Deferred, same as Divergence for Many:** cost/capacity testing, a second asset — descriptive and
+tested is not yet tradeable. FVG (off by default in the source) and Premium/Discount zones (a live
+single-state display, not a historical zone series) remain out of scope for this pattern entirely.
