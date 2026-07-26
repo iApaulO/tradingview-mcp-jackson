@@ -835,6 +835,7 @@ noisier/cleaner views of the same thing.
   grows (confirmed: proportionally scaling it to 7 for 10 indicators collapses zone count without
   a clear quality gain). One modest lead (all 10 enabled, threshold unchanged) not yet tested.
 - `confluence-significance.js` — permutation significance test, see result below.
+- `analytics-page-template.html` + `build-analytics-page.js` — the "enterprise grade lab page," DB-driven (queries the live SQLite DB and reruns the permutation test fresh, not a hand-transcribed snapshot) so rerunning after any future rebuild keeps it current. Output: `analytics-page.html`, also published as an Artifact.
 
 **Real bugs caught by testing against real data, not assumed correct:**
 1. Touch detection initially only checked one side of the price (`low <= price` alone for a
