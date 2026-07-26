@@ -42,7 +42,12 @@ CREATE TABLE IF NOT EXISTS eqh_eql_events (
   pivot_time INTEGER NOT NULL,
   confirm_bar_idx INTEGER NOT NULL,
   confirm_time INTEGER NOT NULL,
-  color TEXT NOT NULL
+  color TEXT NOT NULL,
+  sweep_status TEXT CHECK(sweep_status IN ('unswept','swept_reversed','swept_continued')),
+  sweep_time INTEGER,
+  bars_to_sweep INTEGER,
+  reversal_time INTEGER,
+  bars_to_reversal INTEGER
 );
 CREATE INDEX IF NOT EXISTS idx_eqhl_tf_time ON eqh_eql_events(timeframe, confirm_time);
 
@@ -184,9 +189,15 @@ export function insertAll(db, { runId, timeframe, structureEvents, eqhEqlEvents,
     for (const e of structureEvents) structStmt.run(runId, timeframe, e.scope, e.type, e.side, e.barIdx, e.time, e.price, e.color);
 
     const eqStmt = db.prepare(
-      "INSERT INTO eqh_eql_events (run_id, timeframe, side, level, pivot_bar_idx, pivot_time, confirm_bar_idx, confirm_time, color) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      `INSERT INTO eqh_eql_events (run_id, timeframe, side, level, pivot_bar_idx, pivot_time, confirm_bar_idx, confirm_time, color, sweep_status, sweep_time, bars_to_sweep, reversal_time, bars_to_reversal)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     );
-    for (const e of eqhEqlEvents) eqStmt.run(runId, timeframe, e.side, e.level, e.pivotBarIdx, e.pivotTime, e.confirmBarIdx, e.confirmTime, e.color);
+    for (const e of eqhEqlEvents) {
+      eqStmt.run(
+        runId, timeframe, e.side, e.level, e.pivotBarIdx, e.pivotTime, e.confirmBarIdx, e.confirmTime, e.color,
+        e.sweepStatus ?? null, e.sweepTime ?? null, e.barsToSweep ?? null, e.reversalTime ?? null, e.barsToReversal ?? null,
+      );
+    }
 
     const obStmt = db.prepare(
       `INSERT INTO order_blocks (run_id, timeframe, scope, side, bar_high, bar_low, origin_bar_idx, origin_time, created_bar_idx, created_time, mitigated_bar_idx, mitigated_time, status, color)

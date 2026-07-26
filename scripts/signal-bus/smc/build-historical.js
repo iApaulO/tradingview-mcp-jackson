@@ -9,6 +9,7 @@ import { execSync } from "child_process";
 import { loadCandles } from "../../backtest/lib/load-candles.js";
 import { computeSMC } from "./calc.js";
 import { computeAllOrderBlockTouches } from "./touches.js";
+import { detectLiquiditySweeps } from "./liquidity.js";
 import { openStore, clearAll, insertRun, insertAll } from "./store.js";
 
 const LADDER = [
@@ -46,6 +47,7 @@ async function main() {
     }
     const { structureEvents, eqhEqlEvents, orderBlocks } = computeSMC(candles);
     computeAllOrderBlockTouches(candles, orderBlocks);
+    detectLiquiditySweeps(candles, eqhEqlEvents);
 
     const runId = insertRun(db, { timeframe: key, candles, gitCommit: commit });
     insertAll(db, { runId, timeframe: key, structureEvents, eqhEqlEvents, orderBlocks });
