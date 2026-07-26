@@ -5,6 +5,11 @@
 // Reuses node:sqlite (DatabaseSync), same module already proven for the historical-data import
 // (scripts/backtest/import-historical-data.js). This DB is fully project-local, not on the S:
 // drive, so (unlike that import script) there's no PowerShell-vs-Bash launch constraint here.
+//
+// Write flow is two-phase because confluence.js (added 2026-07-25) needs stable zone IDs across
+// ALL timeframes before it can compute anything: insertZonesAndTouches() first, which sets a real
+// `.id` on each in-memory zone from SQLite's autoincrement; only once every timeframe's zones
+// have real ids does updateConfluence() run and write the cross-timeframe results back.
 
 import { DatabaseSync } from "node:sqlite";
 import { mkdirSync } from "fs";
@@ -35,7 +40,10 @@ CREATE TABLE IF NOT EXISTS zones (
   confirmed_time INTEGER NOT NULL,
   expires_bar_idx INTEGER,
   expires_time INTEGER,
-  status TEXT NOT NULL
+  status TEXT NOT NULL,
+  atr_at_creation REAL,
+  confluence_count INTEGER NOT NULL DEFAULT 1,
+  same_timeframe_cluster_size INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS idx_zones_tf_price ON zones(timeframe, price);
 CREATE INDEX IF NOT EXISTS idx_zones_run ON zones(run_id);
@@ -50,7 +58,9 @@ CREATE TABLE IF NOT EXISTS touches (
   bars_count INTEGER NOT NULL,
   max_penetration REAL NOT NULL,
   outcome TEXT NOT NULL CHECK(outcome IN ('held','broken')),
-  ongoing INTEGER NOT NULL DEFAULT 0
+  ongoing INTEGER NOT NULL DEFAULT 0,
+  approach_direction TEXT NOT NULL CHECK(approach_direction IN ('above','below','at')),
+  polarity_flip_retest INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS idx_touches_zone ON touches(zone_id);
 
@@ -64,6 +74,13 @@ CREATE TABLE IF NOT EXISTS badges (
   count INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_badges_tf_time ON badges(timeframe, time);
+
+CREATE TABLE IF NOT EXISTS zone_confluences (
+  zone_id INTEGER NOT NULL REFERENCES zones(id),
+  confluent_zone_id INTEGER NOT NULL REFERENCES zones(id),
+  PRIMARY KEY (zone_id, confluent_zone_id)
+);
+CREATE INDEX IF NOT EXISTS idx_confluences_zone ON zone_confluences(zone_id);
 `;
 
 export function openStore() {
@@ -73,22 +90,41 @@ export function openStore() {
   return db;
 }
 
-export function saveRun(db, { timeframe, candles, gitCommit, zones, badges }) {
+export function clearAll(db) {
   db.exec("BEGIN");
   try {
-    const runStmt = db.prepare(
-      "INSERT INTO runs (timeframe, candle_count, range_start, range_end, git_commit, generated_at) VALUES (?, ?, ?, ?, ?, ?)",
-    );
-    const runInfo = runStmt.run(timeframe, candles.length, candles[0].t, candles[candles.length - 1].t, gitCommit, new Date().toISOString());
-    const runId = Number(runInfo.lastInsertRowid);
+    db.exec("DELETE FROM zone_confluences");
+    db.exec("DELETE FROM touches");
+    db.exec("DELETE FROM badges");
+    db.exec("DELETE FROM zones");
+    db.exec("DELETE FROM runs");
+    db.exec("COMMIT");
+  } catch (err) {
+    db.exec("ROLLBACK");
+    throw err;
+  }
+}
 
+export function insertRun(db, { timeframe, candles, gitCommit }) {
+  const runStmt = db.prepare(
+    "INSERT INTO runs (timeframe, candle_count, range_start, range_end, git_commit, generated_at) VALUES (?, ?, ?, ?, ?, ?)",
+  );
+  const runInfo = runStmt.run(timeframe, candles.length, candles[0].t, candles[candles.length - 1].t, gitCommit, new Date().toISOString());
+  return Number(runInfo.lastInsertRowid);
+}
+
+// Inserts zones + their touches for one timeframe, and sets `.id` on each in-memory zone object
+// to the real SQLite-assigned id -- required before computeConfluence() can run across timeframes.
+export function insertZonesAndTouches(db, { runId, timeframe, zones }) {
+  db.exec("BEGIN");
+  try {
     const zoneStmt = db.prepare(
-      `INSERT INTO zones (run_id, timeframe, side, price, created_bar_idx, created_time, confirmed_bar_idx, confirmed_time, expires_bar_idx, expires_time, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO zones (run_id, timeframe, side, price, created_bar_idx, created_time, confirmed_bar_idx, confirmed_time, expires_bar_idx, expires_time, status, atr_at_creation)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     );
     const touchStmt = db.prepare(
-      `INSERT INTO touches (zone_id, start_bar_idx, start_time, end_bar_idx, end_time, bars_count, max_penetration, outcome, ongoing)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO touches (zone_id, start_bar_idx, start_time, end_bar_idx, end_time, bars_count, max_penetration, outcome, ongoing, approach_direction, polarity_flip_retest)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     );
     for (const z of zones) {
       const zoneInfo = zoneStmt.run(
@@ -103,37 +139,55 @@ export function saveRun(db, { timeframe, candles, gitCommit, zones, badges }) {
         z.expiresBarIdx,
         z.expiresTime,
         z.status,
+        z.atrAtCreation ?? null,
       );
-      const zoneId = Number(zoneInfo.lastInsertRowid);
+      z.id = Number(zoneInfo.lastInsertRowid); // fed into confluence.js later
       for (const t of z.touches || []) {
-        touchStmt.run(zoneId, t.startBarIdx, t.startTime, t.endBarIdx, t.endTime, t.barsCount, t.maxPenetration, t.outcome, t.ongoing ? 1 : 0);
+        touchStmt.run(
+          z.id,
+          t.startBarIdx,
+          t.startTime,
+          t.endBarIdx,
+          t.endTime,
+          t.barsCount,
+          t.maxPenetration,
+          t.outcome,
+          t.ongoing ? 1 : 0,
+          t.approachDirection,
+          t.polarityFlipRetest ? 1 : 0,
+        );
       }
     }
-
-    const badgeStmt = db.prepare("INSERT INTO badges (run_id, timeframe, bar_idx, time, side, count) VALUES (?, ?, ?, ?, ?, ?)");
-    for (const b of badges) {
-      badgeStmt.run(runId, timeframe, b.barIdx, b.time, b.side, b.count);
-    }
-
     db.exec("COMMIT");
-    return runId;
   } catch (err) {
     db.exec("ROLLBACK");
     throw err;
   }
 }
 
-// Clears prior runs for a timeframe before a fresh build, so re-running build-historical.js is
-// idempotent (no duplicate accumulation across re-runs) rather than append-only. Deliberately NOT
-// how the live signal bus will behave later (that one accumulates over time, by design, per the
-// original "persistent memory matrix" goal) -- this is the historical/offline rebuild path.
-export function clearTimeframe(db, timeframe) {
+export function insertBadges(db, { runId, timeframe, badges }) {
   db.exec("BEGIN");
   try {
-    db.prepare("DELETE FROM touches WHERE zone_id IN (SELECT id FROM zones WHERE timeframe = ?)").run(timeframe);
-    db.prepare("DELETE FROM zones WHERE timeframe = ?").run(timeframe);
-    db.prepare("DELETE FROM badges WHERE timeframe = ?").run(timeframe);
-    db.prepare("DELETE FROM runs WHERE timeframe = ?").run(timeframe);
+    const badgeStmt = db.prepare("INSERT INTO badges (run_id, timeframe, bar_idx, time, side, count) VALUES (?, ?, ?, ?, ?, ?)");
+    for (const b of badges) badgeStmt.run(runId, timeframe, b.barIdx, b.time, b.side, b.count);
+    db.exec("COMMIT");
+  } catch (err) {
+    db.exec("ROLLBACK");
+    throw err;
+  }
+}
+
+// Writes confluence.js's output (allZones already annotated with real .id, confluenceCount,
+// sameTimeframeClusterSize, confluentZoneIds) back to the zones table + zone_confluences junction.
+export function updateConfluence(db, allZones) {
+  db.exec("BEGIN");
+  try {
+    const updateStmt = db.prepare("UPDATE zones SET confluence_count = ?, same_timeframe_cluster_size = ? WHERE id = ?");
+    const linkStmt = db.prepare("INSERT OR IGNORE INTO zone_confluences (zone_id, confluent_zone_id) VALUES (?, ?)");
+    for (const z of allZones) {
+      updateStmt.run(z.confluenceCount, z.sameTimeframeClusterSize, z.id);
+      for (const otherId of z.confluentZoneIds) linkStmt.run(z.id, otherId);
+    }
     db.exec("COMMIT");
   } catch (err) {
     db.exec("ROLLBACK");

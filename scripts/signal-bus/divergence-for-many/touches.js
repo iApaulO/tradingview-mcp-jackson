@@ -11,12 +11,32 @@
 //
 // outcome: "held" if the interaction's last bar closed back on the zone's defended side (above
 // price for bullish/support, below price for bearish/resistance) -- "broken" if it closed through.
+// This label is direction-agnostic by construction (it only asks "which side did price end up
+// on", not "which side did it come from") -- correct regardless of approach, but it throws away
+// information: a support zone re-tested from BELOW after already breaking once is the classical
+// "old support becomes resistance" polarity-flip retest, a materially different event than a
+// fresh descent-and-defend, even though both could resolve as "held". approachDirection +
+// polarityFlipRetest (added 2026-07-25, prompted by a direct question about this exact case) fix
+// that: approachDirection is read from the close of the bar immediately before the interaction
+// started (always available -- it's a real prior candle in the full series, independent of the
+// zone's own confirmed/expired lifecycle window). polarityFlipRetest is true when a zone is
+// approached from the side OPPOSITE its natural creation side (bullish zones are naturally
+// approached from above; bearish from below) -- the actual signature of a level's role flipping.
+//
 // maxPenetration: how far price pushed beyond the level during the interaction (wick depth) --
 // magnitude of the test, not just a binary outcome, for later "does confluence predict a stronger
 // reaction" analysis (see the research-protocol-shaped hypothesis from the 2026-07-25 discussion).
 
+// BUG FIX 2026-07-25: originally `bar.l <= price` (bullish) / `bar.h >= price` (bearish) alone --
+// which is ALSO true for every bar entirely past the level and still drifting further away, not
+// just bars genuinely reaching it. That silently merged "broke and drifted off for 100+ bars"
+// into one continuous "interaction" with the drift counted as penetration, and made a
+// re-approach-from-the-far-side impossible to ever detect (the "interaction" never ended long
+// enough to start a new one) -- caught by asking what should happen on a from-below retest, which
+// surfaced 0 polarity-flip retests out of 17,037 touches, an implausible result that was the tell.
+// Correct definition: the bar's own range has to actually contain the price level.
 function isTouching(bar, zone) {
-  return zone.side === "bullish" ? bar.l <= zone.price : bar.h >= zone.price;
+  return bar.l <= zone.price && bar.h >= zone.price;
 }
 
 function penetration(bar, zone) {
@@ -25,6 +45,10 @@ function penetration(bar, zone) {
 
 function resolveOutcome(lastClose, zone) {
   return zone.side === "bullish" ? (lastClose > zone.price ? "held" : "broken") : lastClose < zone.price ? "held" : "broken";
+}
+
+function naturalSide(zone) {
+  return zone.side === "bullish" ? "above" : "below";
 }
 
 export function detectTouches(candles, zone) {
@@ -36,7 +60,18 @@ export function detectTouches(candles, zone) {
   for (let i = startBar; i <= endBar; i++) {
     const bar = candles[i];
     if (isTouching(bar, zone)) {
-      if (!current) current = { startBarIdx: i, startTime: bar.t, barsCount: 0, maxPenetration: 0 };
+      if (!current) {
+        const priorClose = i > 0 ? candles[i - 1].c : bar.c;
+        const approachDirection = priorClose > zone.price ? "above" : priorClose < zone.price ? "below" : "at";
+        current = {
+          startBarIdx: i,
+          startTime: bar.t,
+          barsCount: 0,
+          maxPenetration: 0,
+          approachDirection,
+          polarityFlipRetest: approachDirection !== "at" && approachDirection !== naturalSide(zone),
+        };
+      }
       current.barsCount++;
       const p = penetration(bar, zone);
       if (p > current.maxPenetration) current.maxPenetration = p;

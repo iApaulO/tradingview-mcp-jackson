@@ -1,20 +1,20 @@
 #!/usr/bin/env node
 // Full historical build across the confirmed 8-timeframe signal-bus ladder (W, D, 4H, 3H, 2H, 1H,
-// 15m, 5m -- 2026-07-25 discussion). Computes zones + touches per timeframe and stores them in
-// data/signal-bus/divergence-for-many.db. Idempotent: clears each timeframe's prior rows before
-// writing fresh ones, so re-running after a calc.js/touches.js change doesn't accumulate stale
-// duplicate runs.
+// 15m, 5m -- 2026-07-25 discussion). Computes zones + touches per timeframe, THEN confluence
+// across the full combined set (confluence.js needs every timeframe's zones with real ids before
+// it can compute anything cross-timeframe -- see store.js's two-phase write). Always a full
+// rebuild (clearAll), not per-timeframe -- confluence spans timeframes, so a partial rebuild
+// wouldn't be correct anyway.
 //
 // Usage: node scripts/signal-bus/divergence-for-many/build-historical.js
-//        node scripts/signal-bus/divergence-for-many/build-historical.js --tf=4h,1d   (subset)
 
 import { execSync } from "child_process";
 import { loadCandles } from "../../backtest/lib/load-candles.js";
 import { computeDivergenceForMany } from "./calc.js";
 import { computeAllTouches } from "./touches.js";
-import { openStore, saveRun, clearTimeframe } from "./store.js";
+import { computeConfluence } from "./confluence.js";
+import { openStore, clearAll, insertRun, insertZonesAndTouches, insertBadges, updateConfluence } from "./store.js";
 
-// Maps the confirmed timeframe ladder to data/historical/binance-btc-{key}.csv filenames.
 const LADDER = [
   { label: "W", key: "1w" },
   { label: "D", key: "1d" },
@@ -25,9 +25,6 @@ const LADDER = [
   { label: "15m", key: "15m" },
   { label: "5m", key: "5m" },
 ];
-
-const args = Object.fromEntries(process.argv.slice(2).map((a) => a.replace(/^--/, "").split("=")));
-const ONLY = args.tf ? args.tf.split(",") : null;
 
 function gitCommit() {
   try {
@@ -40,10 +37,12 @@ function gitCommit() {
 async function main() {
   const commit = gitCommit();
   const db = openStore();
+  clearAll(db);
+
+  const allZones = [];
   const summary = [];
 
   for (const { label, key } of LADDER) {
-    if (ONLY && !ONLY.includes(key) && !ONLY.includes(label)) continue;
     process.stdout.write(`${label.padEnd(4)} (${key}) ... `);
     const t0 = Date.now();
     const candles = await loadCandles(key);
@@ -53,21 +52,34 @@ async function main() {
     }
     const { badges, zones } = computeDivergenceForMany(candles);
     computeAllTouches(candles, zones);
+    for (const z of zones) z.timeframe = key; // confluence.js needs this on the zone object itself
 
-    clearTimeframe(db, key);
-    saveRun(db, { timeframe: key, candles, gitCommit: commit, zones, badges });
+    const runId = insertRun(db, { timeframe: key, candles, gitCommit: commit });
+    insertZonesAndTouches(db, { runId, timeframe: key, zones }); // sets z.id on each zone
+    insertBadges(db, { runId, timeframe: key, badges });
 
+    allZones.push(...zones);
     const touches = zones.reduce((s, z) => s + z.touches.length, 0);
-    const held = zones.reduce((s, z) => s + z.touches.filter((t) => t.outcome === "held").length, 0);
-    const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
-    console.log(`${candles.length.toLocaleString()} candles, ${zones.length} zones, ${touches} touches (${touches ? ((held / touches) * 100).toFixed(1) : "0.0"}% held) -- ${elapsed}s`);
-    summary.push({ label, key, candles: candles.length, zones: zones.length, badges: badges.length, touches, held });
+    console.log(`${candles.length.toLocaleString()} candles, ${zones.length} zones, ${touches} touches -- ${((Date.now() - t0) / 1000).toFixed(1)}s`);
+    summary.push({ label, key, candles: candles.length, zones: zones.length, badges: badges.length, touches });
   }
+
+  process.stdout.write(`\nComputing confluence across ${allZones.length} zones (all timeframes combined) ... `);
+  const t0 = Date.now();
+  computeConfluence(allZones);
+  updateConfluence(db, allZones);
+  console.log(`done -- ${((Date.now() - t0) / 1000).toFixed(1)}s`);
 
   db.close();
 
-  console.log("\nSummary:");
+  console.log("\nPer-timeframe summary:");
   console.table(summary);
+
+  const isolated = allZones.filter((z) => z.confluenceCount === 1).length;
+  const confluent = allZones.length - isolated;
+  console.log(`\nConfluence: ${isolated} isolated zones (no other timeframe agrees), ${confluent} in some confluence cluster (${((confluent / allZones.length) * 100).toFixed(1)}%)`);
+  const maxConfluence = Math.max(...allZones.map((z) => z.confluenceCount));
+  console.log(`Max confluence depth observed: ${maxConfluence} distinct timeframes agreeing at one price`);
 }
 
 main().catch((err) => {

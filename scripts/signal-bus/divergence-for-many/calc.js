@@ -288,6 +288,7 @@ export function computeDivergenceForMany(candles) {
           expiresBarIdx: null,
           expiresTime: null,
           status: "active",
+          atrAtCreation: atrSeries[i],
         });
         activeBear.push(zoneIdx);
         if (activeBear.length > BADGEGLOW_MAX_LEVELS) {
@@ -313,6 +314,7 @@ export function computeDivergenceForMany(candles) {
           expiresBarIdx: null,
           expiresTime: null,
           status: "active",
+          atrAtCreation: atrSeries[i],
         });
         activeBull.push(zoneIdx);
         if (activeBull.length > BADGEGLOW_MAX_LEVELS) {
