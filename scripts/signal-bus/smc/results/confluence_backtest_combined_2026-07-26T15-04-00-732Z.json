@@ -1,0 +1,59 @@
+{
+  "scope": "all_timeframes_combined",
+  "trade_construction": "entry = next-bar-open after touch starts; exit(held) = next-bar-open after touch ends; exit(broken) = order block's boundary price at its real mitigation time",
+  "total_trades": 1061,
+  "span_years": 5.86436230892083,
+  "buckets": {
+    "low (1-2)": {
+      "trade_count": 89,
+      "trades_per_year": 15.176415663236526,
+      "gross": {
+        "win_rate": 0.449438202247191,
+        "avg_win_pct": 0.00254548739718022,
+        "avg_loss_pct": 0.0069271389176356075,
+        "net_return_pct": -0.2152048414276213,
+        "profit_factor": 0.2999721703815021
+      },
+      "confirmed_derivatives_costed": {
+        "win_rate": 0.20224719101123595,
+        "net_return_pct": -0.3081332519839396,
+        "profit_factor": 0.13473689359264004
+      }
+    },
+    "mid (3-5)": {
+      "trade_count": 506,
+      "trades_per_year": 86.28389129885036,
+      "gross": {
+        "win_rate": 0.5276679841897233,
+        "avg_win_pct": 0.004607149184892996,
+        "avg_loss_pct": 0.009078001505222338,
+        "net_return_pct": -0.6211191005889019,
+        "profit_factor": 0.5669638716443691
+      },
+      "confirmed_derivatives_costed": {
+        "win_rate": 0.32806324110671936,
+        "net_return_pct": -0.818200403156673,
+        "profit_factor": 0.3553714716703494
+      }
+    },
+    "high (6-8)": {
+      "trade_count": 466,
+      "trades_per_year": 79.46303032660923,
+      "gross": {
+        "win_rate": 0.5364806866952789,
+        "avg_win_pct": 0.011595378651876442,
+        "avg_loss_pct": 0.019769541363186142,
+        "net_return_pct": -0.7809087655190706,
+        "profit_factor": 0.6788512134311139
+      },
+      "confirmed_derivatives_costed": {
+        "win_rate": 0.48068669527896996,
+        "net_return_pct": -0.8993638889490758,
+        "profit_factor": 0.5401131899536742
+      }
+    }
+  },
+  "diagnosis": "Negative gross P&L in every bucket despite a real, tested hold-rate gradient (ARCHITECTURE.md §10) -- avg_loss runs 1.7-2.8x avg_win across buckets, because this trade construction caps wins at 'price just cleared the zone' while losses ride the full zone width to the boundary stop. A majority win rate (53.6% at high confluence) cannot overcome that size asymmetry. This is a trade-construction problem, not primarily a cost problem -- costs make an already-negative result modestly worse, they are not the deciding factor.",
+  "git_commit": "212c2843b851173e635cc15c49b3704609f6e529",
+  "generated_at": "2026-07-26T15:04:00.732Z"
+}

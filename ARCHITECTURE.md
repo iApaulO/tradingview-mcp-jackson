@@ -925,3 +925,36 @@ page as a tested negative result, not omitted or left as an unresolved lead — 
 session a dramatic-looking raw number was checked properly and didn't survive (after the 82-88%
 Divergence-for-Many hold-rate bug and the backtest program's uncorrected p-values), and each time
 the correction was the point, not a failure of the exercise.
+
+**Cost/capacity testing on the order-block confluence finding — 2026-07-26, a new failure mode,
+not just "costs ate the edge."** The confluence finding (p<0.00001) is a hold/break
+*classification*, not a strategy — no entry/exit/P&L existed yet. Built
+`confluence-backtest.js`: constructs real trades from the touch data (next-bar-open entry when
+price enters a zone; exit at next-bar-open once price clears the zone if "held," or at the zone's
+own boundary price at its real mitigation time if "broken"), bucketed by confluence tier, run
+through the SAME confirmed cost model already built for the main backtest program
+(`scripts/backtest/lib/costs.js` — the real Coinbase derivatives fee tier, both funding-sign
+assumptions) rather than re-deriving costs from scratch.
+
+**Result: negative gross P&L in every bucket, including the best one.** High confluence (6-8):
+53.6% win rate, but net return **-0.78x gross**, before any fees. Diagnosed, not just reported:
+avg_loss runs 1.7-2.8x avg_win across all three buckets (low: 0.25%/0.69%; mid: 0.46%/0.91%; high:
+1.16%/1.98%) — because this specific trade construction caps wins at "price just cleared the
+zone" while losses ride the full zone width to the boundary stop. A 53.6% win rate cannot
+overcome a loss size nearly double the win size; the arithmetic doesn't work regardless of costs.
+Costs make it modestly worse (-0.78x → -0.90x at the confirmed derivatives tier) but are **not the
+deciding factor** — this fails on trade construction, not on fees. Capacity is not the problem
+either: 79.5 trades/year at high confluence, 86.3/year at mid — plenty of frequency, the strategy
+just loses money per trade.
+
+**What this does and doesn't mean:** the underlying classification finding (higher confluence
+predicts a more reliable hold) is still statistically real — that hasn't changed. What's now clear
+is that "reliable hold rate" doesn't automatically imply "profitable if you just buy/sell the zone
+and exit on resolution." Win rate and R:R asymmetry both matter, and this trade construction has
+bad R:R baked in by design (small capped win, full-zone-width loss). A different exit rule (e.g. a
+symmetric R-multiple target, or riding toward the next opposing zone instead of exiting at the
+first clear) is the obvious next thing to test — flagged as a new, separate hypothesis to test
+properly, not assumed to be the fix and not built yet, to avoid exactly the "keep changing the
+rule until it looks good" pattern this whole session has been disciplined about avoiding.
+
+Results saved to `scripts/signal-bus/smc/results/confluence_backtest_*.json`.
