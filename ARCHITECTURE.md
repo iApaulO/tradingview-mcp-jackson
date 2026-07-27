@@ -861,6 +861,77 @@ asset (BTC), 4+ confluence bucket too thin (n=171) to read, and this tests "does
 exist" not "is it tradeable" (no cost model, no capacity check — the same gap the backtest
 program's strategies needed filled before anything about them was actionable).
 
+**Follow-up, 2026-07-27: cost/capacity test on the confluence finding, run rather than assumed —
+result is trade-construction-blocked, and for a different reason than SMC's version of this same
+test.** Mirrors §10's SMC order-block confluence cost/capacity test exactly in method
+(`scripts/signal-bus/divergence-for-many/confluence-backtest.js`), adapted for the one structural
+difference: these zones are lines, not boxes, so there's no natural far-boundary exit price the
+way an order block had one. Both "held" and "broken" touches exit the same way — next-bar-open
+after the interaction ends — rather than inventing a boundary that doesn't exist in this
+indicator's own logic. Entry stays next-bar-open after the touch starts (no look-ahead, same
+discipline as everywhere else). 27,851 completed trades, all 8 timeframes combined, bucketed by
+confluence count exactly as the significance test bucketed them.
+
+*Naive construction — gross is barely above breakeven, and the reason is not what it looks like
+at first:*
+
+| bucket | n | trades/yr | win rate | avg win | avg loss | win/loss ratio | PF | costed net |
+|---|---|---|---|---|---|---|---|---|
+| 1 (isolated) | 21,955 | 2,978.7 | 28.9% | 0.298% | 0.118% | 2.53x | 1.03 | −1.00x |
+| 2 | 4,901 | 664.9 | 28.0% | 0.409% | 0.154% | 2.65x | 1.03 | −1.00x |
+| 3 | 824 | 111.8 | 30.9% | 0.699% | 0.307% | 2.28x | 1.02 | −0.70x |
+| 4+ (top) | 171 | 23.2 | 28.1% | 1.199% | 0.449% | 2.67x | 1.04 | −0.25x |
+
+The win/loss size ratio here is actually *favorable* (2.3–2.7x, no asymmetry problem the way SMC's
+naive construction had) — but win rate sits at 28–31%, far below the 53–60% **hold rate** the
+significance test measured. That gap is the real finding: "held" (the zone's price level wasn't
+crossed during the interaction) and "this specific entry-to-exit window made money" are different
+measurements. A zone can hold — the classification the confluence test validated — while the
+trade built on top of it (entered at the touch's start, exited at its end) still nets a small
+loss, because favorable movement inside that window isn't guaranteed by the level merely holding.
+Net effect: gross profit factor lands at 1.02–1.04 across every bucket, an edge too thin to call
+real before costs, let alone after. Real-cost (confirmed derivatives, 0.070%/0.065% + pessimistic
+funding) collapses every bucket to decisively negative, with the two highest-frequency buckets
+(isolated: 2,978.7 trades/yr; bucket 2: 664.9 trades/yr) hitting the −1.00x floor — at that
+frequency, round-trip costs (~0.14%+ funding) are the same order of magnitude as the average win
+itself (0.298–0.409%), so cost drag alone is close to sufficient to erase the edge, and it
+compounds fast at thousands of trades per year. The lower-frequency buckets degrade less
+violently (3: −0.70x; top: −0.25x) simply because there are far fewer trades to compound the drag
+through, not because their per-trade economics are meaningfully better.
+
+*Fixed R:R follow-up — unlike SMC, does not rescue the top-confluence bucket at any R multiple
+tested* (`confluence-backtest-fixed-rr.js`, risk = 0.6×ATR(14) at zone creation — the same
+constant `calc.js` already uses for zone dedup, not an invented number — target = entry ±
+R-multiple×that, race-to-target-or-stop, R ∈ {1, 1.5, 2, 3}):
+
+| bucket | 1R gross | 1.5R gross | 2R gross | 3R gross | 3R costed |
+|---|---|---|---|---|---|
+| 1 (isolated) | −1.00x | −0.99x | −0.96x | −0.91x | −1.00x |
+| 2 | −0.43x | −0.26x | +0.32x | **+1.20x** | −1.00x |
+| 3 | −0.34x | −0.18x | −0.11x | −0.21x | −0.77x |
+| 4+ (top) | +0.03x | −0.09x | −0.12x | −0.28x | −0.47x |
+
+SMC's fixed-R:R retest found forcing a designed R-multiple exit fixed its win/loss asymmetry and
+turned the top-confluence bucket gross-positive at 3R. Here, the top-confluence bucket ("4+")
+never turns gross-positive at any R multiple — it's flat-to-negative throughout and gets *worse*
+as R increases (+0.03x at 1R down to −0.28x at 3R), the opposite direction from SMC's pattern. The
+only bucket that turns sharply gross-positive is the *2-way* bucket at 3R (+1.20x) — but at 664.9
+trades/year, real costs still crush it to the −1.00x floor, because the frequency-driven cost
+problem from the naive test doesn't go away just because the exit rule changed. No R multiple,
+confluence bucket, or exit design tested here clears real costs anywhere in the grid.
+
+**Conclusion: `trade-construction-blocked`, same label as SMC's order-block confluence finding,
+but a materially different diagnosis — don't collapse the two into "confluence doesn't translate
+to trades" as if it's one universal problem.** SMC's block was a fixable size-asymmetry problem
+that a designed R:R almost cleared (3R got to +0.34x gross before costs took it back to −0.93x).
+This one is a thinner, more structural problem: the classification's "held" outcome doesn't
+predict same-window P&L sign well enough to produce a real gross edge in the first place (PF
+1.02–1.04 even before costs), a fixed R:R exit doesn't fix that at the one bucket that would
+matter (top-confluence), and the buckets that do show a designed-exit gross edge fire far too
+often for real transaction costs to survive. The underlying classification (higher confluence →
+higher hold rate, p=0.0002/0.0001) remains real and unshaken — only the leap from that
+classification to a standalone trade is blocked, and it's blocked harder here than it was for SMC.
+
 ## 10. Per-indicator signal bus (SMC) — 2026-07-25/26
 
 Second indicator on the pattern, prompted by a direct question about whether directional colors

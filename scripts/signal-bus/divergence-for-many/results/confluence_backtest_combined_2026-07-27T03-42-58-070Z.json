@@ -1,0 +1,74 @@
+{
+  "scope": "all_timeframes_combined",
+  "trade_construction": "entry = next-bar-open after touch starts; exit (both held and broken) = next-bar-open after touch ends -- no boundary-price special-case, unlike SMC's order blocks, since these zones are lines with no natural far edge",
+  "total_trades": 27851,
+  "span_years": 7.370560498897254,
+  "buckets": {
+    "2": {
+      "trade_count": 4901,
+      "trades_per_year": 664.9426459131925,
+      "gross": {
+        "win_rate": 0.27953478881860844,
+        "avg_win_pct": 0.004086948581560635,
+        "avg_loss_pct": 0.0015425222038369924,
+        "net_return_pct": 0.05552357571031852,
+        "profit_factor": 1.0279940458293249
+      },
+      "confirmed_derivatives_costed": {
+        "win_rate": 0.16731279330748827,
+        "net_return_pct": -0.9989602236110967,
+        "profit_factor": 0.3747848980855303
+      }
+    },
+    "3": {
+      "trade_count": 824,
+      "trades_per_year": 111.79611104518885,
+      "gross": {
+        "win_rate": 0.3094660194174757,
+        "avg_win_pct": 0.006988353390919271,
+        "avg_loss_pct": 0.0030677271155488267,
+        "net_return_pct": -0.015129730103644712,
+        "profit_factor": 1.0209066846524173
+      },
+      "confirmed_derivatives_costed": {
+        "win_rate": 0.20024271844660194,
+        "net_return_pct": -0.6982732906413838,
+        "profit_factor": 0.5634277579510697
+      }
+    },
+    "1 (isolated)": {
+      "trade_count": 21955,
+      "trades_per_year": 2978.7422548508753,
+      "gross": {
+        "win_rate": 0.28918241858346616,
+        "avg_win_pct": 0.002981738332443751,
+        "avg_loss_pct": 0.001176383178530657,
+        "net_return_pct": 0.3946902141589168,
+        "profit_factor": 1.0311799194748537
+      },
+      "confirmed_derivatives_costed": {
+        "win_rate": 0.15363242997039397,
+        "net_return_pct": -0.9999999999999437,
+        "profit_factor": 0.28809753557216417
+      }
+    },
+    "4+ (top)": {
+      "trade_count": 171,
+      "trades_per_year": 23.20040653971759,
+      "gross": {
+        "win_rate": 0.2807017543859649,
+        "avg_win_pct": 0.01198763996206343,
+        "avg_loss_pct": 0.0044949640822832685,
+        "net_return_pct": -0.003339680062363737,
+        "profit_factor": 1.040743221568377
+      },
+      "confirmed_derivatives_costed": {
+        "win_rate": 0.22807017543859648,
+        "net_return_pct": -0.24601522458596214,
+        "profit_factor": 0.6616420632664797
+      }
+    }
+  },
+  "git_commit": "d1d780d29c64539da896575679c2f73d50f2eb59",
+  "generated_at": "2026-07-27T03:42:58.070Z"
+}
