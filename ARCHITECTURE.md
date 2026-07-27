@@ -1124,3 +1124,73 @@ excluded as "no longer live" structure. Those are different, untested questions,
 this result.
 
 Results saved to `scripts/signal-bus/cross-confluence/results/cross_confluence_significance_*.json`.
+
+**Follow-up, same day: a different cross-indicator question — does BREAKOUT DIRECTION (not hold
+rate) correlate with SMC's prevailing bias?** Asked directly as a follow-up to the null result
+above: instead of "does SMC structure sitting on a zone predict whether it holds," this asks
+"when a divergence zone breaks, does the direction of that break agree with what SMC's own
+structure already says the trend is?" (`scripts/signal-bus/cross-confluence/breakout-direction-vs-smc-bias.js`).
+
+**Method:** for every "broken" touch (12,806 total), breakout direction is implied by which side
+broke — a bullish/support zone breaking is a bearish-direction break, a bearish/resistance zone
+breaking is bullish-direction. "SMC bias" = the side of the most recent BOS/CHoCH structure event
+on the *same timeframe*, at or before the touch's own `start_time` (no look-ahead), tested
+separately for `scope='swing'` (primary — house convention already treats swing as less noisy
+than internal, register row 8) and `scope='internal'` (secondary). Permutation unit is the touch,
+not the zone: unlike `confluence_count`, SMC bias is genuinely time-varying, so what's being
+tested is whether the true pairing (this touch's real bias reading, this touch's real breakout
+direction) carries information beyond a random re-pairing of the two series — the null shuffles
+which touch gets which real bias reading, keeping every touch's own real breakout direction fixed.
+
+**Result — real, large, and checked for the obvious way this fools people before trusting it:**
+
+| scope | n (defined bias) | real alignment | permuted null | p |
+|---|---|---|---|---|
+| swing | 12,795 | **79.79%** | mean 50.71%, range [48.45%, 52.40%] | 0.0000 (20,000 iters) |
+| internal | 12,803 | **70.51%** | mean 50.28%, range [48.47%, 52.08%] | 0.0000 (20,000 iters) |
+
+Both real values sit far outside the entire permuted range, not just past a tail — this is the
+single largest cross-indicator effect found in this project. A number this dramatic is exactly
+the shape of three prior results that turned out to be bugs or didn't survive correction
+(SuperTrend's uncorrected p=0.022, the original 82–88% divergence hold-rate claim, and this
+session's first cross-confluence test's tempting-looking "both" bucket) — so before trusting it,
+checked the most obvious way a stat like this gets inflated: **is the "prior" SMC bias reading
+actually prior, or is it coincident with the same breakout bar** (both indicators reacting to the
+literal same price move at once, which would be circularity dressed up as prediction)? Bucketing
+by the time gap between the referenced bias event and the touch's start (`scope='swing'`):
+
+| gap | n | % of sample | alignment |
+|---|---|---|---|
+| same-bar (gap=0) | 663 | 5.2% | 95.0% |
+| 0–1hr | 830 | 6.5% | 87.4% |
+| 1hr–1day | 8,741 | 68.3% | 78.9% |
+| 1day–1wk | 1,920 | 15.0% | 75.1% |
+| >1wk | 641 | 5.0% | 80.8% |
+
+The bulk of the sample (68%) sits at 1hr–1day lag and still shows ~79% alignment; it holds at
+1-week+ lag too (80.8%). This is **not** an artifact of near-simultaneous coincidence — the
+elevated same-bar bucket (95%, only 5.2% of the sample) isn't what's carrying the result. The
+effect is genuinely present at lags long enough that "SMC's last confirmed structural bias" is
+real, standing-before-the-fact information, not a same-instant echo of the divergence break
+itself. Side breakdown is symmetric (bullish/support breaks 79.0% aligned, bearish/resistance
+breaks 80.4% aligned, swing scope) — no lopsided skew hiding in one direction. Internal scope
+alignment being meaningfully lower (70.5% vs. 79.8%) is also a good internal-consistency check —
+it matches this project's pre-existing (separately derived) finding that swing structure reads
+cleaner than internal structure, rather than contradicting it.
+
+**Label: `descriptive-significant` — the largest, cleanest cross-indicator finding in this
+project so far, but not yet decision-grade, for the same reason every other descriptive-significant
+finding here has needed a further test before being trusted with size:** this has NOT been
+cost/capacity tested. Two of the three prior descriptive-significant findings in this project
+(SMC order-block confluence, Divergence-for-Many's own confluence) turned out to be
+trade-construction-blocked once actually costed — there is no reason to assume this one clears
+that bar just because the raw statistic is unusually strong. It also has a real, honest scope
+limit worth stating plainly rather than glossing over: this measures agreement between SMC's
+*existing* structural bias and a divergence zone's break direction, which is consistent with
+ordinary trend persistence (breakouts tend to go with the grain of the prevailing trend, and SMC's
+BOS/CHoCH machinery is itself one particular way of measuring "what has the trend been lately") —
+it has not been checked against a naive baseline (e.g., simple recent price-direction momentum
+with no SMC machinery at all) to see whether SMC's specific structural read adds anything beyond
+that simpler signal. That's a real, useful next question, not yet answered here.
+
+Results saved to `scripts/signal-bus/cross-confluence/results/breakout_direction_vs_smc_bias_*.json`.

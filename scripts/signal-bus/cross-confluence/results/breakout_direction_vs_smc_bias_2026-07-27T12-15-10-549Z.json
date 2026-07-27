@@ -1,0 +1,58 @@
+{
+  "results": {
+    "swing": {
+      "totalBrokenTouches": 12806,
+      "touchesWithDefinedBias": 12795,
+      "excludedNoPriorStructure": 11,
+      "realAlignedRate": 0.7978898007033998,
+      "bySide": {
+        "bullish": {
+          "n": 5486,
+          "alignedRate": 0.7896463725847612
+        },
+        "bearish": {
+          "n": 7309,
+          "alignedRate": 0.8040771651388698
+        }
+      },
+      "permutation": {
+        "iterations": 20000,
+        "seed": 42,
+        "permutedMean": 0.5070650488471863,
+        "permutedRange": [
+          0.4844861273935131,
+          0.5240328253223916
+        ],
+        "p": 0
+      }
+    },
+    "internal": {
+      "totalBrokenTouches": 12806,
+      "touchesWithDefinedBias": 12803,
+      "excludedNoPriorStructure": 3,
+      "realAlignedRate": 0.7051472311177068,
+      "bySide": {
+        "bullish": {
+          "n": 5492,
+          "alignedRate": 0.7164967225054625
+        },
+        "bearish": {
+          "n": 7311,
+          "alignedRate": 0.6966215292025715
+        }
+      },
+      "permutation": {
+        "iterations": 20000,
+        "seed": 42,
+        "permutedMean": 0.5027952042489254,
+        "permutedRange": [
+          0.48473014137311565,
+          0.5208154338826837
+        ],
+        "p": 0
+      }
+    }
+  },
+  "git_commit": "c15c93d5bfa84807629174b22e8b4b14af880340",
+  "generated_at": "2026-07-27T12:15:10.549Z"
+}
