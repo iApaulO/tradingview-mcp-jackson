@@ -1194,3 +1194,69 @@ with no SMC machinery at all) to see whether SMC's specific structural read adds
 that simpler signal. That's a real, useful next question, not yet answered here.
 
 Results saved to `scripts/signal-bus/cross-confluence/results/breakout_direction_vs_smc_bias_*.json`.
+
+**Follow-up, same day: cost/capacity test on the breakout-direction-vs-SMC-bias finding — a real
+methodology bug caught along the way, and the underlying result is trade-construction-blocked.**
+(`scripts/signal-bus/cross-confluence/breakout-bias-backtest.js`.) The classification above is
+agreement between two already-known facts at break time, not a strategy. The natural trade it
+implies: when a divergence zone breaks, take a continuation trade in the breakout direction, and
+test whether SMC-bias alignment (the exact condition just measured) predicts better real P&L.
+Same fixed-R:R convention already established for this indicator (risk = 0.6×ATR at zone
+creation, R ∈ {1, 1.5, 2, 3}, race-to-target-or-stop, `scope='swing'` bias only). Entry = next-bar-open
+after the breaking touch *ends* (when the break is actually confirmed, not touch start — direction
+isn't knowable until the interaction resolves).
+
+**Bug caught before trusting the first run's output: `net_return_pct` read 16,649x at 1R.**
+`metrics.js` compounds every trade sequentially into one account (`equity *= 1 + pnlPct`,
+documented in its own header comment as a known simplification) — valid for the earlier
+lower-frequency, single-timeframe-at-a-time tests, but meaningless here: 10,209+ "aligned" trades
+drawn from 8 timeframes genuinely overlap in time (a 5m trade and a 1W trade can easily be open
+simultaneously), so modeling them as one account reinvesting 100% into one sequential position is
+nonsense, and with a real positive edge across that many trades the compounding math explodes
+combinatorially rather than settling near a plausible number the way it did in prior,
+closer-to-breakeven tests. **Fix:** dropped `net_return_pct`/`final_equity_multiple` for this
+test and used arithmetic-mean per-trade expectancy instead (`win_rate × avg_win − (1−win_rate) ×
+avg_loss`, in %) — invariant to trade ordering and overlap, the correct non-compounding way to ask
+"does the average trade clear costs." `win_rate`, `avg_win_pct`, `avg_loss_pct`, and
+`profit_factor` were never affected by this bug (simple aggregates, not equity-curve-dependent) —
+only the compounded return figure was nonsense. **This same distortion likely affects the
+magnitude (not necessarily the pass/fail verdict) of every other high-frequency cost/capacity
+result reported so far in §9/§10/§11** — worth a standing caveat rather than re-running every
+prior test right now.
+
+**Corrected result, 12,795 entries (10,209 aligned / 2,586 not-aligned), confirmed-derivatives
+cost tier:**
+
+| R | bucket | n | win rate | PF | expectancy gross | expectancy costed |
+|---|---|---|---|---|---|---|
+| 1R | aligned | 10,209 | 65.0% | 1.89 | +0.0966%/trade | −0.0441%/trade |
+| 1R | not-aligned | 2,586 | 65.9% | 1.99 | +0.0807%/trade | −0.0595%/trade |
+| 1.5R | aligned | 10,209 | 55.3% | 1.80 | +0.1136%/trade | −0.0277%/trade |
+| 1.5R | not-aligned | 2,586 | 56.2% | 1.85 | +0.0930%/trade | −0.0475%/trade |
+| 2R | aligned | 10,209 | 47.2% | 1.70 | +0.1182%/trade | −0.0236%/trade |
+| 2R | not-aligned | 2,586 | 46.9% | 1.76 | +0.0988%/trade | −0.0420%/trade |
+| 3R | aligned | 10,209 | 36.2% | 1.63 | +0.1273%/trade | −0.0152%/trade |
+| 3R | not-aligned | 2,586 | 36.0% | 1.54 | +0.0869%/trade | −0.0543%/trade |
+
+Capacity: aligned 1,385.2 trades/year, not-aligned 350.9 trades/year (7.37-year span).
+
+**Two honest findings, not one:**
+1. **The underlying breakout-continuation trade has a real gross edge regardless of alignment**
+   (PF 1.5–2.0 in every row) **but never clears real costs at any R multiple tested** — best case
+   is −0.0152%/trade (3R, aligned), still negative. Costs (~0.135% round-trip + funding) are the
+   same order of magnitude as the raw per-trade edge (0.08–0.13%), and at 1,385 trades/year that
+   gap compounds into a real, if now-correctly-measured (not astronomically-mis-measured), loss.
+2. **The alignment classification's practical translation is far more modest than its 79.8%-vs-50%
+   headline suggests.** Aligned beats not-aligned by only 1.6–4.0 basis points of expectancy per
+   trade at every R multiple — both buckets are gross-positive with similar profit factors, and
+   both are blocked by costs. The classification is real and large as a *directional agreement*
+   statistic (§11 above), but it does not translate into "aligned breakouts are tradeable and
+   non-aligned ones aren't" — both look similar once turned into an actual trade, and neither
+   clears the bar.
+
+**Label: `trade-construction-blocked`.** Consistent with every other descriptive-significant
+finding tested for cost/capacity in this project (SMC order-block confluence, Divergence-for-Many's
+own confluence) — the underlying classification survives rigorous testing, the leap to a
+standalone trade does not.
+
+Results saved to `scripts/signal-bus/cross-confluence/results/breakout_bias_backtest_*.json`.

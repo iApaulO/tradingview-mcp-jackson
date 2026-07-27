@@ -1,5 +1,12 @@
 // Standard backtest metrics from a trade list (scripts/backtest/lib/simulate-trades.js output).
-// Equity curve assumes full-equity compounding per trade (no fixed fractional sizing yet).
+// Equity curve assumes full-equity compounding per trade (no fixed fractional sizing yet). This
+// breaks down hard when trades genuinely overlap in time (e.g. entries drawn from multiple
+// timeframes at once) -- confirmed 2026-07-27 when a real, positive per-trade edge over ~10k such
+// trades compounded to a nonsensical 16,649x (see ARCHITECTURE.md §11's breakout-bias cost test).
+// win_rate/avg_win_pct/avg_loss_pct/profit_factor are simple aggregates and stay valid regardless;
+// net_return_pct/final_equity_multiple/max_drawdown_pct do not -- prefer a non-compounding
+// arithmetic-mean per-trade expectancy (win_rate*avg_win - (1-win_rate)*avg_loss) for any test with
+// a large trade count and/or trades from more than one timeframe/instrument in flight at once.
 
 export function computeMetrics(trades) {
   if (!trades.length) {

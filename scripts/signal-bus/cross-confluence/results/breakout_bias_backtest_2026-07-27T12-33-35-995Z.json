@@ -1,0 +1,107 @@
+{
+  "scope_used_for_bias": "swing",
+  "trade_construction": "entry = next-bar-open after the breaking touch ENDS (break confirmed, no look-ahead); side = breakout direction; risk R = 0.6x ATR(14) at zone creation; stop = entry -/+ R; target = entry +/- R-multiple x R; race-to-target-or-stop, max 200 bars, same-bar ambiguity scored as the stop",
+  "r_multiples_tested": [
+    1,
+    1.5,
+    2,
+    3
+  ],
+  "total_entries_with_defined_bias": 12795,
+  "results": {
+    "1R": {
+      "buckets": {
+        "aligned": {
+          "trade_count": 10209,
+          "win_rate": 0.6499167401312568,
+          "avg_win_pct": 0.0031513575700307943,
+          "avg_loss_pct": 0.0030915023646113284,
+          "gross_net_return_pct": 16649.69741099684,
+          "costed_net_return_pct": -0.9903375491287267,
+          "profit_factor": 1.8924067104403586
+        },
+        "not-aligned": {
+          "trade_count": 2586,
+          "win_rate": 0.6593194122196442,
+          "avg_win_pct": 0.0024635833501147728,
+          "avg_loss_pct": 0.0023979416721888473,
+          "gross_net_return_pct": 6.857146035578244,
+          "costed_net_return_pct": -0.7910493698042059,
+          "profit_factor": 1.9882780595615104
+        }
+      },
+      "inconclusive": 0
+    },
+    "1.5R": {
+      "buckets": {
+        "aligned": {
+          "trade_count": 10209,
+          "win_rate": 0.5532373396023117,
+          "avg_win_pct": 0.004627105299339234,
+          "avg_loss_pct": 0.003186953104106516,
+          "gross_net_return_pct": 86375.0559862209,
+          "costed_net_return_pct": -0.9528586403725811,
+          "profit_factor": 1.7979115640925762
+        },
+        "not-aligned": {
+          "trade_count": 2586,
+          "win_rate": 0.5618716163959784,
+          "avg_win_pct": 0.003600085701325548,
+          "avg_loss_pct": 0.002494009893315716,
+          "gross_net_return_pct": 9.600124337239874,
+          "costed_net_return_pct": -0.7197023946545817,
+          "profit_factor": 1.8511873417057252
+        }
+      },
+      "inconclusive": 0
+    },
+    "2R": {
+      "buckets": {
+        "aligned": {
+          "trade_count": 10209,
+          "win_rate": 0.4720344793809384,
+          "avg_win_pct": 0.006090119246368562,
+          "avg_loss_pct": 0.003206705863478686,
+          "gross_net_return_pct": 126755.94841344292,
+          "costed_net_return_pct": -0.9339761519426988,
+          "profit_factor": 1.6979888400842957
+        },
+        "not-aligned": {
+          "trade_count": 2586,
+          "win_rate": 0.46867749419953597,
+          "avg_win_pct": 0.00487727867243233,
+          "avg_loss_pct": 0.002443497343267871,
+          "gross_net_return_pct": 11.043955996103715,
+          "costed_net_return_pct": -0.6831524316879898,
+          "profit_factor": 1.7606846843773278
+        }
+      },
+      "inconclusive": 0
+    },
+    "3R": {
+      "buckets": {
+        "aligned": {
+          "trade_count": 10209,
+          "win_rate": 0.36183759427955725,
+          "avg_win_pct": 0.00912631698144005,
+          "avg_loss_pct": 0.0031804679383671567,
+          "gross_net_return_pct": 266824.61977907957,
+          "costed_net_return_pct": -0.87047949859728,
+          "profit_factor": 1.6269979212721044
+        },
+        "not-aligned": {
+          "trade_count": 2586,
+          "win_rate": 0.35962877030162416,
+          "avg_win_pct": 0.006902658355809642,
+          "avg_loss_pct": 0.002520031482393156,
+          "gross_net_return_pct": 7.684350234248347,
+          "costed_net_return_pct": -0.7744753840503744,
+          "profit_factor": 1.5382716225158475
+        }
+      },
+      "inconclusive": 0
+    }
+  },
+  "git_commit": "91a4835ee81b651283f43b2f487449841baad035",
+  "generated_at": "2026-07-27T12:33:35.995Z"
+}
