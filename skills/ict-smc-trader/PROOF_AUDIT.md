@@ -73,7 +73,7 @@ the vetoes list alone did.
 | 4 | Incorporation of prior art | **Pass, after the §7 fix above** | §9/§10 were captured correctly on the first pass (spot-checked: confluence gradients, both significance tests, the trade-construction-blocked backtest, the falsified liquidity finding, the touch-detection and confluence-tolerance bugs found and fixed mid-session — all present with correct numbers). §7 was the miss, now closed |
 | 5 | Multiple-testing / MTF leakage awareness | **Pass, after the standing-risk fix above** | Confluence weighting explicitly cites the *tested* gradient rather than inventing new cross-TF-agreement claims; the indicator-sweep is correctly kept as "unknown/untested, 16 comparisons, zero correction" rather than upgraded; the new standing-risk section closes the remaining gap (the skill's own future usage pattern) |
 | 6 | Risk contract compatibility with `rules.json` | **Pass** | `risk_rules` treated as inviolable, quoted not reinterpreted, in both `decision-policy.md`'s veto #1 and `output-contracts.md`'s target-policy proposal format, which explicitly excludes `risk_rules` from any proposed change |
-| 7 | Clear non-merge with quant epistemology | **Pass** | `SKILL.md` states the six labels are inherited from `institutional-quant/epistemology.md`, not reinvented; sibling-skill language is symmetric with institutional-quant's own existing "Sibling skill (planned, keep separate): ict-smc-trader" line — this pack completes that pairing rather than contradicting it; `~/.claude/skills/institutional-quant/` file timestamps confirmed unmodified by this work (verified via `ls -la --time-style=full-iso`, all predate this session's work on this skill) |
+| 7 | Clear non-merge with quant epistemology | **Pass, after a correction — see Addendum** | Sibling-skill language is symmetric with institutional-quant's own existing "Sibling skill (planned, keep separate): ict-smc-trader" line — this pack completes that pairing rather than contradicting it; `~/.claude/skills/institutional-quant/` file timestamps confirmed unmodified by this work (verified via `ls -la --time-style=full-iso`, all predate this session's work on this skill). The original claim that this skill's six labels were "inherited" from `institutional-quant/epistemology.md` was **factually wrong** — see Addendum below |
 | 8 | Drives a future rules/signal-bus without ambiguity | **Pass, contingent on the arithmetic fix above** | Missing-data handling now has an explicit rule (score 0, flag it, never skip silently); the target-policy output contract (§D) gives a concrete path from the current `rules.json` stub to something that encodes this policy |
 
 ## Accepted residual risks (not defects — disclosed, not fixed, because fixing them isn't this
@@ -102,3 +102,40 @@ being updated to match — that would be the specific failure mode to watch for,
 the kind of drift PRIOR_ART.md §7's closing note warns about ("update this file, don't let it
 drift"). Recommend a lightweight habit: any time `ARCHITECTURE.md` gets a new §9/§10-style finding,
 touch `significance-register.md` in the same sitting.
+
+---
+
+## Addendum — second audit pass, requested independently, 2026-07-26
+
+The first pass above was written by the same author who wrote the skill, in the same sitting —
+a real conflict-of-interest limitation, disclosed at the time but not fully corrected for. A
+second, explicitly independent pass was requested afterward. It re-verified rather than re-stated:
+
+- **Decision-policy.md's scoring arithmetic** (the fix from the first pass) was hand-recomputed
+  from the file as committed, not from memory of writing the fix: HTF 2×1×3=6, structure 3×1×2=6,
+  trigger base 3×1×1=3, trigger bonus 3×1=3, total 18 — matches the file's own stated total.
+  Confirmed correct.
+- **`significance-register.md` row numbering** re-checked programmatically (1–23, no gaps, no
+  duplicates). Clean.
+- **One real, factual error found and fixed:** both `SKILL.md` and this file's own criterion-7
+  row claimed the six significance labels were "inherited from `institutional-quant/epistemology.md`,
+  not reinvented." That's false — checked institutional-quant's actual label table (Established /
+  Supported / Hypothesized / Descriptive / Contradicted / Unknown) directly against this pack's six
+  (descriptive-significant / trade-construction-blocked / falsified / engineering-complete /
+  stub-outdated / unknown-untested). They are a **different vocabulary**, not a renamed copy — two
+  labels here (`trade-construction-blocked`, `engineering-complete`) have no equivalent in
+  institutional-quant's scheme at all. The first-pass audit asserted a specific factual claim
+  (inheritance) without checking it against the actual source text, in the same session it was
+  writing that source text from memory. That's exactly the kind of unverified-but-plausible-sounding
+  claim both skills exist to catch in *other* people's work — worth naming directly rather than
+  quietly fixing and moving on.
+
+**Fix applied:** `SKILL.md` and this file's criterion-7 row rewritten to describe the actual
+relationship accurately — a shared epistemic *stance* (label everything, never fake confidence,
+name what would change the verdict), not a shared label *taxonomy*. Criterion 7 remains a Pass,
+but on the corrected basis, not the original one.
+
+**What this addendum itself does not claim:** that this second pass is now exhaustive or immune
+to the same conflict of interest — it was still performed by the same reviewer, just with an
+explicit instruction to re-verify rather than re-assert. A genuinely third-party read (a different
+model instance, or a human) would be a stronger check than either pass here.
