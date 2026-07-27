@@ -1,0 +1,48 @@
+{
+  "zoneCount": 4141,
+  "touchCount": 27851,
+  "iterations": 20000,
+  "seed": 42,
+  "byCategory": {
+    "none": {
+      "zoneCount": 3496,
+      "touchCount": 23597,
+      "holdRate": 0.5397296266474552
+    },
+    "OB-only": {
+      "zoneCount": 407,
+      "touchCount": 2610,
+      "holdRate": 0.5340996168582376
+    },
+    "liquidity-only": {
+      "zoneCount": 215,
+      "touchCount": 1483,
+      "holdRate": 0.5509103169251517
+    },
+    "both": {
+      "zoneCount": 23,
+      "touchCount": 161,
+      "holdRate": 0.6086956521739131
+    }
+  },
+  "correlation": {
+    "real": 0.0022041522236727036,
+    "p": 0.3715,
+    "permutedMean": 0.000046699360796660216,
+    "permutedRange": [
+      -0.03144058459110011,
+      0.024956142238697958
+    ]
+  },
+  "gap": {
+    "real": 0.0030536361640164378,
+    "p": 0.37055,
+    "permutedMean": 0.00007748448082544453,
+    "permutedRange": [
+      -0.04261127920642105,
+      0.0340231554972239
+    ]
+  },
+  "git_commit": "4704cb3710903a706fd6ccdb8c4bbe2282bf113b",
+  "generated_at": "2026-07-27T12:07:37.864Z"
+}

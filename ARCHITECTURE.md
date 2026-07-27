@@ -1056,3 +1056,71 @@ this construction produces." A genuinely different, narrower problem than before
 distinguishing precisely rather than leaving the original blanket verdict unchanged.
 
 Results saved to `scripts/signal-bus/smc/results/confluence_backtest_fixed_rr_*.json`.
+
+## 11. Cross-indicator confluence (Divergence for Many × SMC) — 2026-07-27
+
+Every confluence test built so far (§9, §10) was WITHIN one indicator, across timeframes. This
+asks a different question, prompted directly: does a Divergence-for-Many zone that overlaps SMC
+structure — sitting inside a still-active order block, or resting near a still-unswept EQH/EQL
+liquidity level — hold more reliably than an isolated zone with no such overlap?
+
+**Method** (`scripts/signal-bus/cross-confluence/cross-confluence-significance.js`, reads both
+`divergence-for-many.db` and `smc.db`): for every Divergence-for-Many zone, side-matched against
+SMC structure (divergence "bullish"/support ↔ order-block "bullish" ↔ EQL; divergence
+"bearish"/resistance ↔ order-block "bearish" ↔ EQH):
+- `obConfluence` — at least one SMC order block, same side, still active at the zone's
+  `confirmed_time` (created before, not yet mitigated), whose real `[bar_low, bar_high]` range
+  *contains* the zone's price. Order blocks have real width, so this is containment, not a
+  tolerance band.
+- `liqConfluence` — at least one SMC EQH/EQL level, same side, confirmed by the zone's
+  `confirmed_time` and still *unswept* at that time, within 0.2% of the zone's price — the same
+  flat tolerance `confluence.js` already uses everywhere else, not a new number invented for this
+  test.
+
+Both checks scan across ALL SMC timeframes, not just the zone's own — cross-timeframe structure
+counts as "in the room" here the same way it already does inside each indicator's own confluence
+test. Zone-level permutation, same discipline as `confluence-significance.js`: the label under
+test (cross-confluence category, not confluence_count) is shuffled at the zone level; each zone
+keeps its own real touch outcomes attached, since a zone's touches are not independent
+observations of it.
+
+**Result — no effect detected. Does not survive the test.** 4,141 zones with touches (27,851
+touches), cross-referenced:
+
+| category | zones | touches | hold rate |
+|---|---|---|---|
+| none | 3,496 | 23,597 | 54.0% |
+| OB-only | 407 | 2,610 | 53.4% |
+| liquidity-only | 215 | 1,483 | 55.1% |
+| both | 23 | 161 | 60.9% |
+
+The "both" bucket looks the most interesting at a glance (60.9% vs. 54.0% baseline) — exactly the
+kind of number that looked real before testing in three other cases this project has now run
+(SuperTrend flip, EQH/EQL sweep, the original 82–88% divergence hold-rate bug). It does not survive
+here either: only 23 zones back it. Point-biserial correlation (has any cross-confluence vs.
+held/broken, all touches) is r=0.0022 against a permuted null centered at 0.0000 with range
+[−0.0314, 0.0250] — the real value sits almost exactly at the null's center, not near either tail.
+p=0.3715. The any-vs-none hold-rate gap (0.31 points real) sits inside a permuted range of
+[−4.26, +3.40] points, p=0.3705. Both statistics land close to the middle of their null
+distributions, at 20,000 iterations (seed=42) — this isn't a borderline miss, it's a genuine null.
+
+**Conclusion: `falsified` (no significant effect detected) — do not use SMC order-block or
+EQH/EQL overlap to weight a Divergence-for-Many zone's confidence, in either direction.** Unlike
+the EQH/EQL sweep test (§10), where the real rate sat *below* the entire null range (a confident
+wrong-direction result), this one sits *inside* the null — the honest reading is "structural
+overlap between these two indicators, as defined here, carries no detectable information about
+whether a divergence zone holds," not "overlap makes things worse." The small "both" bucket
+(n=23) is too thin to read either way and should not be quoted as if it clears the bar the table
+next to it makes clear it doesn't.
+
+**What this doesn't rule out** — worth being precise about scope, since a negative result invites
+overreach in the other direction: this tested one specific operationalization (order-block
+containment, EQH/EQL proximity within 0.2%, both evaluated at the divergence zone's own
+`confirmed_time`). It does not test whether SMC structure predicts *anything else* about a
+divergence zone (e.g., which direction it eventually breaks, or interaction with SMC's own
+already-tested order-block confluence degree rather than raw presence), and it does not test
+proximity to *mitigated* order blocks or *swept* liquidity levels, which were deliberately
+excluded as "no longer live" structure. Those are different, untested questions, not settled by
+this result.
+
+Results saved to `scripts/signal-bus/cross-confluence/results/cross_confluence_significance_*.json`.
