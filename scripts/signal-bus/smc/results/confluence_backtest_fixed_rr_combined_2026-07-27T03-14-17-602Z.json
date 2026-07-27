@@ -1,0 +1,143 @@
+{
+  "scope": "all_timeframes_combined",
+  "trade_construction": "entry = next-bar-open after touch start; stop = order block's own far boundary (unchanged from confluence-backtest.js); target = entry +/- R-multiple x risk; first of stop/target hit wins, same-bar ambiguity scored conservatively as the stop",
+  "r_multiples_tested": [
+    1,
+    1.5,
+    2,
+    3
+  ],
+  "max_hold_bars": 200,
+  "results": {
+    "1R": {
+      "buckets": {
+        "low (1-2)": {
+          "trade_count": 217,
+          "win_rate": 0.4423963133640553,
+          "avg_win_pct": 0.006597333657939238,
+          "avg_loss_pct": 0.008243690988431788,
+          "gross_net_return_pct": -0.3189937012830665,
+          "costed_net_return_pct": -0.5019070604982464,
+          "profit_factor": 0.6349398829684404
+        },
+        "mid (3-5)": {
+          "trade_count": 1162,
+          "win_rate": 0.4802065404475043,
+          "avg_win_pct": 0.012642208980420221,
+          "avg_loss_pct": 0.011432588176926127,
+          "gross_net_return_pct": -0.06879530105385134,
+          "costed_net_return_pct": -0.8378734082631816,
+          "profit_factor": 1.0215877244455922
+        },
+        "high (6-8)": {
+          "trade_count": 1013,
+          "win_rate": 0.5231984205330701,
+          "avg_win_pct": 0.02596843814023239,
+          "avg_loss_pct": 0.028476537301509702,
+          "gross_net_return_pct": -0.5871161330354842,
+          "costed_net_return_pct": -0.9538783314963036,
+          "profit_factor": 1.000661959197674
+        }
+      },
+      "inconclusive": 15
+    },
+    "1.5R": {
+      "buckets": {
+        "low (1-2)": {
+          "trade_count": 216,
+          "win_rate": 0.3611111111111111,
+          "avg_win_pct": 0.007780277291057893,
+          "avg_loss_pct": 0.008477975422196617,
+          "gross_net_return_pct": -0.44371907942738,
+          "costed_net_return_pct": -0.5944925484734894,
+          "profit_factor": 0.5187026164952964
+        },
+        "mid (3-5)": {
+          "trade_count": 1158,
+          "win_rate": 0.3842832469775475,
+          "avg_win_pct": 0.017019090441987954,
+          "avg_loss_pct": 0.011897149077178622,
+          "gross_net_return_pct": -0.702941362690938,
+          "costed_net_return_pct": -0.9525755373109541,
+          "profit_factor": 0.8928200277054225
+        },
+        "high (6-8)": {
+          "trade_count": 1008,
+          "win_rate": 0.44543650793650796,
+          "avg_win_pct": 0.036501624255571546,
+          "avg_loss_pct": 0.028803825198302536,
+          "gross_net_return_pct": -0.6001395562694134,
+          "costed_net_return_pct": -0.9650905561205267,
+          "profit_factor": 1.0178799426351715
+        }
+      },
+      "inconclusive": 25
+    },
+    "2R": {
+      "buckets": {
+        "low (1-2)": {
+          "trade_count": 216,
+          "win_rate": 0.2777777777777778,
+          "avg_win_pct": 0.01051472001634925,
+          "avg_loss_pct": 0.007942752820928831,
+          "gross_net_return_pct": -0.4703801979194777,
+          "costed_net_return_pct": -0.61431035211933,
+          "profit_factor": 0.5091588740562528
+        },
+        "mid (3-5)": {
+          "trade_count": 1152,
+          "win_rate": 0.3307291666666667,
+          "avg_win_pct": 0.020934352250253998,
+          "avg_loss_pct": 0.011901738316545118,
+          "gross_net_return_pct": -0.7909276894048565,
+          "costed_net_return_pct": -0.9677269491158115,
+          "profit_factor": 0.8692000205913799
+        },
+        "high (6-8)": {
+          "trade_count": 1002,
+          "win_rate": 0.39520958083832336,
+          "avg_win_pct": 0.04500224208145486,
+          "avg_loss_pct": 0.02911284002530708,
+          "gross_net_return_pct": -0.7232865657382463,
+          "costed_net_return_pct": -0.9804791221474559,
+          "profit_factor": 1.0101180678707788
+        }
+      },
+      "inconclusive": 37
+    },
+    "3R": {
+      "buckets": {
+        "low (1-2)": {
+          "trade_count": 214,
+          "win_rate": 0.2102803738317757,
+          "avg_win_pct": 0.010600977051550034,
+          "avg_loss_pct": 0.008124792320636865,
+          "gross_net_return_pct": -0.6030056806583222,
+          "costed_net_return_pct": -0.7128132308083196,
+          "profit_factor": 0.34742369495232395
+        },
+        "mid (3-5)": {
+          "trade_count": 1147,
+          "win_rate": 0.2702702702702703,
+          "avg_win_pct": 0.028957603639970544,
+          "avg_loss_pct": 0.0118163178584931,
+          "gross_net_return_pct": -0.7622222133870916,
+          "costed_net_return_pct": -0.9653042242727773,
+          "profit_factor": 0.9076464016635727
+        },
+        "high (6-8)": {
+          "trade_count": 991,
+          "win_rate": 0.3239152371342079,
+          "avg_win_pct": 0.06647907971305901,
+          "avg_loss_pct": 0.028259058564015404,
+          "gross_net_return_pct": 0.34228036929245675,
+          "costed_net_return_pct": -0.9289892316635862,
+          "profit_factor": 1.1270872554333942
+        }
+      },
+      "inconclusive": 55
+    }
+  },
+  "git_commit": "a7443ffb0661a21b92a82ece048c1aae5e128e83",
+  "generated_at": "2026-07-27T03:14:17.602Z"
+}

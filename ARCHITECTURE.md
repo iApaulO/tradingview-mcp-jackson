@@ -958,3 +958,30 @@ properly, not assumed to be the fix and not built yet, to avoid exactly the "kee
 rule until it looks good" pattern this whole session has been disciplined about avoiding.
 
 Results saved to `scripts/signal-bus/smc/results/confluence_backtest_*.json`.
+
+**Follow-up, 2026-07-27: the flagged fixed-R:R exit test, run rather than assumed.** Built
+`confluence-backtest-fixed-rr.js` — same entry and same stop (the order block's own far
+boundary, unchanged), but the exit is now a genuine fixed R-multiple target (1R/1.5R/2R/3R)
+instead of "exit whenever the zone happens to clear." Tested 1R through 3R, all three confluence
+buckets, both gross and at the confirmed real cost tier.
+
+**Diagnosis confirmed, not just asserted:** avg_win/avg_loss ratio at 1R (high confluence) is
+2.60%/2.85% — a ratio of 1.10, essentially symmetric, versus the original construction's 1.7-2.8x
+skew. At 3R it's 6.65%/2.83%, a ratio of ~2.35, tracking the designed 3:1 target closely (some
+slippage from stop-out imprecision expected). **The fix does exactly what it was built to do: it
+eliminates the size asymmetry that was the original diagnosis.**
+
+**Real, if modest, progress — not a full recovery.** At 3R, high confluence turns **gross-positive
+for the first time** (+0.34x, win rate 32.4% against a 25% breakeven threshold for 3:1 R:R — a
+genuine, if thin, positive edge). But the confirmed real cost tier still wipes it out
+(**-0.93x costed**) — the win/loss asymmetry problem is fixed, and what's left standing in its
+place is cost drag, principally funding accumulated over the longer hold times a bigger R-multiple
+target requires. Every other R-multiple/bucket combination remains negative both gross and costed.
+
+**Bottom line: `trade-construction-blocked` is still the right label, but the reason has
+changed.** It's no longer "this exit rule has bad R:R baked in" (fixed) — it's "even a properly
+symmetric R:R, on this classification, doesn't clear real trading costs at the sizes/hold-times
+this construction produces." A genuinely different, narrower problem than before, and worth
+distinguishing precisely rather than leaving the original blanket verdict unchanged.
+
+Results saved to `scripts/signal-bus/smc/results/confluence_backtest_fixed_rr_*.json`.
