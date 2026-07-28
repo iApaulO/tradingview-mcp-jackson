@@ -128,6 +128,39 @@ design (raised earlier, deferred pending this exact milestone) should be revisit
 3. **Backtesting path.** Full design in §6 — this is no longer "open," it's the current focus.
 4. **Performance baselines.** Not established for any indicator individually or in combination.
    This is what §6 exists to produce.
+5. **SMC confluence vs. nesting — sketched 2026-07-28, corrected 2026-07-28 (see §10's confluence-
+   metric-gap writeup for the finding that prompted the correction).** iapaulo's own discretionary
+   read of the chart ("nested signals seem more truthful") surfaced a real vocabulary gap: this
+   project has been using "confluence" for one specific thing (`confluence.js`: same-side,
+   price-close, time-overlapping — a *proximity* relationship, and specifically, per the gap found
+   2026-07-28, **distinct-timeframes-only**) while at least two related but different concepts
+   have gone unnamed and untested:
+   - **Geometric nesting/containment** — one structure's price range strictly *containing*
+     another's (an LTF order block wholly inside an HTF one, an EQH/EQL level inside an active
+     order block's box). Stricter than proximity confluence. Not yet built.
+   - **Same-timeframe sequential recurrence** — how many times has demand/supply re-formed at a
+     price band on ONE timeframe over a rolling window, regardless of any other timeframe
+     agreeing. This is what iapaulo's live chart example turned out to be (six same-timeframe 4H
+     order blocks overlapping over three weeks, `confluenceCount = 1` for every one of them
+     because they share a timeframe). Also not yet built.
+
+   Proposed design, still sketching, not decided:
+   - `mtf-snapshot.js` — `getActiveStructuresAt(timestamp)`: given a moment in time, return every
+     SMC structure across all 8 timeframes currently live (order block created but not yet
+     mitigated, EQH/EQL confirmed but not yet swept, most recent BOS/CHoCH per timeframe/scope).
+     The missing piece today — every existing query is timeframe-siloed; nothing gives a
+     whole-board-at-once view.
+   - `nesting.js` — `computeNesting(snapshot)`: strict range-containment check (not the 0.2%
+     tolerance `confluence.js` uses) between every pair of active structures, any two timeframes,
+     producing a `nestingDepth` per structure.
+   - A third, new pass for **same-timeframe recurrence**: for a given price band and timeframe,
+     count how many order blocks (mitigated or not) have originated there within a rolling lookback
+     — a `recurrenceCount` distinct from both `confluenceCount` (cross-timeframe) and
+     `nestingDepth` (geometric containment).
+   - Payoff: all three become independent bucketing variables, testable with the exact method
+     already proven out in this project (zone-level permutation, hold-rate-by-bucket, then the
+     cost/capacity gauntlet) — directly turning "nested/stacked signals feel more truthful" into
+     a falsifiable claim per mechanism, rather than one blended intuition.
 
 ## 6. Backtesting lab design
 
@@ -1109,6 +1142,68 @@ this construction produces." A genuinely different, narrower problem than before
 distinguishing precisely rather than leaving the original blanket verdict unchanged.
 
 Results saved to `scripts/signal-bus/smc/results/confluence_backtest_fixed_rr_*.json`.
+
+**Correction, 2026-07-28: the "EQH/EQL = liquidity zone" equivalence was an unverified assumption,
+not an established fact — pushed back on directly (iapaulo), and the pushback is correct.**
+`equalHighsLowsThresholdInput` defaults to **0.1 × ATR** — two pivots count as "equal" because
+they're within a tolerance band, not because they're actually equal. This project's own framing
+("EQH/EQL is the house's operationalization of liquidity zones," used when building
+`scripts/signal-bus/smc/liquidity.js`) borrowed that equivalence from general ICT convention
+(clustered near-equal highs/lows are said to mark resting stop-liquidity) — it was never
+independently verified as the *correct* operationalization. EQH/EQL could easily be a weak or
+wrong proxy for whatever "liquidity zone" actually means; real liquidity pooling might show up
+somewhere else entirely (single strong swings, volume concentration, round numbers) that this
+project hasn't looked at. **Concrete consequence: the EQH/EQL-sweep-reversal finding (above,
+§10, labeled FALSIFIED) must be read as "falsified *as operationalized via EQH/EQL*," not as a
+blanket statement that liquidity-sweep-reversal doesn't exist as a phenomenon.** Those are
+different claims — the register's wording is being tightened to make this explicit rather than
+implying more than what was actually tested.
+
+**Order-block anchoring diagnosis, 2026-07-28 — verified a live discretionary chart read down to
+the exact bar and rule, not just the price range.** iapaulo described a 4H order block ("zone 2"
+of the stacked cluster below) at approximately $63,245–$61,210, attached to a red candle, formed
+around 6 Jul 2026. Located it precisely in the rebuilt data: **internal bullish order block,
+origin candle 2026-07-06T08:00 UTC** (a real red 4H candle: O=63,024.27, H=63,177.93, L=62,421.85,
+C=62,421.85), box = **$62,421.85–$63,177.93**, mitigated 2026-07-08. The red-candle clue and the
+high end ($63,177.93 vs. described $63,245) check out closely. The low did not (**$62,421.85 vs.
+described $61,210**) — traced to a specific, verifiable rule rather than left as an unexplained
+gap: the very next 4H candle (2026-07-06T12:00 UTC: O=62,420.01, **H=63,516, L=61,250**,
+C=63,501.46) has a $2,266 range against a computed ATR(200) of ~$946 (2×ATR ≈ $1,893) — it exceeds
+the source's own high-volatility-bar threshold. Per `pine/smart-money-concepts-luxalgo.pine` line
+323, `parsedLow = highVolatilityBar ? high : low` — a high-volatility bar has its low swapped for
+its high specifically so one oversized wick can't set an order block's boundary. The $61,250 wick
+iapaulo was reading (very close to the described $61,210) is real price action sitting right next
+to this order block, but the indicator's own anchoring logic explicitly disqualifies it from
+being used as the box boundary. Confirmed correct via direct computation (`scripts/signal-bus/smc/calc.js`
+lines 88–94, 116–124), not asserted — this is the same defensive rule this project's own
+reimplementation already encodes, it just hadn't been checked against a live discretionary read
+until now. If the live chart's box genuinely extends to $61,210 despite this rule, that would be
+a real discrepancy between this reimplementation and the live indicator worth chasing further —
+not ruled out, just not the more likely explanation.
+
+**Confluence-metric gap found while confirming the "stacked zones" observation, 2026-07-28 — a
+real, previously-unrecognized limitation of the flagship SMC confluence finding.** Confirmed the
+underlying phenomenon iapaulo was describing (multiple 4H order blocks re-forming at the same
+price band over time) is real: six distinct bullish 4H internal order blocks formed in the
+$61,000–$64,800 band between 2026-07-02 and 2026-07-24 (origins 07-02, 07-05, 07-06, 07-13,
+07-17, 07-20 — two still unmitigated as of 2026-07-28), all overlapping in price. But every one
+of them shows `confluenceCount = 1` in the data — investigated why rather than assuming a bug in
+the observation. Root cause, found in `scripts/signal-bus/smc/confluence.js` line 92:
+`ob.confluenceCount = timeframesSeen.size` — confluence count is defined as **distinct
+timeframes**, not total overlapping elements. Since all six of these order blocks share the same
+timeframe (4H), they contribute nothing to each other's count — a set of six clearly
+price-overlapping, sequentially-forming order blocks reads as "isolated" by this metric, every
+time. **This means the flagship SMC order-block confluence-vs-hold-rate finding (34.7%→68.0%,
+p<0.00001, §10 above) measures cross-timeframe agreement only and is structurally blind to
+same-timeframe recurrence — it should be described that way specifically from now on, not as
+"confluence" unqualified.** This is exactly the phenomenon iapaulo was calling "nesting" in the
+§5 architecture discussion — a distinct, third kind of signal alongside cross-timeframe proximity
+confluence (tested, real) and cross-structure geometric containment (sketched in §5, not yet
+built): **same-timeframe sequential re-formation**, i.e. how many times has demand/supply
+re-established at this price band over a rolling window, regardless of timeframe. Not yet named,
+computed, or tested anywhere in this project. Candidate for a fourth bucketing variable alongside
+`confluenceCount` and the sketched `nestingDepth`, worth adding to the §5 design before building
+`mtf-snapshot.js`/`nesting.js` rather than after.
 
 ## 11. Cross-indicator confluence (Divergence for Many × SMC) — 2026-07-27
 
