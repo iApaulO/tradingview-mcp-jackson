@@ -566,6 +566,59 @@ weren't vetted — `Binance_Historical_Data.db` is the strongest candidate found
 full timeframe coverage, validated gap-free) so no need to chase the others unless this one
 turns out to have issues on import.
 
+**Data refresh, 2026-07-28: gap-filled through today, venue switch to Coinbase.** The historical
+data had gone stale — checked the *source* DB directly (not just our derived CSVs) and confirmed
+it stops at 2024-12-31 too (its file mtime is Feb 2025, but nothing inside is newer). Binance's
+live API is also geo-blocked from this environment (`api.binance.com` returns "restricted
+location"). Switched the gap-fill source to Coinbase's public Exchange API
+(`api.exchange.coinbase.com`, no auth) — deliberately, not just as a workaround: it's the actual
+venue family this project's cost model is already built around (confirmed Coinbase Advanced
+derivatives fee tier), so this is less of a proxy than Binance ever was, not more.
+
+- `scripts/backtest/fetch-coinbase-gapfill.js` — fetches native Coinbase granularities (5m/15m/1h/1d)
+  from each CSV's last timestamp through now, paginated (300 candles/request, self-throttled).
+  Coinbase's candle response is `[time, low, high, open, close, volume]` — different field order
+  than our CSVs, mapped explicitly, not assumed. Ran 2026-07-28: 165,032 (5m) / 55,013 (15m) /
+  13,756 (1h) / 574 (1d) new candles, all through 2026-07-28T13:00Z.
+- **Seam checked, not assumed clean:** last Binance close (2024-12-31) vs. first Coinbase value
+  (2025-01-01T00:00Z) — $93,576 vs. $93,347.59 open, a ~0.24% gap, consistent with ordinary
+  cross-venue basis, not a discontinuity worth correcting for.
+- `scripts/backtest/build-aggregated-candles.js` — generalizes the existing `build-3h-candles.js`
+  pattern (`aggregate-candles.js`, UTC-bucket-aligned) to all four non-native timeframes: 2H/3H/4H
+  from 1H, 1W from 1D. Coinbase has no native 2h/4h/1w granularity at all (only
+  1m/5m/15m/1h/6h/1d), so this synthesis is now load-bearing for more of the ladder than before.
+- Both signal buses (`smc/build-historical.js`, `divergence-for-many/build-historical.js`)
+  rebuilt against the extended data — all 8 timeframes now run through 2026-07-28, BTC ~$63,400
+  in the newest bars.
+- **Not yet re-run:** every cost/capacity and significance test in §9/§10/§11 was computed against
+  the *old* (pre-2025-01-01) data window. None of those results are invalidated by the refresh —
+  the underlying method didn't change — but none have been re-checked against the extended window
+  either. Treat existing findings as still the best evidence available, not as freshly re-validated.
+
+**Verification prompted by a live discretionary chart read (iapaulo, 4H chart, order blocks
+around $61k–63k support, late Jun–Jul 2026) — partial match, not a full confirmation.** Queried
+the rebuilt `smc.db` for 4H order blocks in that window rather than taking the read at face value
+(per standing practice — a live read should be checked against real indicator data before being
+treated as confirmed). Two of the four described zones line up closely:
+
+| Described | Found in rebuilt data | Match? |
+|---|---|---|
+| 2 Jul, $61,160–62,185 | internal bullish, $61,067.81–62,147.89, created 2026-07-03, **still active** | Close — 1-day/~1% offset, plausibly the same zone |
+| 6 Jul, $61,310–63,055 | **no order block with this range found** | No match |
+| 13 Jul, $61,825–62,215 | internal bullish, $61,750.90–62,567.99, created 2026-07-14, **still active** | Roughly close, wider on the high side |
+| 17 Jul, price re-tests the 6 Jul zone | can't confirm — the zone itself isn't found | Unconfirmed |
+
+Nine distinct order blocks touched the $60k–64k band between 2026-06-24 and 2026-07-28, but only
+**two are still active (unmitigated)** as of today — the rest were mitigated (broken) at some
+point and, per LuxAlgo's own source (`orderBlocks.remove(index)` on mitigation), would have been
+deleted from the chart entirely once that happened. That doesn't match a "5 currently stacked"
+picture. Most likely explanation: a data-feed difference (this rebuild is Coinbase Exchange
+BTC-USD spot; the live chart is presumably a different exact instrument/feed) shifting which
+exact wicks trigger detection/mitigation — not ruled out: a reimplementation discrepancy, or the
+indicator's `HISTORICAL` vs. `PRESENT` mode setting on the live chart affecting what's retained.
+Two of four zones matching approximately, one clearly not matching, is a real, mixed result — not
+grounds to fully confirm or fully dismiss the discretionary read.
+
 ## 7. Empirical research log
 
 Tracking what public/published data exists (or doesn't) for our indicators' settings and
