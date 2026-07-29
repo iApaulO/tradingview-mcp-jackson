@@ -93,7 +93,63 @@ Max possible: 6 (HTF) + 6 (structure) + 3 (trigger base) + 3 (trigger quality bo
 | **Weak** | 2–5 | HTF neutral, structure thin or mixed, no clean trigger yet — informational only, not a call to act |
 | **No-trade** | <2, or any hard veto tripped | Do not present as a setup |
 
-## Hard vetoes (override scoring entirely)
+## Tested Setup Alert: SMC order-block recurrence (separate from the discretionary score)
+
+**This is categorically different from every input above.** Everything in the Layers/weights
+system is a discretionary bias input — real findings, judgment weighting. This one is not: it's
+the only fully tested, costed, entry/stop/target construction in this house's inventory
+(significance-register.md #27b, ARCHITECTURE.md §13) — the first thing here to survive both a
+formal significance test and the full cost/capacity gauntlet. Folding it into the -1/0/+1 scoring
+system would launder a specific, tested recipe into a vague point contribution and throw away the
+one thing that makes it different. It gets its own lane instead.
+
+**The exact tested recipe — do not improvise on it:**
+- **Gate:** an SMC order block (any timeframe) with `recurrence_count ≥ 3` (three or more
+  same-timeframe order blocks price- and time-overlapping it —§13/§10) begins a touch.
+- **Side:** long on a bullish (demand) order block, short on a bearish (supply) one.
+- **Entry:** next-bar-open after the touch starts.
+- **Stop:** the order block's own far boundary (`bar_low` for bullish, `bar_high` for bearish) —
+  unchanged from the tested construction.
+- **Target: 1× risk (1R).** This is the ONLY R-multiple with a formal permutation significance
+  test behind it (r=0.286, p=0.0000, §13). 1.5R/2R/3R showed even stronger costed numbers in
+  testing but are corroborating description, not independently significance-tested — using a
+  bigger target is a deliberate, flagged extrapolation beyond the tested claim, not the same
+  evidentiary standing as 1R. Default to 1R; say so explicitly if asked for a bigger target.
+- **Timeout:** if neither stop nor target resolves within 200 bars (the tested cap), the original
+  backtest excluded it as inconclusive — mirror that live: close and log as inconclusive, don't
+  let it ride indefinitely on the assumption the tested edge still applies past that horizon.
+
+**Existing hard vetoes still apply, full stop — this alert does not bypass them.** HTF opposition,
+`rules.json` risk rules, and the liquidity-sweep exclusion are risk-management/methodological
+principles, not specific to which structural pattern is firing. The recurrence finding was never
+tested *conditional on* HTF bias one way or the other — there's no evidence it still holds when
+HTF opposes, so the conservative default is to keep every existing veto in force on top of it, not
+carve out an exception.
+
+**Three real gaps that must be disclosed every time this fires, not just once in a doc:**
+1. **No live computation exists yet.** `recurrence_count` is only computed by the offline
+   signal-bus pipeline (`build-historical.js` + `build-confluence.js` run against historical
+   CSVs) — nothing in `signal-grid.js` or any live extraction tool computes it from a live chart.
+   Until that's built, the realistic near-term mechanism is periodic (daily/session) re-runs of
+   the offline pipeline against freshly-fetched data, surfacing any currently-active
+   recurrence≥3 order block as a **watchlist item for manual review** — not a real-time trigger.
+   Say this plainly rather than imply live automation exists.
+2. **Instrument proxy, same as everywhere else in this house.** Backtested on Coinbase Exchange
+   spot BTC-USD, not the actual traded contract (`COINBASE:BIPZ2030`, Coinbase Advanced
+   derivatives) — the same style of mismatch as the Bitstamp SuperTrend proxy, disclose it the
+   same way.
+3. **Backtest-only — going live starts a forward test, it doesn't end one.** This clears every
+   bar the backtest lab has set, on historical data, for one asset. It has not traded forward.
+   Treat the first live/paper instances as the beginning of real evidence, not confirmation.
+
+**Logging is not optional for this one.** The "Standing risk" section below already warns that
+grading many setups without tracking hits and misses recreates a multiple-testing problem by
+another name. That applies here with more force, not less, precisely because this is the
+flagship, most consequential input in the whole stack — log every instance this alert fires,
+whether taken or not, and whether it wins or loses. A string of remembered wins on this specific
+alert is not evidence it works; a logged, honest hit/miss record going forward is.
+
+## Hard vetoes (override scoring entirely — including the Tested Setup Alert above)
 
 1. **`rules.json`'s `risk_rules`** — R:R below 1:2, first 15 minutes of NY session, 3rd position
    with 2 already open, 2 losses already taken today. These are the user's own standing rules;
@@ -140,3 +196,8 @@ permutation-test discipline the signal-bus findings got, not as evidence on its 
   grade means "the discretionary layering lines up cleanly," not "this will win."
 - That `rules.json` currently encodes any of this. It doesn't yet — flag that every time the file
   is read live, until it's updated to match.
+- That the Tested Setup Alert (recurrence_count≥3, fixed 1R) is a proven live edge. It's the first
+  finding in this house's inventory to clear a real backtest gauntlet — that's real evidence, not
+  a forward track record. No live computation of `recurrence_count` exists yet either; treat any
+  instance surfaced today as coming from a manually re-run offline pipeline, not a live trigger,
+  until that gap is closed.
