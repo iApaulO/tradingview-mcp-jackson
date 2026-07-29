@@ -1276,6 +1276,18 @@ important, heavily-trafficked price level"), and this test doesn't control for t
 genuinely independent contribution from recurrence specifically, versus recurrence just riding on
 the back of confluence, is an open question this test doesn't answer.
 
+**Retroactively checked against the touchCount/survival-time confound that broke §12's
+`proximityCount` result below (2026-07-29) — this finding largely survives it.** Once that
+confound was found, the same check was owed to every order-block-derived count in this register,
+not just the new one. `recurrenceCount` correlates with `touchCount` at r=0.30 (meaningfully
+weaker than `proximityCount`'s r=0.53). Stratifying by exact `touchCount` and comparing high- vs.
+low-recurrence within each stratum: real, mostly-consistent residual gaps of 4–14 points across 5
+of 7 strata (touchCount 1 through 5), only flattening to zero at touchCount=6–7 — the two
+smallest strata (n=27, n=18), where a modest real effect could plausibly wash out in the noise
+rather than genuinely vanish. This does not fully clear the concern (the true effect size is
+probably closer to single digits than the marginal 33.4-point gap implies), but it is a
+materially different, more reassuring result than `proximityCount` got under the identical check.
+
 ## 11. Cross-indicator confluence (Divergence for Many × SMC) — 2026-07-27
 
 Every confluence test built so far (§9, §10) was WITHIN one indicator, across timeframes. This
@@ -1518,7 +1530,55 @@ alongside touches — every future rebuild computes both automatically. Totals a
 8-timeframe ladder: 3,708 near-miss events (2 on W up to 960 on 5m), roughly comparable in
 volume to the 2,404 real touches across the same ladder.
 
-**Not yet significance-tested.** This is a new descriptive capability, not yet a tested finding —
-whether near-misses carry any predictive information (e.g., does a level that gets "respected
-from a distance" behave differently on a later real touch than one that doesn't) is a genuinely
-open, interesting question this build makes newly answerable, not one this build answers.
+**Significance test, 2026-07-29 — looked dramatic, turned out confounded. Written up as a full
+diagnosis, not just the number that survived.** (`scripts/signal-bus/smc/proximity-significance.js`,
+exact same order-block-level permutation method as `confluence-significance.js`/
+`recurrence-significance.js`.)
+
+*The naive marginal test:* `proximityCount` (total near-miss events per order block) vs. hold
+rate, 1,200 order blocks / 2,603 touches. Hold rate rises from **26.7% (zero near-misses) to
+80.4% (11+ near-misses)** — the largest raw gradient found anywhere in this project. Correlation
+r = 0.3055 against a permuted null of [−0.090, 0.076] (50,000 iterations) — p = 0.0000. Top-vs-bottom
+gap 58.98 points, p = 0.0000. Both statistics look as clean as anything in this register.
+
+*Checked before trusting it, and it doesn't hold up.* A gradient this large, on a brand-new
+metric, from a project that has already caught three dramatic-looking-but-wrong results this
+month (the original 82–88% divergence hold-rate bug, EQH/EQL's sweep-reversal, the
+`net_return_pct` compounding artifact) warrants suspicion before belief, not after. Checked the
+most obvious mechanical confound: **order-block survival time.** `touchCount` alone (completely
+ignoring proximity) shows an even starker gradient — 9.0% hold rate at touchCount=1 up to 91.7%
+at touchCount=11+ — because a block can only be mitigated ("broken") *once*, and per LuxAlgo's
+own source it's removed from tracking the instant that happens. A block that survives to be
+touched 11 times has, by construction, at most one "broken" touch among those 11 — the rest are
+mechanically "held." This isn't a real predictive signal about the future, it's closer to
+tautology: "this block has lasted a while" and "most of its recorded touches were held" are
+nearly the same fact stated twice. `proximityCount` correlates with `touchCount` at r = 0.53 —
+plausible on its face (both scale with how long a block stays active) and enough to suspect
+proximityCount's marginal result is riding on this, not contributing independently.
+
+*Controlled for it directly:* stratified order blocks by exact `touchCount`, split each stratum
+by `proximityCount` above/below its own median, compared average hold rate within each stratum
+(holding survival time fixed, isolating proximity's remaining contribution, if any):
+
+| touchCount | n | low-proximity hold rate | high-proximity hold rate | gap |
+|---|---|---|---|---|
+| 2 | 332 | 50.5% | 57.1% | 6.6pts |
+| 3 | 155 | 67.4% | 70.6% | 3.2pts |
+| 4 | 76 | 78.8% | 79.1% | 0.3pts |
+| 5 | 47 | 80.8% | 83.6% | 2.8pts |
+| 6 | 27 | 83.3% | 83.3% | 0pts |
+| 7 | 18 | 85.7% | 85.7% | 0pts |
+
+The 58.98-point marginal gap collapses to single digits — and inconsistent, non-monotonic single
+digits at that — the moment survival time is held constant. Whatever's left (0–6.6 points,
+depending on stratum) is small enough to plausibly be noise in these sample sizes, not a
+methodically re-verified independent effect.
+
+**Conclusion: the naive proximityCount-vs-hold-rate correlation does NOT survive controlling for
+the obvious confound — do not present this as a real, independent signal.** This is a different
+kind of catch than the bugs found earlier in this section (those were code defects; this is a
+textbook confounded-variable trap: `proximityCount` and hold rate are both driven by a third
+factor, order-block survival duration, and the marginal correlation mistook that shared cause for
+a direct relationship). The underlying question §12 raised — does being "respected from a
+distance" carry information beyond mere survival — remains genuinely open; this specific test of
+it does not answer yes.
