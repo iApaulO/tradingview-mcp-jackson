@@ -1,0 +1,65 @@
+{
+  "scope": "all_timeframes_combined",
+  "trade_construction": "entry = next-bar-open after touch starts; exit(held) = next-bar-open after touch ends; exit(broken) = order block's boundary price at its real mitigation time -- identical to confluence-backtest.js, bucketed by recurrence_count instead of confluence_count",
+  "note": "net_return_pct assumes full-equity sequential compounding, invalid once trades from different timeframes overlap in time (see metrics.js header) -- expectancy_pct_per_trade is the trustworthy figure for this combined-timeframe test",
+  "total_trades": 1211,
+  "span_years": 6.153262605521332,
+  "buckets": {
+    "isolated (1)": {
+      "trade_count": 669,
+      "trades_per_year": 108.7228098146998,
+      "gross": {
+        "win_rate": 0.47832585949177875,
+        "avg_win_pct": 0.006837585231520062,
+        "avg_loss_pct": 0.01490699089410352,
+        "net_return_pct": -0.95926021764173,
+        "expectancy_pct_per_trade": -0.0045059978295302035,
+        "profit_factor": 0.42056905836956454
+      },
+      "confirmed_derivatives_costed": {
+        "win_rate": 0.3602391629297459,
+        "net_return_pct": -0.9863890875982013,
+        "expectancy_pct_per_trade": -0.00611454136465727,
+        "profit_factor": 0.3009812008342301
+      }
+    },
+    "mid (2)": {
+      "trade_count": 353,
+      "trades_per_year": 57.367940006859534,
+      "gross": {
+        "win_rate": 0.6118980169971672,
+        "avg_win_pct": 0.008299838551593901,
+        "avg_loss_pct": 0.012419801726813267,
+        "net_return_pct": 0.039653668422471755,
+        "expectancy_pct_per_trade": 0.0002585050724387101,
+        "profit_factor": 1.0536300923563016
+      },
+      "confirmed_derivatives_costed": {
+        "win_rate": 0.46175637393767704,
+        "net_return_pct": -0.40077197617600846,
+        "expectancy_pct_per_trade": -0.0012999905602336225,
+        "profit_factor": 0.7655600907192213
+      }
+    },
+    "high (3-6)": {
+      "trade_count": 189,
+      "trades_per_year": 30.715412638233577,
+      "gross": {
+        "win_rate": 0.7142857142857143,
+        "avg_win_pct": 0.0064974221576780955,
+        "avg_loss_pct": 0.011047780397133923,
+        "net_return_pct": 0.307005467593771,
+        "expectancy_pct_per_trade": 0.0014845071420175192,
+        "profit_factor": 1.4703003508658836
+      },
+      "confirmed_derivatives_costed": {
+        "win_rate": 0.5079365079365079,
+        "net_return_pct": -0.023220098001721423,
+        "expectancy_pct_per_trade": -0.00005730282270911242,
+        "profit_factor": 0.9847760132454998
+      }
+    }
+  },
+  "git_commit": "56f0fea1f43e082a7d5f0ba8d47c78f8ae803648",
+  "generated_at": "2026-07-29T12:21:37.152Z"
+}

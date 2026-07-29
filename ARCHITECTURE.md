@@ -1582,3 +1582,67 @@ factor, order-block survival duration, and the marginal correlation mistook that
 a direct relationship). The underlying question §12 raised — does being "respected from a
 distance" carry information beyond mere survival — remains genuinely open; this specific test of
 it does not answer yes.
+
+## 13. Cost/capacity test on recurrenceCount — the first finding in this project to clear the bar
+
+Mirrors `confluence-backtest.js`/`confluence-backtest-fixed-rr.js` exactly (same trade
+construction, same confirmed Coinbase derivatives cost model), bucketed by `recurrence_count`
+instead of `confluence_count`. Given every prior cost/capacity test in this project ended
+`trade-construction-blocked` or worse, a positive result here demands *more* scrutiny before
+trusting it, not less — treated accordingly below.
+
+**Naive construction** (`recurrence-backtest.js`, same entry/exit rule as §10's original
+confluence test): near-breakeven at the high-recurrence bucket — gross expectancy +0.148%/trade
+(PF 1.47, 30.7 trades/year), costed expectancy **−0.0057%/trade**, essentially flat, not
+meaningfully different from zero. Same story as every other finding so far: a real gross
+gradient that doesn't clearly survive costs under this construction.
+
+**Fixed R:R follow-up** (`recurrence-backtest-fixed-rr.js`, same stop as before — the order
+block's own far boundary — target = entry ± R-multiple × risk, R ∈ {1, 1.5, 2, 3}): the
+high-recurrence bucket clears real costs at **every** R multiple tested, and improves
+monotonically with R:
+
+| R | n | win rate | PF | costed expectancy |
+|---|---|---|---|---|
+| 1R | 332 | 76.8% | 3.20 | +0.7055%/trade |
+| 1.5R | 331 | 71.6% | 3.74 | +1.1140%/trade |
+| 2R | 331 | 68.3% | 3.38 | +1.2496%/trade |
+| 3R | 322 | 60.9% | 3.47 | +1.6104%/trade |
+
+Capacity: ~54 trades/year at 1R (332 trades over the 6.15-year span) — a realistic, executable
+frequency, not one of the thousands-per-year buckets that got crushed by cost drag elsewhere in
+this project.
+
+**Checked before trusting it — this is the first positive result in the whole project, which is
+exactly the situation that calls for the most scrutiny, not the least:**
+1. *Not a directional/regime artifact.* Split the 1R construction by side: bullish (long) wins
+   68.5% (n=213), bearish (short) wins **84.0%** (n=119) — if this were just "riding a bull
+   market" or one secular trend, the counter-trend side should underperform, not outperform. It
+   doesn't.
+2. *Not concentrated in one cluster or timeframe.* 104 distinct order blocks across 7 of the 8
+   timeframes (15m through 1D — 1W too thin to appear), not a handful of lucky boxes.
+3. *Formal permutation significance test*, not just descriptive diagnostics
+   (`recurrence-fixed-rr-significance.js`, same order-block-level shuffle as every other
+   significance test in this project, applied to the 1R win/loss outcome directly rather than
+   `touches.js`'s held/broken): 1,193 order blocks, 2,589 resolved 1R trades. Point-biserial
+   r = 0.2860 against a permuted null of [−0.109, 0.114] (50,000 iterations) — **p = 0.0000**.
+   Top(6)-vs-bottom(1) win-rate gap: 67.10 points — **p = 0.0000**. Both statistics land entirely
+   outside their null ranges.
+
+**Two honest scope limits, not swept under the rug just because the result is finally positive:**
+(1) the formal permutation test covers the **1R construction only** — 1.5R/2R/3R are corroborating
+descriptive evidence (consistent direction, monotonically increasing magnitude, which is itself
+harder to produce by chance than a single lucky value) but have not each been independently
+permutation-tested; (2) this is one finding surviving out of roughly a dozen tested across this
+entire project (SuperTrend, SMC confluence ×2 constructions, Divergence-for-Many confluence ×2,
+breakout-bias, EQH/EQL, cross-indicator confluence, proximityCount all failed) — real cause for
+some optimism, not proof the broader system works. Single-asset (BTC), backtest-only (no live
+execution), idealized next-bar-open fills throughout.
+
+**Label: the first finding in this project to survive significance testing AND the full
+cost/capacity gauntlet.** Worth being precise about what that does and doesn't mean: it clears
+every bar this project has set so far, on this specific construction (fixed R:R off an order
+block's own far boundary, gated by recurrence_count ≥ 3). It has not been forward-tested, has not
+been checked against a second asset, and has not yet been folded into `decision-policy.md` or the
+live skill — that's a real decision worth making deliberately, not a default next step to take
+silently.
