@@ -1,0 +1,102 @@
+{
+  "results": {
+    "1R": {
+      "rMultiple": 1,
+      "obCount": 1193,
+      "tradeCount": 2589,
+      "correlation": {
+        "real": 0.28595249027119946,
+        "p": 0,
+        "permutedRange": [
+          -0.10890866002709386,
+          0.11443383966783476
+        ]
+      },
+      "gap": {
+        "real": 0.6710097719869708,
+        "p": 0,
+        "nTop": 12,
+        "nBottom": 1535,
+        "permutedRange": [
+          -0.46703296703296704,
+          0.6031746031746033
+        ]
+      },
+      "verdict": "Both statistics clear 5% -- real, not a labeling artifact."
+    },
+    "1.5R": {
+      "rMultiple": 1.5,
+      "obCount": 1190,
+      "tradeCount": 2583,
+      "correlation": {
+        "real": 0.31225439086537665,
+        "p": 0,
+        "permutedRange": [
+          -0.10383920265446381,
+          0.11422069408625912
+        ]
+      },
+      "gap": {
+        "real": 0.6691160461571957,
+        "p": 0.00038,
+        "nTop": 12,
+        "nBottom": 1531,
+        "permutedRange": [
+          -0.38687782805429866,
+          0.6807511737089202
+        ]
+      },
+      "verdict": "Both statistics clear 5% -- real, not a labeling artifact."
+    },
+    "2R": {
+      "rMultiple": 2,
+      "obCount": 1187,
+      "tradeCount": 2578,
+      "correlation": {
+        "real": 0.3336695663684412,
+        "p": 0,
+        "permutedRange": [
+          -0.10567750187374778,
+          0.11318381649280813
+        ]
+      },
+      "gap": {
+        "real": 0.47675180091683034,
+        "p": 0.11734,
+        "nTop": 12,
+        "nBottom": 1527,
+        "permutedRange": [
+          -0.3305739514348786,
+          0.7365654205607477
+        ]
+      },
+      "verdict": "Mixed -- unresolved."
+    },
+    "3R": {
+      "rMultiple": 3,
+      "obCount": 1182,
+      "tradeCount": 2551,
+      "correlation": {
+        "real": 0.3368433301603232,
+        "p": 0,
+        "permutedRange": [
+          -0.10931339526473993,
+          0.12550579395769948
+        ]
+      },
+      "gap": {
+        "real": 0.036145901999560526,
+        "p": 0.25448,
+        "nTop": 12,
+        "nBottom": 1517,
+        "permutedRange": [
+          -0.2619047619047619,
+          0.7985865724381626
+        ]
+      },
+      "verdict": "Mixed -- unresolved."
+    }
+  },
+  "git_commit": "a0ceb8fd691f12de156c8f8489cbe5fb73cd32d6",
+  "generated_at": "2026-07-29T13:00:53.998Z"
+}

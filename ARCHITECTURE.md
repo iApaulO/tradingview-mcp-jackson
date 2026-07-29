@@ -1646,3 +1646,34 @@ block's own far boundary, gated by recurrence_count ≥ 3). It has not been forw
 been checked against a second asset, and has not yet been folded into `decision-policy.md` or the
 live skill — that's a real decision worth making deliberately, not a default next step to take
 silently.
+
+**Update, 2026-07-29: formalized significance for 1.5R/2R/3R (previously flagged as untested
+extrapolation) — result is real but split, not a clean "all four confirmed."**
+(`recurrence-fixed-rr-significance.js`, extended to loop over R multiples, same order-block-level
+permutation as the 1R test above, run independently per R since a wider target changes which bar
+each trade resolves on — not one test reused across R values.)
+
+| R | n trades | correlation r | correlation p | top(6)-vs-bottom(1) gap | gap p |
+|---|---|---|---|---|---|
+| 1R | 2,589 | 0.2860 | 0.0000 | 67.1pts | 0.0000 |
+| 1.5R | 2,583 | 0.3123 | 0.0000 | 66.9pts | 0.0004 |
+| 2R | 2,578 | 0.3337 | 0.0000 | 47.7pts | **0.1173 (NOT significant)** |
+| 3R | 2,551 | 0.3368 | 0.0000 | 3.6pts | **0.2545 (NOT significant)** |
+
+**Don't round this up or down — the two statistics tell different parts of the story.** The
+point-biserial correlation (uses the full gradient across all 6 recurrence buckets, the larger,
+more stable sample) is significant at p=0.0000 for every R multiple, and if anything *strengthens*
+as R increases (0.286→0.337). The top-vs-bottom gap (compares only the extremes) loses
+significance at 2R and 3R — but that's not evidence the effect reverses at higher R; it's the same
+**single order block (n=12 trades, recurrence=6)** that was already flagged as too thin to trust
+on its own in the original hold-rate test, now showing through again at every R multiple, since
+it's literally the same one block's trades re-evaluated at a wider target each time. A thin
+bucket doesn't get more trustworthy just because a different R was chosen.
+
+**Practical read: 1R and 1.5R have the cleanest, most complete evidentiary support — both
+statistics clear 5%.** 2R and 3R have real correlational support (arguably the more informative
+statistic here, and the strongest of the four) but the specific top-bucket comparison is
+inconclusive at those targets, for a known, disclosed reason rather than an unexplained gap.
+`decision-policy.md`'s Tested Setup Alert defaults to 1R for exactly this reason — narrowest
+scope limitation, cleanest support on both measures — and that default stands; 1.5R is now
+similarly well-supported if a different target is wanted, 2R/3R carry the extra caveat above.

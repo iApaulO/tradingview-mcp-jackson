@@ -110,11 +110,18 @@ one thing that makes it different. It gets its own lane instead.
 - **Entry:** next-bar-open after the touch starts.
 - **Stop:** the order block's own far boundary (`bar_low` for bullish, `bar_high` for bearish) —
   unchanged from the tested construction.
-- **Target: 1× risk (1R).** This is the ONLY R-multiple with a formal permutation significance
-  test behind it (r=0.286, p=0.0000, §13). 1.5R/2R/3R showed even stronger costed numbers in
-  testing but are corroborating description, not independently significance-tested — using a
-  bigger target is a deliberate, flagged extrapolation beyond the tested claim, not the same
-  evidentiary standing as 1R. Default to 1R; say so explicitly if asked for a bigger target.
+- **Target: 1× risk (1R), default.** All four R-multiples (1, 1.5, 2, 3) now have a formal
+  permutation significance test behind them (significance-register.md #27c) — but the result is
+  split, not a clean confirmation across the board. The correlation (uses the full recurrence
+  gradient, the larger sample) is significant at p=0.0000 for every R multiple tested, rising from
+  r=0.286 at 1R to r=0.337 at 3R. The top-vs-bottom win-rate gap, however, loses significance at
+  2R (p=0.1173) and 3R (p=0.2545) — traced to the same single thin order block (n=12 trades,
+  recurrence=6) already flagged as unreliable alone in the original hold-rate test, not evidence
+  the effect reverses at higher R. **1R and 1.5R clear both statistics cleanly; 2R/3R carry this
+  specific, disclosed caveat.** Default to 1R (cleanest, narrowest-scope support); 1.5R is a
+  reasonable alternative with equivalent statistical standing. If asked for 2R/3R, say plainly
+  that the aggregate correlation supports it but the extreme-bucket comparison does not, rather
+  than presenting it as equally well-supported as 1R/1.5R.
 - **Timeout:** if neither stop nor target resolves within 200 bars (the tested cap), the original
   backtest excluded it as inconclusive — mirror that live: close and log as inconclusive, don't
   let it ride indefinitely on the assumption the tested edge still applies past that horizon.
