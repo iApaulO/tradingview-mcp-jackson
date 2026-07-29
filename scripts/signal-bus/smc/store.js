@@ -87,6 +87,20 @@ CREATE TABLE IF NOT EXISTS order_block_touches (
   ongoing INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS idx_obt_ob ON order_block_touches(order_block_id);
+
+CREATE TABLE IF NOT EXISTS order_block_proximity_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  order_block_id INTEGER NOT NULL REFERENCES order_blocks(id),
+  start_bar_idx INTEGER NOT NULL,
+  start_time INTEGER NOT NULL,
+  end_bar_idx INTEGER NOT NULL,
+  end_time INTEGER NOT NULL,
+  bars_count INTEGER NOT NULL,
+  closest_approach_pct REAL NOT NULL,
+  approach_direction TEXT NOT NULL CHECK(approach_direction IN ('above','below')),
+  ongoing INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_obp_ob ON order_block_proximity_events(order_block_id);
 `;
 
 export function openStore() {
@@ -99,6 +113,7 @@ export function openStore() {
 export function clearAll(db) {
   db.exec("BEGIN");
   try {
+    db.exec("DELETE FROM order_block_proximity_events");
     db.exec("DELETE FROM order_block_touches");
     db.exec("DELETE FROM order_blocks");
     db.exec("DELETE FROM eqh_eql_events");
@@ -208,6 +223,10 @@ export function insertAll(db, { runId, timeframe, structureEvents, eqhEqlEvents,
       `INSERT INTO order_block_touches (order_block_id, start_bar_idx, start_time, end_bar_idx, end_time, bars_count, max_penetration_pct, approach_direction, outcome, ongoing)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     );
+    const proximityStmt = db.prepare(
+      `INSERT INTO order_block_proximity_events (order_block_id, start_bar_idx, start_time, end_bar_idx, end_time, bars_count, closest_approach_pct, approach_direction, ongoing)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    );
     for (const ob of orderBlocks) {
       const info = obStmt.run(
         runId, timeframe, ob.scope, ob.side, ob.barHigh, ob.barLow, ob.originBarIdx, ob.originTime,
@@ -216,6 +235,9 @@ export function insertAll(db, { runId, timeframe, structureEvents, eqhEqlEvents,
       const obId = Number(info.lastInsertRowid);
       for (const t of ob.touches || []) {
         touchStmt.run(obId, t.startBarIdx, t.startTime, t.endBarIdx, t.endTime, t.barsCount, t.maxPenetrationPct, t.approachDirection, t.outcome, t.ongoing ? 1 : 0);
+      }
+      for (const p of ob.proximityEvents || []) {
+        proximityStmt.run(obId, p.startBarIdx, p.startTime, p.endBarIdx, p.endTime, p.barsCount, p.closestApproachPct, p.approachDirection, p.ongoing ? 1 : 0);
       }
     }
     db.exec("COMMIT");

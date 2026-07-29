@@ -1479,3 +1479,46 @@ own confluence) — the underlying classification survives rigorous testing, the
 standalone trade does not.
 
 Results saved to `scripts/signal-bus/cross-confluence/results/breakout_bias_backtest_*.json`.
+
+## 12. Order-block proximity / "near-miss" detection (SMC) — 2026-07-28
+
+Formalized directly from a live discretionary chart exchange: iapaulo counted 7 real touches on
+the stacked $61k–63k order-block structure (§10/§11) plus "1 time where price found clean support
+with no touch" — verified by hand first (a 3-bar pullback on 2026-07-04, bottoming $126/0.20%
+above OB225's top before reversing cleanly, never entering the box), then formalized into a
+permanent capability rather than left as a one-off script, per the direct request ("we may need a
+proximity sensor... formalize this please and build it in").
+
+**`scripts/signal-bus/smc/proximity.js`** — `detectProximityEvents`/`computeAllProximityEvents`,
+mirroring `touches.js`'s exact structure (maximal run of consecutive qualifying bars, per order
+block, bounded by its active window) but for the opposite condition: bars that approach an active
+order block's boundary from outside within a tolerance, *without* ever touching it (mutually
+exclusive with a real touch at the bar level — a bar is one or the other, never both). No
+held/broken outcome, since a near-miss by construction never enters the box; the useful facts
+recorded are closest approach (`closestApproachPct`), duration, and approach direction.
+
+**Tolerance — checked before shipping it, not after: confluence.js's existing 0.2% constant
+would have been wrong for this.** The motivating event bottomed at 0.20% away (runner-up bars at
+0.31–0.33%) — a 0.2% hard cutoff would have excluded the very case this was built to catch. That
+constant answers a different question (do two separate structures count as "the same" price
+level for identity-matching); near-miss detection is "how close counts as almost touching one
+specific existing box," reasonably a looser bar. Set `PROXIMITY_TOLERANCE_PCT = 0.5%` instead —
+a new starting assumption, not a validated constant (same disclosed status as every other
+tolerance constant in this project), chosen to clear the motivating example with real margin.
+
+**Verified against the motivating example before trusting the formalized version:** re-ran the
+full pipeline (`build-historical.js` → `build-confluence.js`, both required after any schema
+change — the same two-step dependency that caused the pipeline-staleness bug earlier this
+session, this time run in the right order) and queried OB225 directly. The detector reproduces
+the exact 2026-07-04T00:00→12:00 event (closest approach 0.203%, matching the hand-verified
+number) — plus 6 more legitimate near-misses on the same order block (07-05, 07-06, 07-08, 07-09,
+07-14, 07-17) that hadn't been individually checked before, all in the 0.2–0.5% range. New DB
+table `order_block_proximity_events` (schema in `store.js`), wired into `build-historical.js`
+alongside touches — every future rebuild computes both automatically. Totals across the full
+8-timeframe ladder: 3,708 near-miss events (2 on W up to 960 on 5m), roughly comparable in
+volume to the 2,404 real touches across the same ladder.
+
+**Not yet significance-tested.** This is a new descriptive capability, not yet a tested finding —
+whether near-misses carry any predictive information (e.g., does a level that gets "respected
+from a distance" behave differently on a later real touch than one that doesn't) is a genuinely
+open, interesting question this build makes newly answerable, not one this build answers.

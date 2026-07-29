@@ -9,6 +9,7 @@ import { execSync } from "child_process";
 import { loadCandles } from "../../backtest/lib/load-candles.js";
 import { computeSMC } from "./calc.js";
 import { computeAllOrderBlockTouches } from "./touches.js";
+import { computeAllProximityEvents } from "./proximity.js";
 import { detectLiquiditySweeps } from "./liquidity.js";
 import { openStore, clearAll, insertRun, insertAll } from "./store.js";
 
@@ -47,17 +48,19 @@ async function main() {
     }
     const { structureEvents, eqhEqlEvents, orderBlocks } = computeSMC(candles);
     computeAllOrderBlockTouches(candles, orderBlocks);
+    computeAllProximityEvents(candles, orderBlocks);
     detectLiquiditySweeps(candles, eqhEqlEvents);
 
     const runId = insertRun(db, { timeframe: key, candles, gitCommit: commit });
     insertAll(db, { runId, timeframe: key, structureEvents, eqhEqlEvents, orderBlocks });
 
     const touches = orderBlocks.reduce((s, o) => s + o.touches.length, 0);
+    const proximityEvents = orderBlocks.reduce((s, o) => s + o.proximityEvents.length, 0);
     const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
     console.log(
-      `${candles.length.toLocaleString()} candles, ${structureEvents.length} structure events, ${eqhEqlEvents.length} EQH/EQL, ${orderBlocks.length} order blocks, ${touches} OB touches -- ${elapsed}s`,
+      `${candles.length.toLocaleString()} candles, ${structureEvents.length} structure events, ${eqhEqlEvents.length} EQH/EQL, ${orderBlocks.length} order blocks, ${touches} OB touches, ${proximityEvents} near-misses -- ${elapsed}s`,
     );
-    summary.push({ label, key, candles: candles.length, structureEvents: structureEvents.length, eqhEql: eqhEqlEvents.length, orderBlocks: orderBlocks.length, obTouches: touches });
+    summary.push({ label, key, candles: candles.length, structureEvents: structureEvents.length, eqhEql: eqhEqlEvents.length, orderBlocks: orderBlocks.length, obTouches: touches, nearMisses: proximityEvents });
   }
 
   db.close();
