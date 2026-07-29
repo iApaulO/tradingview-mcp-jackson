@@ -134,13 +134,19 @@ HTF opposes, so the conservative default is to keep every existing veto in force
 carve out an exception.
 
 **Three real gaps that must be disclosed every time this fires, not just once in a doc:**
-1. **No live computation exists yet.** `recurrence_count` is only computed by the offline
-   signal-bus pipeline (`build-historical.js` + `build-confluence.js` run against historical
-   CSVs) — nothing in `signal-grid.js` or any live extraction tool computes it from a live chart.
-   Until that's built, the realistic near-term mechanism is periodic (daily/session) re-runs of
-   the offline pipeline against freshly-fetched data, surfacing any currently-active
-   recurrence≥3 order block as a **watchlist item for manual review** — not a real-time trigger.
-   Say this plainly rather than imply live automation exists.
+1. **Live computation exists now (2026-07-29), but is UNVERIFIED and differs from the tested
+   metric in two disclosed ways.** `signal-grid.js`'s `extractOrderBlockRecurrence()` reads
+   `data_get_pine_boxes` and computes recurrence live, but (a) side is inferred from the box's
+   position relative to current price, not decoded from its color (the ABGR decode was confirmed
+   once but never saved as reusable code, and re-guessing it risked a silent, inverted side call
+   — see ARCHITECTURE.md's §13 live-wiring note), and (b) it only sees the ~5 most recently
+   *displayed* boxes per scope, not the full ~100-tracked history the offline backtest used — a
+   live "recurrence=3" is a **lower bound**, not a guaranteed match to the tested metric. It has
+   never been run against a real chart (no live TradingView connection was available when it was
+   built) — treat every reading as unverified until checked once by hand against a known order
+   block. `printTable()` surfaces qualifying boxes as a `⚑ Tested Setup Alert candidate` note —
+   explicitly a **manual-review watchlist flag, not a live trigger**. Say this plainly rather
+   than imply live automation or verified accuracy exists.
 2. **Instrument proxy, same as everywhere else in this house.** Backtested on Coinbase Exchange
    spot BTC-USD, not the actual traded contract (`COINBASE:BIPZ2030`, Coinbase Advanced
    derivatives) — the same style of mismatch as the Bitstamp SuperTrend proxy, disclose it the
@@ -205,6 +211,7 @@ permutation-test discipline the signal-bus findings got, not as evidence on its 
   is read live, until it's updated to match.
 - That the Tested Setup Alert (recurrence_count≥3, fixed 1R) is a proven live edge. It's the first
   finding in this house's inventory to clear a real backtest gauntlet — that's real evidence, not
-  a forward track record. No live computation of `recurrence_count` exists yet either; treat any
-  instance surfaced today as coming from a manually re-run offline pipeline, not a live trigger,
-  until that gap is closed.
+  a forward track record. Live computation now exists (`signal-grid.js`) but is unverified against
+  a real chart and differs from the tested metric in two disclosed ways (price-inferred side,
+  display-capped recurrence) — treat any instance surfaced today as a manual-review watchlist
+  flag from unverified live code, not a validated live trigger, until it's been checked by hand.

@@ -206,27 +206,97 @@ function extractStructure(labelStudies) {
   return { found: true, total_events_in_window: smc.total_labels, recent };
 }
 
+// Live counterpart to scripts/signal-bus/smc/confluence.js's computeRecurrence (decision-policy.md's
+// Tested Setup Alert, significance-register.md #27b/c) -- how many currently-visible SMC order
+// blocks, same side, price-overlap a given box. Two deliberate differences from the offline/
+// backtested version, both disclosed here rather than silently assumed away:
+//
+// 1. Side is inferred from the box's position relative to CURRENT PRICE, not decoded from its
+//    ABGR-packed color. The exact byte-order decode was confirmed once (ARCHITECTURE.md, 2026-07-25:
+//    "SMC's box color is ABGR-packed, not ARGB... decoded and confirmed exact matches") but that
+//    decode function was never saved as reusable code, and this session has no live TradingView
+//    connection to re-derive or re-verify it -- shipping a guessed byte order here risks a SILENT,
+//    CONFIDENT-LOOKING, and potentially INVERTED side call feeding straight into a live trade
+//    alert, which is worse than not having the field. Price-position inference carries no such
+//    risk: this project already uses the identical fallback for BOS/CHoCH direction when tag text
+//    alone is ambiguous (extractStructure's known limitation, ARCHITECTURE.md §3) -- an unmitigated
+//    order block price has moved away from is, by construction, on the correct side (mitigation
+//    deletes the box the instant price fully clears it, per the Pine source's own
+//    `orderBlocks.remove(index)`), so "price is now above this box" reliably means bullish/demand,
+//    "price is now below" reliably means bearish/supply. A box price is CURRENTLY INSIDE can't be
+//    classified this way -- scored `side: "unknown"`, excluded from recurrence counting, not guessed.
+// 2. Only counts CURRENTLY VISIBLE boxes. Pine's own source only ever displays the most recent
+//    orderBlockSizeInput boxes per scope (default 5), even though it tracks up to 100 internally
+//    (ARCHITECTURE.md §2) -- the offline backtest's recurrence_count was computed against that
+//    full tracked history. A live reading of "recurrence=3" is a lower bound on what the offline
+//    metric would show, not a guaranteed match to it -- narrower, not equivalent.
+//
+// Requires "Swing Order Blocks" enabled in the live indicator's own settings (OFF by default,
+// ARCHITECTURE.md §2) for swing-scope boxes to appear at all -- internal-scope boxes are on by
+// default and always available.
+function rangesOverlap(a, b) {
+  return a.low <= b.high && b.low <= a.high;
+}
+
+function inferOrderBlockSide(box, currentPrice) {
+  if (currentPrice == null || Number.isNaN(currentPrice)) return "unknown";
+  if (currentPrice > box.high) return "bullish"; // price moved above -- this was a demand zone below
+  if (currentPrice < box.low) return "bearish"; // price moved below -- this was a supply zone above
+  return "unknown"; // price currently inside the box -- position alone can't tell us which side
+}
+
+function extractOrderBlockRecurrence(boxStudies, currentPrice) {
+  const smc = boxStudies.find((s) => s.name.includes("Smart Money"));
+  if (!smc || !smc.all_boxes?.length) return { found: false };
+
+  const boxes = smc.all_boxes
+    .filter((b) => b.high != null && b.low != null)
+    .map((b) => ({ high: b.high, low: b.low, side: inferOrderBlockSide(b, currentPrice) }));
+
+  for (const box of boxes) {
+    if (box.side === "unknown") { box.recurrence_count = null; continue; }
+    let matches = 0;
+    for (const other of boxes) {
+      if (other === box || other.side !== box.side) continue;
+      if (rangesOverlap(box, other)) matches++;
+    }
+    box.recurrence_count = 1 + matches;
+  }
+
+  const scored = boxes.filter((b) => b.recurrence_count != null);
+  const maxRecurrence = scored.length ? Math.max(...scored.map((b) => b.recurrence_count)) : null;
+  return {
+    found: true,
+    boxes,
+    max_recurrence: maxRecurrence,
+    note: "side inferred from price position, not color -- see header comment. recurrence_count is capped by the indicator's own display limit (~5 boxes/scope), a lower bound on the offline-backtested metric, not a guaranteed match to it.",
+  };
+}
+
 async function scanChartTimeframe(symbol, tf) {
   await chart.setSymbol({ symbol });
   await new Promise((r) => setTimeout(r, 900));
   await chart.setTimeframe({ timeframe: tf.chartTf });
   await new Promise((r) => setTimeout(r, 900));
 
-  const [values, labels, lines, quote] = await Promise.all([
+  const [values, labels, lines, boxes, quote] = await Promise.all([
     data.getStudyValuesEnsured(),
     data.getPineLabels({ study_filter: "Smart Money", max_labels: 10 }),
     data.getPineLines({ study_filter: "Divergence for Many" }),
+    data.getPineBoxes({ study_filter: "Smart Money", verbose: true }),
     data.getQuote({}),
   ]);
 
+  const price = quote?.last ?? quote?.close ?? null;
   const studies = values.studies || [];
   return {
-    price: quote?.last ?? quote?.close ?? null,
+    price,
     ribbon: extractRibbon(studies),
     cipher_b: extractCipherB(studies),
     boom_hunter: extractBoomHunter(studies),
     structure: extractStructure(labels.studies || []),
     divergence: extractDivergence(lines.studies || []),
+    order_block_recurrence: extractOrderBlockRecurrence(boxes.studies || [], price),
   };
 }
 
@@ -296,7 +366,7 @@ function printTable(grid) {
     console.log(`\n${symbol}`);
     console.log(
       "TF".padEnd(5) + "Ribbon".padEnd(12) + "RSI".padEnd(6) + "MFI".padEnd(6) + "Stoch K/D".padEnd(11) +
-      "STC".padEnd(6) + "WT".padEnd(9) + "SMC latest".padEnd(22) + "Div".padEnd(5) + "SuperTrend",
+      "STC".padEnd(6) + "WT".padEnd(9) + "SMC latest".padEnd(22) + "Div".padEnd(5) + "Recur".padEnd(7) + "SuperTrend",
     );
     for (const [label, tf] of Object.entries(timeframes)) {
       const cb = tf.cipher_b;
@@ -308,15 +378,26 @@ function printTable(grid) {
       const wt = cb?.found ? cb.wt_direction : "n/a";
       const smcLatest = tf.structure?.recent?.[0] ? `${tf.structure.recent[0].text} @ ${tf.structure.recent[0].price}` : "n/a";
       const badges = tf.divergence?.active_badge_levels?.length ?? 0;
+      const recur = tf.order_block_recurrence?.found ? String(tf.order_block_recurrence.max_recurrence ?? "n/a") : "n/a";
       const st = tf.supertrend?.error
         ? "n/a"
         : `${tf.supertrend.direction === "bullish" ? "▲" : "▼"} ${tf.supertrend.direction}`;
       console.log(
         label.padEnd(5) + ribbon.padEnd(12) + rsi.padEnd(6) + mfi.padEnd(6) + stoch.padEnd(11) +
-        stc.padEnd(6) + wt.padEnd(9) + smcLatest.padEnd(22) + String(badges).padEnd(5) + st,
+        stc.padEnd(6) + wt.padEnd(9) + smcLatest.padEnd(22) + String(badges).padEnd(5) + recur.padEnd(7) + st,
       );
       if (cb?.found && cb.signals_firing.length) {
         console.log("     ↳ Cipher B firing: " + cb.signals_firing.join(", "));
+      }
+      // Mirrors decision-policy.md's Tested Setup Alert gate (recurrence_count >= 3) exactly --
+      // flagged here as a watchlist note, NOT a live trigger (see extractOrderBlockRecurrence's
+      // header comment: side is price-inferred, recurrence is display-capped, and no automated
+      // entry exists). Manual review only.
+      const highRecurBoxes = (tf.order_block_recurrence?.boxes || []).filter((b) => b.recurrence_count >= 3);
+      if (highRecurBoxes.length) {
+        for (const b of highRecurBoxes) {
+          console.log(`     ⚑ Tested Setup Alert candidate: ${b.side} order block $${b.low}-${b.high}, recurrence=${b.recurrence_count} — manual review, see decision-policy.md`);
+        }
       }
     }
   }
