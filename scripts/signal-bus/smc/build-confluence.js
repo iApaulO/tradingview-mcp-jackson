@@ -25,6 +25,12 @@ function main() {
   const maxDepth = Math.max(...targets.map((t) => t.confluenceCount));
   console.log(`\n${isolated} isolated order blocks, ${confluent} in some confluence (${((confluent / targets.length) * 100).toFixed(1)}%)`);
   console.log(`Max confluence depth: ${maxDepth} distinct timeframes agreeing`);
+
+  const noRecurrence = targets.filter((t) => t.recurrenceCount === 1).length;
+  const recurrent = targets.length - noRecurrence;
+  const maxRecurrence = Math.max(...targets.map((t) => t.recurrenceCount));
+  console.log(`\n${noRecurrence} order blocks with no same-timeframe recurrence, ${recurrent} with some (${((recurrent / targets.length) * 100).toFixed(1)}%)`);
+  console.log(`Max recurrence depth: ${maxRecurrence} same-timeframe order blocks stacked together`);
 }
 
 main();

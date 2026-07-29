@@ -1205,6 +1205,77 @@ computed, or tested anywhere in this project. Candidate for a fourth bucketing v
 `confluenceCount` and the sketched `nestingDepth`, worth adding to the §5 design before building
 `mtf-snapshot.js`/`nesting.js` rather than after.
 
+**Correction to the above, 2026-07-28, same session: the "confluenceCount=1 for all six" example
+was a pipeline-staleness artifact, not a clean demonstration of the definitional gap.** Caught
+before building on top of it: `build-confluence.js` is a required step separate from
+`build-historical.js` ("Run after build-historical.js" — was in its own header comment,
+missed during the data refresh above). Every order block in the database — 2018-2024 data
+included, not just the new July 2026 rows — was sitting at `confluence_count`'s schema default
+(1), because the confluence computation pass was never re-run after the refresh. Re-ran
+`build-confluence.js`: 97.7% of order blocks now show real computed confluence (matching the
+original finding's own documented ~97% density), and the six stacked order blocks above now show
+**`confluenceCount = 6` each** — real, substantial cross-timeframe agreement, not 1. **The
+definitional fact itself stands (confluenceCount is `timeframesSeen.size`, verified from source,
+still blind to same-timeframe recurrence in principle) — what was wrong was using this specific
+example as empirical proof of that blindness in action, since it turns out to also have strong
+genuine cross-timeframe confluence.** Flagged here rather than silently editing the earlier
+paragraphs, matching this project's standing practice for self-corrections.
+
+**`recurrenceCount` built and tested, 2026-07-28 (iapaulo: "build the recurrence count and test
+it against the hold rate") — a real, second bug found and fixed before trusting any result, then
+a genuine, strongly significant finding.**
+
+*The bug:* implementing `recurrenceCount` by reusing `confluence.js`'s existing sorted-sweep
+(`searchFrom`/`break` bounds keyed off `obRange[0] - maxTol`) produced **asymmetric results** —
+order block #225 ($61,067.81–62,147.89) counted #229 ($61,750.90–62,567.99) as a same-timeframe
+match, but #229 didn't count #225 back, despite both genuinely overlapping in price, time, and
+side (verified by hand). Root cause: the sweep's window assumes a matching element starts near
+the target's own start — true for the tolerance-expanded point sources (EQH/EQL, structure —
+102,868 of 104,200 pool elements) that dominate `confluenceCount`'s existing, already-tested
+computation, but false for a WIDE order block that starts well before another yet still overlaps
+it via its own width. This is specific to order-block-vs-order-block matching, so it doesn't
+undermine the existing `confluenceCount` finding (dominated by point sources), but it would have
+silently corrupted `recurrenceCount`, which is ONLY order-block-vs-order-block. **Fix:** computed
+`recurrenceCount` separately (`computeRecurrence` in `confluence.js`), grouping order blocks by
+`timeframe|side` and doing a correct pairwise overlap check within each (small) group rather than
+reusing the flawed sweep — correctness over performance, since groups top out around 200 order
+blocks. Re-verified the same pair is now symmetric (both #225 and #229 show `recurrenceCount=2`).
+The six-order-block cluster resolves to three separate overlapping pairs (2,1,1,2,2,2), not one
+blob of 6 — two of the six (created 07-05, mitigated before the next one at 07-06, formed) never
+actually coexisted in time, correctly excluded.
+
+*The test* (`scripts/signal-bus/smc/recurrence-significance.js`, exact same zone-level permutation
+method as `confluence-significance.js` — order-block-level shuffle, not touch-level, since a
+block's touches aren't independent observations of it): 1,200 order blocks with touches, 2,603
+touches.
+
+| recurrenceCount | order blocks | touches | hold rate |
+|---|---|---|---|
+| 1 (isolated) | 825 | 1,548 | 49.0% |
+| 2 | 271 | 723 | 66.1% |
+| 3 | 65 | 191 | 75.4% |
+| 4 | 24 | 78 | 80.8% |
+| 5 | 14 | 51 | 82.4% |
+| 6 | 1 | 12 | 91.7% |
+
+Point-biserial correlation across the full gradient: **r = 0.2109**, against a permuted null
+range of [−0.076, 0.076] (50,000 iterations, seed=42) — **p = 0.0000**, real value entirely
+outside the null. Top(6)-vs-bottom(1) gap: 42.64 points, p = 0.0336 — significant, but notably
+weaker and closer to the 5% line than the correlation, because the top bucket is a **single order
+block** (n=1, 12 touches) — don't read the 91.7%/recurrence=6 cell as reliable on its own; the
+gradient from 1→5 (49.0%→82.4%, each bucket with real n) is the trustworthy part of this result.
+
+**Label: `descriptive-significant` — a real, second confluence-adjacent gradient, independent of
+the cross-timeframe one, not yet cost/capacity tested.** Two honest caveats before this goes any
+further: (1) not yet run through the cost/capacity gauntlet — two of the three prior
+descriptive-significant SMC/Divergence findings in this register turned out
+trade-construction-blocked once actually costed, no reason to assume this one is different; (2)
+not yet deconfounded from `confluenceCount` — order blocks with high same-timeframe recurrence
+may also tend to have high cross-timeframe confluence (both could reflect "this is simply an
+important, heavily-trafficked price level"), and this test doesn't control for that overlap. A
+genuinely independent contribution from recurrence specifically, versus recurrence just riding on
+the back of confluence, is an open question this test doesn't answer.
+
 ## 11. Cross-indicator confluence (Divergence for Many × SMC) — 2026-07-27
 
 Every confluence test built so far (§9, §10) was WITHIN one indicator, across timeframes. This

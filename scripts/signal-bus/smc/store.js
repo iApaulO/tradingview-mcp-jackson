@@ -67,7 +67,8 @@ CREATE TABLE IF NOT EXISTS order_blocks (
   mitigated_time INTEGER,
   status TEXT NOT NULL,
   color TEXT NOT NULL,
-  confluence_count INTEGER NOT NULL DEFAULT 1
+  confluence_count INTEGER NOT NULL DEFAULT 1,
+  recurrence_count INTEGER NOT NULL DEFAULT 1
 );
 CREATE INDEX IF NOT EXISTS idx_ob_tf ON order_blocks(timeframe);
 CREATE INDEX IF NOT EXISTS idx_ob_price ON order_blocks(bar_low, bar_high);
@@ -171,8 +172,8 @@ export function loadConfluencePool(db) {
 export function updateConfluence(db, orderBlocks) {
   db.exec("BEGIN");
   try {
-    const stmt = db.prepare("UPDATE order_blocks SET confluence_count = ? WHERE id = ?");
-    for (const ob of orderBlocks) stmt.run(ob.confluenceCount, ob.id);
+    const stmt = db.prepare("UPDATE order_blocks SET confluence_count = ?, recurrence_count = ? WHERE id = ?");
+    for (const ob of orderBlocks) stmt.run(ob.confluenceCount, ob.recurrenceCount, ob.id);
     db.exec("COMMIT");
   } catch (err) {
     db.exec("ROLLBACK");

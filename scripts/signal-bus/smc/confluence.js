@@ -42,11 +42,21 @@ function windowsOverlap([aLo, aHi], [bLo, bHi]) {
   return aLo <= bHi && bLo <= aHi;
 }
 
+// recurrenceCount (2026-07-28, added after a live discretionary chart read surfaced that
+// same-timeframe order-block recurrence -- demand/supply re-forming at one price band on ONE
+// timeframe over time -- is invisible to confluenceCount by definition (distinct TIMEFRAMES seen,
+// timeframesSeen.size). Mirrors Divergence for Many's sameTimeframeClusterSize
+// (divergence-for-many/confluence.js) exactly: same matching pass, just tallying same-timeframe
+// order-block matches instead of (or alongside) distinct-timeframe agreement. A DIFFERENT
+// question from confluenceCount, not a replacement for it -- both are computed and stored.
+
 // orderBlocks: the target list (each needs id, priceLow, priceHigh, activeStart, activeEnd, side).
 // pool: ALL elements (order blocks + EQH/EQL + structure, all timeframes) to check confluence
 // against, each shaped { type, id, timeframe, side, price OR (priceLow/priceHigh), activeStart,
 // activeEnd }. Mutates orderBlocks in place: confluenceCount (distinct timeframes agreeing,
-// including itself), confluenceSources (breakdown by type), confluentIds.
+// including itself), confluenceSources (breakdown by type), confluentIds, recurrenceCount (how
+// many OTHER order blocks on this SAME timeframe are confluent with it -- 1 = this is the only
+// order block on its own timeframe in this price/time neighborhood).
 export function computeSMCConfluence(orderBlocks, pool) {
   const sorted = [...pool].sort((a, b) => priceRange(a)[0] - priceRange(b)[0]);
   const lowBounds = sorted.map((el) => priceRange(el)[0]);
@@ -94,5 +104,47 @@ export function computeSMCConfluence(orderBlocks, pool) {
     ob.confluentIds = confluentIds;
   }
 
+  computeRecurrence(orderBlocks);
   return orderBlocks;
+}
+
+// recurrenceCount: how many OTHER order blocks on the SAME timeframe (and side) price-overlap
+// and time-overlap this one -- deliberately NOT reusing the sweep above. That sweep's
+// searchFrom/break bounds assume a matching element starts near `ob`'s own start (true for the
+// narrow, tolerance-expanded point sources -- EQH/EQL, structure -- that dominate the pool, 102,868
+// of 104,200 elements), which is false for a WIDE order block that starts much earlier than
+// another order block yet still overlaps it via its own width. Confirmed as a real bug, not a
+// theory: two order blocks with verified real overlap (id 225: $61,067.81-62,147.89, id 229:
+// $61,750.90-62,567.99, same side/timeframe, both open-ended) showed ASYMMETRIC results under the
+// sweep (225 counted 229 as a match, 229 didn't count 225 back) -- impossible for a symmetric
+// overlap relation, traced to id 225's wide range starting well before id 229's own searchFrom
+// cutoff. Per-timeframe-group O(n^2) here instead: groups are small (≤200 order blocks per
+// scope/timeframe by construction, ORDER_BLOCK_MAX_TRACKED in calc.js), so correctness costs
+// nothing worth optimizing away. Left the sweep above untouched for confluenceCount -- that
+// finding was already tested/reported against it, and the point-source-dominated pool makes this
+// specific bug's impact there minor; revisiting it is a separate, later decision, not bundled in
+// here.
+function computeRecurrence(orderBlocks) {
+  const byGroup = new Map(); // "timeframe|side" -> order blocks
+  for (const ob of orderBlocks) {
+    const key = `${ob.timeframe}|${ob.side}`;
+    if (!byGroup.has(key)) byGroup.set(key, []);
+    byGroup.get(key).push(ob);
+  }
+  for (const group of byGroup.values()) {
+    for (const ob of group) {
+      const obRange = [ob.priceLow, ob.priceHigh];
+      const obWindow = [ob.activeStart, ob.activeEnd ?? Infinity];
+      let matches = 0;
+      for (const other of group) {
+        if (other.id === ob.id) continue;
+        const otherRange = [other.priceLow, other.priceHigh];
+        const otherWindow = [other.activeStart, other.activeEnd ?? Infinity];
+        if (!rangesOverlap(obRange, otherRange, 0)) continue;
+        if (!windowsOverlap(obWindow, otherWindow)) continue;
+        matches++;
+      }
+      ob.recurrenceCount = 1 + matches;
+    }
+  }
 }
