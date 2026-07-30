@@ -134,17 +134,19 @@ HTF opposes, so the conservative default is to keep every existing veto in force
 carve out an exception.
 
 **Three real gaps that must be disclosed every time this fires, not just once in a doc:**
-1. **Live computation exists now (2026-07-29), but is UNVERIFIED and differs from the tested
-   metric in two disclosed ways.** `signal-grid.js`'s `extractOrderBlockRecurrence()` reads
-   `data_get_pine_boxes` and computes recurrence live, but (a) side is inferred from the box's
-   position relative to current price, not decoded from its color (the ABGR decode was confirmed
-   once but never saved as reusable code, and re-guessing it risked a silent, inverted side call
-   — see ARCHITECTURE.md's §13 live-wiring note), and (b) it only sees the ~5 most recently
-   *displayed* boxes per scope, not the full ~100-tracked history the offline backtest used — a
-   live "recurrence=3" is a **lower bound**, not a guaranteed match to the tested metric. It has
-   never been run against a real chart (no live TradingView connection was available when it was
-   built) — treat every reading as unverified until checked once by hand against a known order
-   block. `printTable()` surfaces qualifying boxes as a `⚑ Tested Setup Alert candidate` note —
+1. **Live computation exists and is verified working (2026-07-30), but still differs from the
+   tested metric in two disclosed ways.** `signal-grid.js`'s `extractOrderBlockRecurrence()` reads
+   `data_get_pine_boxes` and computes recurrence live; run against the real chart
+   (COINBASE:BIPZ2030, 4H) and every returned `recurrence_count` was hand-recomputed and matched
+   exactly (significance-register.md #27d). Two differences remain, not eliminated by that
+   verification: (a) side is inferred from the box's position relative to current price, not
+   decoded from its color (the ABGR decode was confirmed once but never saved as reusable code) —
+   confirmed *directionally sane* on the live read (bearish above price, bullish below), which
+   verifies internal consistency, not that price-position always matches the box's true
+   color/nature in every chart state; (b) it only sees the ~5 most recently *displayed* boxes per
+   scope, not the full ~100-tracked history the offline backtest used — a live "recurrence=3" is a
+   **lower bound**, not a guaranteed match to the tested metric. `printTable()` surfaces
+   qualifying boxes as a `⚑ Tested Setup Alert candidate` note —
    explicitly a **manual-review watchlist flag, not a live trigger**. Say this plainly rather
    than imply live automation or verified accuracy exists.
 2. **Instrument proxy, same as everywhere else in this house.** Backtested on Coinbase Exchange
@@ -211,7 +213,8 @@ permutation-test discipline the signal-bus findings got, not as evidence on its 
   is read live, until it's updated to match.
 - That the Tested Setup Alert (recurrence_count≥3, fixed 1R) is a proven live edge. It's the first
   finding in this house's inventory to clear a real backtest gauntlet — that's real evidence, not
-  a forward track record. Live computation now exists (`signal-grid.js`) but is unverified against
-  a real chart and differs from the tested metric in two disclosed ways (price-inferred side,
-  display-capped recurrence) — treat any instance surfaced today as a manual-review watchlist
-  flag from unverified live code, not a validated live trigger, until it's been checked by hand.
+  a forward track record. Live computation now exists and its recurrence arithmetic is verified
+  correct against a real chart (`signal-grid.js`, 2026-07-30), but it still differs from the
+  tested offline metric in two disclosed ways (price-inferred side, display-capped recurrence) —
+  treat any instance surfaced live as a manual-review watchlist flag, not a validated live trigger,
+  and not the same thing as a forward track record on the actual Tested Setup Alert recipe.

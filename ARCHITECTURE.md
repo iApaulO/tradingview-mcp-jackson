@@ -1678,35 +1678,64 @@ inconclusive at those targets, for a known, disclosed reason rather than an unex
 scope limitation, cleanest support on both measures — and that default stands; 1.5R is now
 similarly well-supported if a different target is wanted, 2R/3R carry the extra caveat above.
 
-**Live wiring, 2026-07-29 — recurrence_count now computed by `signal-grid.js`, but UNVERIFIED
-against a real chart and built with two deliberate, disclosed differences from the offline
-metric, not a straight port.** Closes half of the "no live computation exists yet" gap
+**Live wiring, 2026-07-29 — recurrence_count computed by `signal-grid.js`, built with two
+deliberate, disclosed differences from the offline metric, not a straight port. VERIFIED against
+a real chart 2026-07-30 — see below.** Closes the "no live computation exists yet" gap
 `decision-policy.md`'s Tested Setup Alert flagged as a standing blocker — `extractOrderBlockRecurrence()`
 now runs every sweep, reading `data_get_pine_boxes({ study_filter: "Smart Money", verbose: true })`.
 
 - **Side is inferred from price position, not decoded from the box's color.** The exact ABGR
   byte-order decode was confirmed once (§3, 2026-07-25) but the decode function itself was never
-  saved as reusable code, and this session has no live TradingView connection to re-derive or
-  re-verify it — shipping a guessed byte order risked a silent, confident-looking, possibly
-  *inverted* side call feeding straight into a live trade alert, which is worse than not having
-  the field at all. Used the same fallback this project already relies on for BOS/CHoCH direction
-  when tag text alone is ambiguous (§3): an unmitigated order block price has moved away from is,
-  by construction, on the correct side (mitigation deletes the box the instant price fully clears
-  it). A box price is currently inside can't be classified this way — scored `side: "unknown"`,
-  excluded from recurrence counting rather than guessed.
+  saved as reusable code — rather than re-guess the byte order (risking a silent, confident-looking,
+  possibly *inverted* side call feeding straight into a live trade alert), used the same fallback
+  this project already relies on for BOS/CHoCH direction when tag text alone is ambiguous (§3): an
+  unmitigated order block price has moved away from is, by construction, on the correct side
+  (mitigation deletes the box the instant price fully clears it). A box price is currently inside
+  can't be classified this way — scored `side: "unknown"`, excluded from recurrence counting
+  rather than guessed.
 - **Only counts currently-visible boxes.** Pine's own source only ever displays the most recent
   ~5 boxes per scope even though it tracks up to 100 internally (§2) — the offline backtest's
   `recurrence_count` was computed against that full tracked history. A live reading of
   "recurrence=3" is a **lower bound** on what the offline metric would show, not a guaranteed
   match — narrower, not equivalent.
 
-`printTable()` now surfaces a `⚑ Tested Setup Alert candidate` line whenever a box's live
-recurrence reaches the decision-policy.md gate (≥3) — explicitly labeled a manual-review
-watchlist note, not a trigger, matching the "no live automation exists" disclosure already in the
-policy. **Cannot be tested this session — no live TradingView MCP connection is available in
-this background job (confirmed at session start, unchanged since).** `node --check` confirms the
-file parses; the actual box color/position data it will receive from a real chart has never been
-observed. Treat this as unverified-live code until it's been run once against a real chart and
-its output checked against a known order block by hand — the same standard this project has held
-every other live-extraction claim to (e.g. Boom Hunter's Quotient1/2 mapping, still flagged
-unverified since 2026-07-25 for the same reason).
+`printTable()` surfaces a `⚑ Tested Setup Alert candidate` line whenever a box's live recurrence
+reaches the decision-policy.md gate (≥3) — explicitly labeled a manual-review watchlist note, not
+a trigger.
+
+**Correction, 2026-07-30: this session's repeated claim that no live TradingView connection
+existed was wrong — checked directly (`curl localhost:9222/json/version`) and the CDP port
+TradingView Desktop exposes was reachable the entire time.** That claim rested on `ToolSearch`
+not finding `mcp__tradingview__*` tools registered in this background session, which is true —
+but `signal-grid.js` and the rest of `src/core/` never went through those MCP tools at all; they
+talk to CDP directly. Absence of the MCP tool layer and unreachability of the underlying chart
+are different facts, and they got conflated across multiple turns until directly questioned
+("have you lost the chart or what") prompted an actual check rather than a repeated assumption.
+
+**Verified against the live chart, 2026-07-30 — ran `signal-grid.js` for real
+(`COINBASE:BIPZ2030`, price $64,305 at the 4H read) and hand-checked the output, not just
+trusted it:**
+
+| Box | Side | Live recurrence |
+|---|---|---|
+| $65,045–65,745 | bearish | 1 |
+| $62,455–63,695 | bullish | 2 |
+| $61,750–62,275 | bullish | **3** ⚑ |
+| $61,240–63,000 | bullish | **4** ⚑ |
+| $61,110–62,180 | bullish | **3** ⚑ |
+
+Manually recomputed every pairwise price-overlap by hand rather than trusting the function's own
+arithmetic: $61,750–62,275 overlaps two other bullish boxes → 1+2=3 ✓; $61,240–63,000 overlaps
+all three others → 1+3=4 ✓; $61,110–62,180 overlaps two → 1+2=3 ✓. **Every recurrence count
+matches exact hand-calculation.** Side inference also checks out directionally: the one bearish
+box sits above current price (supply), all four bullish boxes sit below it (demand) — the correct
+SMC convention, and the same $61k–63k zone independently corroborated by the offline analysis
+earlier this session. Three boxes correctly cleared the ≥3 gate and were flagged, none below it
+were.
+
+**What remains genuinely unverified: the side-inference METHOD itself, not the arithmetic on top
+of it.** This confirms the recurrence-counting logic is correct given a side label; it does not
+independently confirm "price above the box" reliably means the same thing as the box's true
+color/nature across every possible chart state (price currently inside a box, a box that formed
+under unusual conditions, etc.) — only that it produced internally-consistent, directionally
+sane results on this one real read. One verified pass not exhaustive testing.
