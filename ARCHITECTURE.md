@@ -1739,3 +1739,95 @@ independently confirm "price above the box" reliably means the same thing as the
 color/nature across every possible chart state (price currently inside a box, a box that formed
 under unusual conditions, etc.) — only that it produced internally-consistent, directionally
 sane results on this one real read. One verified pass not exhaustive testing.
+
+## 14. Anchor-candle-color significance test (SMC order blocks) — 2026-07-30
+
+Motivated directly by the specific 4H order block identified earlier (§13's neighborhood: bullish
+order block anchored to a red candle, origin 2026-07-06T08:00, box $62,421.85–63,177.93,
+mitigated 2026-07-08). Every order block's anchor bar is whichever bar had the most extreme
+parsed-low/high in its pivot-to-break window (`calc.js`) — the anchor's color is incidental to
+that algorithm, never chosen for it, so whether it carries real information is a genuinely open,
+testable question rather than an assumption either way.
+
+**Method** (`scripts/signal-bus/smc/anchor-color-significance.js`): for every order block, checked
+whether its anchor candle closed red or green, then tested per side (bullish/bearish, all 8
+timeframes pooled), per an "matches classic ICT convention" derived variable (bullish+red or
+bearish+green — textbook ICT expects a bullish order block's anchor to be the last down candle
+before the move), per individual timeframe (bullish only), and stratified by `recurrence_count`
+("nested conditions"). Same order-block-level permutation discipline as every other test here.
+
+**Result: a clean, comprehensive null, in every stratification tested.**
+
+| Test | Red/label=1 hold | Green/label=0 hold | Gap | Null range |
+|---|---|---|---|---|
+| Bullish (pooled) | 54.1% | 59.7% | −5.67pts | [−9.83, +12.40] |
+| Bearish (pooled) | 56.2% | 60.4% | −4.13pts | [−12.38, +12.98] |
+| Matches ICT convention | 57.0% | 58.2% | −1.21pts | [−7.50, +7.64] |
+| 2H bullish (largest single-TF gap) | 48.3% | 67.3% | −19.00pts | [−25.05, +24.73] |
+
+Every real gap — pooled, per-side, per-timeframe (7 of 8 tested, 1W too thin), and per-recurrence
+bucket — sits comfortably inside its own permuted null range, including the most extreme-looking
+single-timeframe result (2H's −19pt gap, still well inside [−25, +25]). None approach
+significance in either direction.
+
+**Conclusion: anchor candle color carries no detectable information about hold rate.** The
+specific 4H order block that prompted this is a real, correctly-identified data point (verified
+bar-for-bar, §13's neighborhood) — but its red anchor isn't evidence of anything special. It's
+incidental, exactly as the anchoring algorithm predicts (most extreme bar in the window, chosen
+without regard to color). If anything the pattern trends opposite classic ICT lore (green anchors
+holding marginally better), but that trend itself doesn't clear the null either.
+
+Results saved to `scripts/signal-bus/smc/results/anchor_color_significance_*.json`.
+
+## 15. Touch-refresh expiry test (Divergence for Many) — 2026-07-30
+
+Prompted directly by iapaulo: "sustained interaction with a line should produce a sustained line,
+however do not want to pollute my screen with ancient irrelevant lines." Checked against the
+actual Pine source first — `pine/divergence-for-many-relevance-gated.pine`'s real expiry rule
+(`expire_old_glows`/`draw_promoted_glow`) pins a promoted zone's clock to its **promotion bar
+only**: `array.push(bars, bar_index)` at draw time, checked later as `bar_index - bars[idx] >
+200`, with no refresh mechanism — a zone that keeps getting touched still expires exactly 200
+bars after it was first promoted, no differently than one nobody ever looks at again. Confirmed
+our `calc.js` reimplementation matches this exactly (uses `confirmedBarIdx` the same way) — no
+existing deficiency in the current rule's *fidelity to the source*. The proposal is a genuinely
+new design, not a bug fix.
+
+**Also confirmed while investigating: the real indicator has no variable "intensity" at all.**
+All three glow layers (outer/middle/core) render at fixed widths/opacity regardless of confluence
+or divergence count (lines 66–68 of the source, plain input values) — "intensity scaling with
+confluence" is a real, well-motivated proposal, but it isn't something we're failing to
+reimplement; the source itself doesn't have it. It's independently justified by an already-tested
+finding (§9: confluence-vs-hold-rate, 53.4%→60.6%, p<0.001) — a real basis for the idea, just not
+yet built (would require modifying the actual Pine script, not a backdata question).
+
+**Touch-refresh tested against real data**
+(`scripts/signal-bus/divergence-for-many/touch-refresh-analysis.js`) — a from-scratch re-scan,
+not a re-query: `touches.js`'s existing detection stops at each zone's original fixed
+`expiresBarIdx`, so touches past that point were never even recorded. Rule tested: a zone's
+"alive until" bar resets to (touch end + 200) every time it's touched, instead of being fixed at
+confirmation + 200; it only truly expires after 200 bars pass with no touch at all.
+
+| | n | hold rate |
+|---|---|---|
+| Core touches (within the original fixed window) | 34,927 | 53.9% |
+| Extended touches (only reachable via refresh, past the original window) | 21,409 | 50.6% |
+
+**Extended touches behave close to core touches, not degraded.** A 3.3-point gap on a sample this
+large is worth a real significance check before leaning on it, but even taken at face value it's
+nowhere near "these are stale, meaningless interactions" — sustained interaction appears to carry
+real signal, not noise, largely consistent with the proposal's premise.
+
+**Capacity/clutter concern directly addressed, not just asserted: only 2 of 5,519 zones (0.04%)
+are currently "expired" under the fixed rule but would still read as touch-refresh-active right
+now.** Most zones that ever get an "extended" touch still eventually go 200 bars without one and
+lapse naturally — touch-refresh extends a zone exactly as much as sustained interaction actually
+warrants, it does not create a growing backlog of old lines. This is a real, concrete answer to
+the stated worry, not a hand-wave: adopting this rule would not flood the screen with ancient
+zones.
+
+**Status: empirically supported, not yet built.** This analysis validates the *backdata
+behavior* of the proposed rule — it does not itself change what's drawn on the live chart.
+Implementing it for real would mean forking `divergence-for-many-relevance-gated.pine`'s expiry
+logic (a Pine script change), a separate, deliberate step from this analysis.
+
+Results saved to `scripts/signal-bus/divergence-for-many/results/touch_refresh_analysis_*.json`.

@@ -1,0 +1,11 @@
+{
+  "totalZones": 5519,
+  "coreTouchCount": 34927,
+  "coreHoldRate": 0.5394107710367337,
+  "extendedTouchCount": 21409,
+  "extendedHoldRate": 0.5057686019898173,
+  "stillActiveUnderRefreshButExpiredUnderFixed": 2,
+  "refreshBars": 200,
+  "git_commit": "dc85554a3bd1772b56e00f5a9cf580ed8099079b",
+  "generated_at": "2026-07-30T12:25:28.618Z"
+}
