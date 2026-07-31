@@ -2088,3 +2088,37 @@ than a regime filter) — flagged for a follow-up pass, not built in this phase.
 verdict stands: **do not gate Cipher B `buySignal`/`sellSignal` by same-bar MFI sign** — it doesn't
 help on the timeframe that matters, and the majority "against" bucket already carries the raw
 signal's edge on its own.
+
+## 21. Multi-timeframe stacking — Phase 3 — the strongest result in this whole investigation — 2026-07-31
+
+Tests the video's other central claim directly: does a 5-minute `buySignal`/`sellSignal` (Phase
+1's one real, replicated base signal) confirmed by a SAME-SIDE dot on a HIGHER timeframe outperform
+one without? Different question from §18.4's per-timeframe stratification (which asked "which
+single timeframe alone is best") — this asks whether cross-timeframe agreement adds value on top
+of the best timeframe already found. Window scales with each higher timeframe's own bar duration
+(3 bars — a 3-hour lookback on 1h, a 3-day lookback on 1d, a 3-week lookback on 1w) rather than a
+flat window, avoiding the "ever in 9 years" mistake already caught once today. Implemented as a
+two-pointer sweep (both event lists chronologically sorted) for efficiency at 45k+ base events, and
+verified look-ahead-safe by construction (a higher-TF event only counts if its own confirmation
+time is at or before the base event's).
+
+**Result: a clean, monotonic dose-response, significant at every one of 4 horizons for every
+confirm-count bucket above zero.**
+
+| confirm-count | n | correct-dir (5/10/20/40 bars) | significant? |
+|---|---|---|---|
+| 0 (no higher-TF agreement) | 29,890 | 53.2–54.4% | **no, at any horizon** |
+| 1 | 11,351 | 54.4–56.1% | yes, all 4 |
+| 2 | 3,056 | 56.9–58.8% | yes, all 4 |
+| 3+ | 895 | 60.2–68.0% | yes, all 4, by far the strongest |
+
+**This is the first result in the entire Cipher B investigation (divergence or buySignal) where a
+professional-practice refinement confirms the theory instead of contradicting or being neutral to
+it** — confirmation-chasing on divergence (§18.2) reversed the edge; same-bar MFI (§20) weakened
+it; multi-timeframe stacking amplifies it cleanly, and the unconfirmed majority (66% of all base
+events) carries essentially no edge on its own — the entire signal lives in the confirmed 34%,
+scaling with how many timeframes agree, exactly as the video describes ("start with the larger
+time frames... the more time frames that agree, the stronger the signal"). 68.0% correct-direction
+at confirm-count=3+, N=20 is the single strongest number produced anywhere in this project's
+Cipher B work, though n=895 there is the thinnest of the four buckets and shouldn't be read as more
+precise than it is. Proceeding to Phase 4 (Cipher A yellow-X veto) per the approved plan.
