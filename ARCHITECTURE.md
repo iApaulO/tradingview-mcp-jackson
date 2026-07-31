@@ -2342,3 +2342,54 @@ already-overextended move rather than catching a fresh reversal — the opposite
 work. **Practical implication for any future trade-construction pass: prefer 60-80 as the
 "stronger" bucket, and treat 90+ readings as a caution flag, not a stronger buy/sell — the reverse
 of the video's own framing.**
+
+## 28. Phase 8 — multi-indicator confluence in the extreme ranges — one near-tautology caught, one genuine compounding effect found — 2026-07-31
+
+iapaulo's third and final ask from the same request: "the significance of multi indicator
+confluence of signals occuring in these ranges." Two attempts.
+
+**Part 1 (caught before trusting it, abandoned as degenerate): Cipher A's own wt2 also reading
+extreme, same side, same bar as Cipher B's.** The obvious first idea — check whether a second
+indicator's oscillator agrees. Before running any significance test, checked the correlation
+between Cipher A's wt2 and Cipher B's wt2 directly: **r=0.9993 across all 939,150 5m bars.** The two
+series are near-identical (both are the same WaveTrend formula on the same price data; the only
+real difference is `wtAverageLen` 12 vs 13) — "confluence" here is close to reading the same number
+off two clocks, not independent confirmation. The naive significance test does show a dramatic
+split (confluent 54.3-55.5% vs. non-confluent 51.0-52.5%), but the non-confluent bucket is only
+7.2% of events (n=3,269) and vanishes to zero entirely above wt2=70 — a direct consequence of the
+near-1.0 correlation, not evidence of a real effect. **Do not use Cipher A's own WT2 as a
+confluence check for Cipher B signals** — it isn't a second opinion, it's the same opinion measured
+twice.
+
+**Part 2 (the real test): Cipher B's own regular WT divergence — a structurally distinct, fractal-
+pivot-based detector (`computeVmcCipherB`, unrelated in method to the OB/OS-threshold crossing
+behind buySignal/sellSignal, though both ultimately read wt2) — occurring same-side within the
+prior 10 bars.** Past-only window, same look-ahead-safe convention as §22/§26's corrected checks.
+
+Overall: divergence-confluent signals (n=3,137, 6.9% of the total) beat non-confluent at every
+horizon except the last: 57.0% vs. 54.0% at N=5 (z=3.78, p=0.0002), 58.6% vs. 54.7% at N=10
+(z=4.67, p<0.0001), 57.0% vs. 55.2% at N=20 (z=4.57, p<0.0001), non-significant by N=40.
+
+**This compounds specifically inside §27's peak zone.** Within the 70-80 wt2 bucket (§27's best
+single-indicator result, 55.8-57.5% correct-direction), adding divergence confluence (n=711) pushes
+it further: 58.5% at N=5, **61.7% at N=10** (z=3.98, p=0.0001), 61.5% at N=20, 60.5% at N=40 — every
+horizon significant, the strongest sustained result in the entire Phase 6-8 extension. The 53-70
+band shows a similar but weaker and less consistent lift (fades by N=20/40). The 80-100 band shows
+a promising but thinner lift (n=366, significant only at N=10/20). **The 100+ reversal bucket
+cannot be tested for a rescue effect — only 15 of 383 events there have a recent divergence, too
+thin to read either way; this is a disclosed gap, not a null result.**
+
+Multiple-comparisons context: this table is dense (roughly 40 cells across the overall test and the
+4-bucket interaction), ~2 false positives expected by chance at α=0.05 — the actual significant-cell
+count is far higher and, critically, concentrated coherently in the theoretically motivated cells
+(the 70-80 peak bucket clears all 4 horizons), not scattered.
+
+**Verdict: genuine multi-indicator (or, more precisely, multi-DETECTOR) confluence is real and
+compounds the strongest existing Cipher B finding — but only when the second signal is actually
+independent.** Two indicators computing the same formula on the same inputs (Part 1) is not
+confluence; two structurally different detection methods reading the same underlying series (Part
+2, an OB/OS-threshold cross plus a fractal-pivot divergence) is. The combination of §27's 70-80
+wt2-extremity sweet spot with a recent same-side regular divergence (this section) is now the
+single strongest, most specific entry description produced across Phases 6-8 — not yet
+cost/capacity tested, per the same standing direction that applies to every finding in this
+extension.

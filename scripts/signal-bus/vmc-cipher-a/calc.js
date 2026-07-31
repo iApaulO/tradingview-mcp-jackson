@@ -77,7 +77,9 @@ function rsi(closes, length) {
   return out;
 }
 
-function computeWaveTrend(candles) {
+// Exported for Phase 8 (multi-indicator confluence): lets a caller read Cipher A's OWN wt2 at an
+// arbitrary bar, e.g. to check whether it's ALSO extreme at the same moment Cipher B's signal fires.
+export function computeWaveTrend(candles) {
   const hlc3 = candles.map((c) => (c.h + c.l + c.c) / 3);
   const esa = ema(hlc3, WT_CHANNEL_LEN);
   const absDiff = hlc3.map((v, i) => Math.abs(v - esa[i]));
