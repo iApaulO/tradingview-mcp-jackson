@@ -1,0 +1,40 @@
+{
+  "zoneCount": 5189,
+  "touchCount": 34927,
+  "iterations": 20000,
+  "seed": 42,
+  "byCategory": {
+    "cipherB-confluent": {
+      "zoneCount": 4932,
+      "touchCount": 32995,
+      "holdRate": 0.5395059857554175
+    },
+    "none": {
+      "zoneCount": 257,
+      "touchCount": 1932,
+      "holdRate": 0.5320910973084886
+    }
+  },
+  "correlation": {
+    "real": 0.0034004207669570126,
+    "p": 0.27115,
+    "permutedMean": -0.00006443946710177405,
+    "permutedRange": [
+      -0.025199522181166157,
+      0.02229645484008642
+    ]
+  },
+  "gap": {
+    "real": 0.007414888446928947,
+    "nAny": 32995,
+    "nNone": 1932,
+    "p": 0.2812,
+    "permutedMean": -0.00018948920073078626,
+    "permutedRange": [
+      -0.05834177292416576,
+      0.04917427536205138
+    ]
+  },
+  "git_commit": "2e0e59fc9a94e9fbf9db750e68c23ea4c56308fb",
+  "generated_at": "2026-07-31T11:51:30.619Z"
+}

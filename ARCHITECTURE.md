@@ -1830,4 +1830,118 @@ behavior* of the proposed rule — it does not itself change what's drawn on the
 Implementing it for real would mean forking `divergence-for-many-relevance-gated.pine`'s expiry
 logic (a Pine script change), a separate, deliberate step from this analysis.
 
+## 16. Touch-refresh + intensity-scaling Pine fork — built, debugged, live-verified — 2026-07-30
+
+Followed through on §15: `pine/divergence-for-many-touch-refresh-intensity.pine`, a surgical fork
+of the original (diffed byte-for-byte to confirm every divergence-detection line above the
+promoted-glow-level machinery is untouched). Two changes, both gated by their own input, default
+true: (1) touch-refresh expiry — a new `refresh_touched_glows()` resets a level's stored
+`bar_index` to now if price is touching it, before `expire_old_glows` runs; (2) confluence-scaled
+intensity — `draw_promoted_glow` computes a `tier` from `divcount - badgeglow_min_reg_divs`
+(capped at `badgeglow_max_intensity_tier`) and widens/brightens the three glow layers accordingly;
+tier 0 (at the minimum threshold) renders identically to the original's fixed widths.
+
+**A real, pre-existing bug was found and fixed in the process, not introduced by the fork.** The
+original's `expire_old_glows` computes its delete index as `idx = array.size(levels) - 1 - i`
+*inside* a `for i = 0 to array.size(levels) - 1` loop whose bound is fixed at the ORIGINAL size —
+when 2+ levels expire on the same bar, the first deletion shrinks the array but `i` keeps
+incrementing against the old bound, driving `idx` negative on a later iteration. Confirmed live on
+the actual chart: `RE10045 — array.get() Index -1 is out of bounds, array size is 1`, bar 2113.
+This crash halts the script's historical replay at that bar, which is why the fork initially
+showed **zero** promoted glow lines on the live chart despite compiling cleanly — not a fork
+regression, a latent bug in the unmodified original that this fork's live-testing happened to
+surface first (it requires the rare condition of two simultaneous same-bar expirations, which the
+original script apparently hadn't hit yet on this specific instance/timeframe history). Fixed by
+iterating the index directly (`for i = array.size(levels) - 1 to 0`, using `i` itself, not a
+recomputed value) so a deletion never invalidates a not-yet-visited index.
+
+**Debugging trail, disclosed because it was expensive and the failure modes are worth knowing
+about for next time:**
+- The Pine Editor's automated `pine.set()`/`pine.compile()` path proved unreliable at this session's
+  scale of back-and-forth: a save operation silently created a **duplicate script** ("... copy")
+  rather than updating the original in at least one instance, and separate edits landed in an
+  editor buffer that wasn't the one visually active on the chart. Ground truth that actually worked:
+  screenshotting the real Pine Editor tab, and hovering the chart's error-exclamation icon directly
+  for the exact `RE10045` runtime-error tooltip (compile-time checks — both the editor's own marker
+  API and TradingView's public `translate_light` endpoint — do NOT surface runtime errors like this
+  one; confirmed the endpoint doesn't even catch an undefined-variable reference, so it's not a
+  reliable signal for anything beyond gross syntax).
+  - A live temp-debug `label.new()` added under `if barstate.islast` without deleting the prior
+    instance caused a SECOND, self-inflicted runtime error (blew past `max_labels_count=400` since
+    `barstate.islast` stays true across every tick of the forming bar, not just once) — fixed by
+    creating the label once via `var` and updating it in place with `label.set_xy`/`label.set_text`.
+    Standard pattern worth remembering for any future live Pine debug scaffolding.
+  - Separately found and fixed a real UI bug unrelated to the Pine fork itself: the price pane had
+    silently become "maximized" (`chart.model().model().panes()[0].maximized() === true`), forcing
+    VMC Cipher B and Boom Hunter Pro's panes to height 0 — invisible, but still fully computing.
+    Fixed with a double-click on the price pane (TradingView's own maximize/restore toggle
+    gesture); no reliable JS setter was found for this, the UI gesture was the only working path.
+
+**Live-verified after the fix:** confirmed zero runtime errors across all 8 signal-bus timeframes
+(1m/5m/15m/1h/2h/4h/1d/1w), and confirmed glow lines are genuinely being drawn (not just "no
+crash") via direct `line.new()` object reads on 2h (3 bearish levels) and 5m (bull+bear mixed).
+The originally-reported "missing lines" pattern (badges without corresponding glow lines) was
+separately confirmed to be the relevance-gating design working as intended, not a bug: a badge
+fires on any 3+ total divergences (mixed regular/hidden across families), while promotion to a
+glow line requires 3+ REGULAR divergences specifically, deduplicated by ATR-tolerance against
+existing levels, and capped at `badgeglow_max_levels` (default 3) concurrently visible per side —
+most historical badges will correctly never have a currently-visible line for one of these three
+reasons, which is the anti-clutter design §15 was proposed to complement, not a defect in it.
+
+## 17. Per-indicator signal bus (VMC Cipher B Divergences) — 2026-07-31
+
+Third indicator brought into the signal-bus pipeline (after Divergence-for-Many, §9, and SMC,
+§10) — motivated directly by iapaulo naming the gap: "we have a whole battery of indicators and no
+clear path to evaluate their individual and cumulative value." `pine/vmc-cipher-b-divergences.pine`
+read in full first; settings verified against the **live chart's actual configuration** (a direct
+properties probe on the running indicator, entity `Ilt4Lv`), not the Pine author's documented
+defaults — `wtShowHiddenDiv` is live-set to `true`, a real deviation from the author's own default
+of `false`, meaning hidden divergences are genuinely active on the chart, not just regular ones.
+
+**Scope, deliberately narrow for this first pass:** only the flagship WT-wave-2 regular + hidden
+divergence signal (`f_wavetrend` + `f_findDivs`, faithfully ported in
+`scripts/signal-bus/vmc-cipher-b/calc.js`) — the signal the indicator is literally named after. Not
+yet built: RSI/Stoch divergence (both confirmed OFF live), `buySignal`/`sellSignal` (WT cross at
+OB/OS, no divergence requirement), `wtGoldBuy`, Sommi flag/diamond (both confirmed OFF live).
+`touches.js`/`confluence.js` are ported verbatim from Divergence-for-Many (same single-price-line
+zone shape, kept as a per-indicator copy per this project's existing convention rather than a
+shared import — see SMC's genuinely-different range-based `touches.js` for why that convention
+exists). One structural difference from every existing zone type in this project: **Cipher B zones
+never expire** (no analogous mechanism in the source) — touches accumulate across the zone's
+entire remaining history, which mattered directly for the significance-testing methodology below.
+
+**Full 8-timeframe historical build:** 38,704 zones, 5.06M touches (`data/signal-bus/vmc-cipher-b.db`).
+
+**Standalone significance test result: essentially null, both cuts.**
+
+| test | statistic | result | p-value |
+|---|---|---|---|
+| regular vs. hidden divergence | hold-rate gap (touch-weighted) | 0.65 pts | 0.0000 |
+| regular vs. hidden divergence | hold-rate gap (zone-level, unweighted) | 0.90 pts | — |
+| cross-timeframe confluence | point-biserial r | 0.0077 | 0.0000 |
+| cross-timeframe confluence | isolated vs. 3-way gap | 1.98 pts | 0.0000 |
+
+Every p-value clears 5% — but the effect sizes are all within ~1-2 points of a 50% coin flip,
+nowhere near the ~7-point gap that made #4/#27 worth pursuing. At 5M touches, statistical power is
+high enough that even an economically meaningless real difference reads as p<0.0001; **checked
+this isn't a single-dominant-zone artifact first** (top 100 zones by touch count are only 1.3% of
+all touches — ruled out) before concluding the effect is real-but-trivial rather than a bug.
+**Read this as a genuine negative result**, not a failed build: Cipher B's raw WT
+divergence — "does price hold at this level" — carries essentially no standalone edge with the
+live chart's current settings, regular or hidden, confluent or isolated.
+
+**Cross-indicator confluence test (2026-07-31), kept apples-to-apples with §11's already-falsified
+SMC test:** same base indicator (Divergence-for-Many zones), same permutation methodology, testing
+Cipher-B-confluence instead of SMC-confluence
+(`scripts/signal-bus/cross-confluence/divergence-vs-cipherb-confluence.js`). Result: **falsified**,
+r=0.0034 (p=0.2712), gap 0.74pts (p=0.2812) — neither statistic distinguishable from a randomly
+relabeled null. **One methodological caveat worth flagging explicitly, not burying**: because
+Cipher B zones never expire, 4,932 of 5,189 Divergence-for-Many zones (95.0%) show *some* Cipher B
+confluence — the "none" bucket (n=257) may partly just be catching very early-history zones before
+enough Cipher B zones had accumulated nearby, a time-in-history confound rather than a pure
+confluence measurement. The near-universal "yes" rate on its own is a sign this particular
+confluence definition has limited discriminating power for Cipher B specifically (unlike SMC's
+mitigation-bounded order blocks, which meaningfully turn on and off over time) — a cleaner test
+would need a bounded "still-relevant" window for Cipher B zones, not just "ever existed before."
+
 Results saved to `scripts/signal-bus/divergence-for-many/results/touch_refresh_analysis_*.json`.

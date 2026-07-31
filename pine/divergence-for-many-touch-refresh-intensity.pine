@@ -1,0 +1,587 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © LonesomeTheBlue
+//
+// FORK, 2026-07-30 (iapaulo / house research): two changes to the promoted-glow-level system,
+// both backdata-validated before being drafted here (ARCHITECTURE.md §14-15, house's own signal-
+// bus work), NOT yet live-tested against a real chart. Diff against
+// pine/divergence-for-many-relevance-gated.pine is confined to the "Relevance-gated badge glow
+// horizontal levels" machinery -- every divergence-detection line above it is untouched, byte for
+// byte, from the original.
+//
+// CHANGE 1 -- Touch-refresh expiry (new input: badgeglow_touch_refresh, default true).
+//   Original rule: a promoted level's clock is set ONCE at promotion (`array.push(bars, bar_index)`
+//   inside draw_promoted_glow) and never touched again -- it expires exactly badgeglow_expire_bars
+//   later regardless of what price does with it in between. Backdata test (§15): a from-scratch
+//   re-scan showed touches that only exist because of a refresh-style rule hold at 50.6% (n=21,409)
+//   vs. 53.9% for touches within the original fixed window (n=34,927) -- close, not degraded --
+//   and only 2 of 5,519 zones currently read "expired" under the fixed rule but would still be
+//   refresh-active, i.e. this does NOT flood the chart with old lines in practice.
+//   Mechanism: a new refresh_touched_glows() function runs every bar, BEFORE expire_old_glows,
+//   and resets a level's stored bar_index to the CURRENT bar_index if price is touching it right
+//   now (same touch test as the house's touches.js: low <= level and high >= level). Gated by an
+//   input so it can be A/B'd against the original behavior without a second indicator instance.
+//
+// CHANGE 2 -- Confluence-scaled intensity (new input: badgeglow_scale_intensity, default true).
+//   Original rule: every promoted level renders at IDENTICAL width/opacity (badge_glow_outer/
+//   middle/core_width, fixed inputs) regardless of how many divergences triggered it, beyond the
+//   minimum-3 gate. Backdata basis: the house's own confluence-vs-hold-rate finding (53.4%->60.6%,
+//   p<0.001) already shows more agreement is real signal, not noise -- this makes that visible.
+//   Mechanism: a level promoted with MORE regular divergences than the minimum gate renders wider
+//   and more opaque, up to a capped tier (+3 divergences above minimum = max tier, avoids
+//   unbounded growth). This is SAME-TIMEFRAME confluence (how many indicator families agreed when
+//   THIS level was promoted) -- not cross-timeframe agreement, which would need request.security()
+//   calls to pull in the other 7 timeframes and is a materially bigger, riskier change (repainting/
+//   look-ahead considerations) intentionally left OUT of this draft. Flagged, not built.
+//
+// Both changes are OFF-able independently via their own inputs -- default true here because both
+// cleared their backdata check, but toggle off to reproduce the original's exact behavior for
+// direct comparison.
+
+//@version=4
+study("Divergence for Many Indicators v4 - Relevance Gated Badge Levels [Touch-Refresh Fork]", overlay = true, max_bars_back = 1000, max_lines_count = 500, max_labels_count = 400)
+
+// Commander default profile:
+// Pivot Period = 10
+// Minimum Divergences = 3
+// Original Divergence Lines = ON
+// Pivot Labels = ON
+// Enabled indicators = MACD, MACD Histogram, RSI, Stochastic
+// Disabled indicators = CCI, Momentum, OBV, VW-MACD, CMF, MFI, External
+
+prd = input(defval = 10, title = "Pivot Period", minval = 1, maxval = 50)
+source = input(defval = "Close", title = "Source for Pivot Points", options = ["Close", "High/Low"])
+searchdiv = input(defval = "Regular", title = "Divergence Type", options = ["Regular", "Hidden", "Regular/Hidden"])
+showindis = input(defval = "Full", title = "Show Indicator Names", options = ["Full", "First Letter", "Don't Show"])
+showlimit = input(3, title="Minimum Number of Divergence", minval = 1, maxval = 11)
+maxpp = input(defval = 10, title = "Maximum Pivot Points to Check", minval = 1, maxval = 20)
+maxbars = input(defval = 100, title = "Maximum Bars to Check", minval = 30, maxval = 200)
+shownum = input(defval = true, title = "Show Divergence Number")
+showlast = input(defval = false, title = "Show Only Last Divergence")
+dontconfirm = input(defval = false, title = "Don't Wait for Confirmation")
+showlines = input(defval = true, title = "Show Original Diagonal Divergence Lines")
+showpivot = input(defval = true, title = "Show Pivot Points")
+calcmacd = input(defval = true, title = "MACD")
+calcmacda = input(defval = true, title = "MACD Histogram")
+calcrsi = input(defval = true, title = "RSI")
+calcstoc = input(defval = true, title = "Stochastic")
+calccci = input(defval = false, title = "CCI")
+calcmom = input(defval = false, title = "Momentum")
+calcobv = input(defval = false, title = "OBV")
+calcvwmacd = input(false, title = "VWmacd")
+calccmf = input(false, title = "Chaikin Money Flow")
+calcmfi = input(false, title = "Money Flow Index")
+calcext = input(false, title = "Check External Indicator")
+externalindi = input(defval = close, title = "External Indicator")
+pos_reg_div_col = input(defval = color.yellow, title = "Positive Regular Divergence")
+neg_reg_div_col = input(defval = color.purple, title = "Negative Regular Divergence")
+pos_hid_div_col = input(defval = color.lime, title = "Positive Hidden Divergence")
+neg_hid_div_col = input(defval = color.red, title = "Negative Hidden Divergence")
+pos_div_text_col = input(defval = color.black, title = "Positive Divergence Text Color")
+neg_div_text_col = input(defval = color.white, title = "Negative Divergence Text Color")
+reg_div_l_style_ = input(defval = "Solid", title = "Regular Divergence Line Style", options = ["Solid", "Dashed", "Dotted"])
+hid_div_l_style_ = input(defval = "Dashed", title = "Hdden Divergence Line Style", options = ["Solid", "Dashed", "Dotted"])
+reg_div_l_width = input(defval = 2, title = "Regular Divergence Line Width", minval = 1, maxval = 5)
+hid_div_l_width = input(defval = 1, title = "Hidden Divergence Line Width", minval = 1, maxval = 5)
+showmas = input(defval = false, title = "Show MAs 50 & 200", inline = "ma12")
+cma1col = input(defval = color.lime, title = "", inline = "ma12")
+cma2col = input(defval = color.red, title = "", inline = "ma12")
+
+// Relevance-gated badge glow horizontal levels
+showbadgeglow = input(defval = true, title = "Show Promoted Badge Glow Levels")
+badgeglowextend = input(defval = true, title = "Extend Promoted Levels Right")
+badgeglowbars = input(defval = 80, title = "Promoted Level Length", minval = 1, maxval = 500)
+badgeglow_min_reg_divs = input(defval = 3, title = "Minimum Regular Divergences for Glow Level", minval = 1, maxval = 11)
+badgeglow_max_levels = input(defval = 3, title = "Maximum Promoted Levels Per Side", minval = 1, maxval = 10)
+badgeglow_atr_len = input(defval = 14, title = "ATR Length for Duplicate Filter", minval = 1, maxval = 100)
+badgeglow_atr_mult = input(defval = 0.60, title = "Duplicate Filter ATR Multiplier", minval = 0.05, maxval = 5.0)
+badgeglow_expire_bars = input(defval = 200, title = "Expire Promoted Levels After Bars", minval = 0, maxval = 1000)
+badgeglow_touch_refresh = input(defval = true, title = "Touch-Refresh Expiry (extend life on interaction)")
+badgeglow_scale_intensity = input(defval = true, title = "Scale Glow Intensity By Confluence")
+badgeglow_max_intensity_tier = input(defval = 3, title = "Max Intensity Tiers Above Minimum", minval = 0, maxval = 8)
+yellow_badge_col = input(defval = color.yellow, title = "Bottom Regular Badge Color")
+purple_badge_col = input(defval = color.purple, title = "Top Regular Badge Color")
+bull_badge_glow_col = input(defval = color.lime, title = "Bottom Yellow Badge Glow Line")
+bear_badge_glow_col = input(defval = color.red, title = "Top Purple Badge Glow Line")
+badge_glow_outer_width = input(defval = 5, title = "Badge Glow Outer Width (base tier)", minval = 1, maxval = 20)
+badge_glow_middle_width = input(defval = 3, title = "Badge Glow Middle Width (base tier)", minval = 1, maxval = 15)
+badge_glow_core_width = input(defval = 1, title = "Badge Glow Core Width (base tier)", minval = 1, maxval = 10)
+
+plot(showmas ? sma(close, 50) : na, color = showmas ? cma1col : na)
+plot(showmas ? sma(close, 200) : na, color = showmas ? cma2col: na)
+
+// set line styles
+var reg_div_l_style = reg_div_l_style_ == "Solid" ? line.style_solid :
+                       reg_div_l_style_ == "Dashed" ? line.style_dashed :
+                       line.style_dotted
+var hid_div_l_style = hid_div_l_style_ == "Solid" ? line.style_solid :
+                       hid_div_l_style_ == "Dashed" ? line.style_dashed :
+                       line.style_dotted
+
+
+// get indicators
+rsi = rsi(close, 14) // RSI
+[macd, signal, deltamacd] = macd(close, 12, 26, 9) // MACD
+moment = mom(close, 10) // Momentum
+cci = cci(close, 10) // CCI
+Obv = obv // OBV
+stk = sma(stoch(close, high, low, 14), 3) // Stoch
+maFast = vwma(close, 12), maSlow = vwma(close, 26), vwmacd = maFast - maSlow // volume weighted macd
+Cmfm = ((close-low) - (high-close)) / (high - low), Cmfv = Cmfm * volume, cmf = sma(Cmfv, 21) / sma(volume,21) // Chaikin money flow
+Mfi = mfi(close, 14) // Moneyt Flow Index
+
+// keep indicators names and colors in arrays
+var indicators_name = array.new_string(11)
+var div_colors = array.new_color(4)
+if barstate.isfirst
+    // names
+    array.set(indicators_name, 0, showindis == "Full" ? "MACD" : "M")
+    array.set(indicators_name, 1, showindis == "Full" ? "Hist" : "H")
+    array.set(indicators_name, 2, showindis == "Full" ? "RSI" : "E")
+    array.set(indicators_name, 3, showindis == "Full" ? "Stoch" : "S")
+    array.set(indicators_name, 4, showindis == "Full" ? "CCI" : "C")
+    array.set(indicators_name, 5, showindis == "Full" ? "MOM" : "M")
+    array.set(indicators_name, 6, showindis == "Full" ? "OBV" : "O")
+    array.set(indicators_name, 7, showindis == "Full" ? "VWMACD" : "V")
+    array.set(indicators_name, 8, showindis == "Full" ? "CMF" : "C")
+    array.set(indicators_name, 9, showindis == "Full" ? "MFI" : "M")
+    array.set(indicators_name,10, showindis == "Full" ? "Extrn" : "X")
+    //colors
+    array.set(div_colors, 0, pos_reg_div_col)
+    array.set(div_colors, 1, neg_reg_div_col)
+    array.set(div_colors, 2, pos_hid_div_col)
+    array.set(div_colors, 3, neg_hid_div_col)
+
+// Check if we get new Pivot High Or Pivot Low
+float ph = pivothigh((source == "Close" ? close : high), prd, prd)
+float pl = pivotlow((source == "Close" ? close : low), prd, prd)
+plotshape(ph and showpivot, text = "H",  style = shape.labeldown, color = color.new(color.white, 100), textcolor = color.red, location = location.abovebar, offset = -prd)
+plotshape(pl and showpivot, text = "L",  style = shape.labelup, color = color.new(color.white, 100), textcolor = color.lime, location = location.belowbar, offset = -prd)
+
+// keep values and positions of Pivot Highs/Lows in the arrays
+var int maxarraysize = 20
+var ph_positions = array.new_int(maxarraysize, 0)
+var pl_positions = array.new_int(maxarraysize, 0)
+var ph_vals = array.new_float(maxarraysize, 0.)
+var pl_vals = array.new_float(maxarraysize, 0.)
+
+// add PHs to the array
+if ph
+    array.unshift(ph_positions, bar_index)
+    array.unshift(ph_vals, ph)
+    if array.size(ph_positions) > maxarraysize
+        array.pop(ph_positions)
+        array.pop(ph_vals)
+
+// add PLs to the array
+if pl
+    array.unshift(pl_positions, bar_index)
+    array.unshift(pl_vals, pl)
+    if array.size(pl_positions) > maxarraysize
+        array.pop(pl_positions)
+        array.pop(pl_vals)
+
+// functions to check Regular Divergences and Hidden Divergences
+
+// function to check positive regular or negative hidden divergence
+// cond == 1 => positive_regular, cond == 2=> negative_hidden
+positive_regular_positive_hidden_divergence(src, cond)=>
+    divlen = 0
+    prsc = source == "Close" ? close : low
+    // if indicators higher than last value and close price is higher than las close
+    if dontconfirm or src > src[1] or close > close[1]
+        startpoint = dontconfirm ? 0 : 1 // don't check last candle
+        // we search last 15 PPs
+        for x = 0 to maxpp - 1
+            len = bar_index - array.get(pl_positions, x) + prd
+            // if we reach non valued array element or arrived 101. or previous bars then we don't search more
+            if array.get(pl_positions, x) == 0 or len > maxbars
+                break
+            if len > 5 and
+               ((cond == 1 and src[startpoint] > src[len] and prsc[startpoint] < nz(array.get(pl_vals, x))) or
+               (cond == 2 and src[startpoint] < src[len] and prsc[startpoint] > nz(array.get(pl_vals, x))))
+                slope1 = (src[startpoint] - src[len]) / (len - startpoint)
+                virtual_line1 = src[startpoint] - slope1
+                slope2 = (close[startpoint] - close[len]) / (len - startpoint)
+                virtual_line2 = close[startpoint] - slope2
+                arrived = true
+                for y = 1 + startpoint to len - 1
+                    if src[y] < virtual_line1 or nz(close[y]) < virtual_line2
+                        arrived := false
+                        break
+                    virtual_line1 := virtual_line1 - slope1
+                    virtual_line2 := virtual_line2 - slope2
+
+                if arrived
+                    divlen := len
+                    break
+    divlen
+
+// function to check negative regular or positive hidden divergence
+// cond == 1 => negative_regular, cond == 2=> positive_hidden
+negative_regular_negative_hidden_divergence(src, cond)=>
+    divlen = 0
+    prsc = source == "Close" ? close : high
+    // if indicators higher than last value and close price is higher than las close
+    if dontconfirm or src < src[1] or close < close[1]
+        startpoint = dontconfirm ? 0 : 1 // don't check last candle
+        // we search last 15 PPs
+        for x = 0 to maxpp - 1
+            len = bar_index - array.get(ph_positions, x) + prd
+            // if we reach non valued array element or arrived 101. or previous bars then we don't search more
+            if array.get(ph_positions, x) == 0 or len > maxbars
+                break
+            if len > 5 and
+               ((cond == 1 and src[startpoint] < src[len] and prsc[startpoint] > nz(array.get(ph_vals, x))) or
+               (cond == 2 and src[startpoint] > src[len] and prsc[startpoint] < nz(array.get(ph_vals, x))))
+                slope1 = (src[startpoint] - src[len]) / (len - startpoint)
+                virtual_line1 = src[startpoint] - slope1
+                slope2 = (close[startpoint] - nz(close[len])) / (len - startpoint)
+                virtual_line2 = close[startpoint] - slope2
+                arrived = true
+                for y = 1 + startpoint to len - 1
+                    if src[y] > virtual_line1 or nz(close[y]) > virtual_line2
+                        arrived := false
+                        break
+                    virtual_line1 := virtual_line1 - slope1
+                    virtual_line2 := virtual_line2 - slope2
+
+                if arrived
+                    divlen := len
+                    break
+    divlen
+
+// calculate 4 types of divergence if enabled in the options and return divergences in an array
+calculate_divs(cond, indicator)=>
+    divs = array.new_int(4, 0)
+    array.set(divs, 0, cond and (searchdiv == "Regular" or searchdiv == "Regular/Hidden") ? positive_regular_positive_hidden_divergence(indicator, 1) : 0)
+    array.set(divs, 1, cond and (searchdiv == "Regular" or searchdiv == "Regular/Hidden") ? negative_regular_negative_hidden_divergence(indicator, 1) : 0)
+    array.set(divs, 2, cond and (searchdiv == "Hidden" or searchdiv == "Regular/Hidden")  ? positive_regular_positive_hidden_divergence(indicator, 2) : 0)
+    array.set(divs, 3, cond and (searchdiv == "Hidden" or searchdiv == "Regular/Hidden")  ? negative_regular_negative_hidden_divergence(indicator, 2) : 0)
+    divs
+
+// array to keep all divergences
+var all_divergences = array.new_int(44) // 11 indicators * 4 divergence = 44 elements
+// set related array elements
+array_set_divs(div_pointer, index)=>
+    for x = 0 to 3
+        array.set(all_divergences, index * 4 + x, array.get(div_pointer, x))
+
+// set divergences array
+array_set_divs(calculate_divs(calcmacd, macd), 0)
+array_set_divs(calculate_divs(calcmacda, deltamacd), 1)
+array_set_divs(calculate_divs(calcrsi, rsi), 2)
+array_set_divs(calculate_divs(calcstoc, stk), 3)
+array_set_divs(calculate_divs(calccci, cci), 4)
+array_set_divs(calculate_divs(calcmom, moment), 5)
+array_set_divs(calculate_divs(calcobv, Obv), 6)
+array_set_divs(calculate_divs(calcvwmacd, vwmacd), 7)
+array_set_divs(calculate_divs(calccmf, cmf), 8)
+array_set_divs(calculate_divs(calcmfi, Mfi), 9)
+array_set_divs(calculate_divs(calcext, externalindi), 10)
+
+// check minimum number of divergence, if less than showlimit then delete all divergence
+total_div = 0
+for x = 0 to array.size(all_divergences) - 1
+    total_div := total_div + round(sign(array.get(all_divergences, x)))
+
+if total_div < showlimit
+    array.fill(all_divergences, 0)
+
+// keep line in an array
+var pos_div_lines = array.new_line(0)
+var neg_div_lines = array.new_line(0)
+var pos_div_labels = array.new_label(0)
+var neg_div_labels = array.new_label(0)
+
+// Separate promoted glow-level storage. These are intentionally not mixed with
+// the original divergence-line arrays, so showlast/delete logic does not create noise.
+// divcount arrays added for CHANGE 2 (intensity scaling) -- parallel to levels/bars.
+var bull_glow_outer_lines = array.new_line(0)
+var bull_glow_middle_lines = array.new_line(0)
+var bull_glow_core_lines = array.new_line(0)
+var bull_glow_levels = array.new_float(0)
+var bull_glow_bars = array.new_int(0)
+var bull_glow_divcount = array.new_int(0)
+var bear_glow_outer_lines = array.new_line(0)
+var bear_glow_middle_lines = array.new_line(0)
+var bear_glow_core_lines = array.new_line(0)
+var bear_glow_levels = array.new_float(0)
+var bear_glow_bars = array.new_int(0)
+var bear_glow_divcount = array.new_int(0)
+
+level_exists_near(levels, level, tolerance)=>
+    exists = false
+    if array.size(levels) > 0
+        for i = 0 to array.size(levels) - 1
+            if abs(array.get(levels, i) - level) <= tolerance
+                exists := true
+    exists
+
+delete_glow_at(outer_lines, middle_lines, core_lines, levels, bars, divcounts, idx)=>
+    line.delete(array.get(outer_lines, idx))
+    line.delete(array.get(middle_lines, idx))
+    line.delete(array.get(core_lines, idx))
+    array.remove(outer_lines, idx)
+    array.remove(middle_lines, idx)
+    array.remove(core_lines, idx)
+    array.remove(levels, idx)
+    array.remove(bars, idx)
+    array.remove(divcounts, idx)
+
+// CHANGE 1: touch-refresh. Runs every bar, BEFORE expire_old_glows -- if price is touching a
+// level RIGHT NOW (same test as the house's touches.js: low <= level and high >= level), reset
+// its stored bar_index to bar_index, extending its life by badgeglow_expire_bars from this touch
+// instead of letting the original promotion-time clock run out underneath it.
+refresh_touched_glows(levels, bars)=>
+    if badgeglow_touch_refresh and array.size(levels) > 0
+        for i = 0 to array.size(levels) - 1
+            level = array.get(levels, i)
+            if low <= level and high >= level
+                array.set(bars, i, bar_index)
+
+// BUGFIX (iapaulo/house, 2026-07-30): this function is otherwise byte-identical to the original's
+// expire_old_glows, but the original's reverse-index math -- idx = array.size(levels) - 1 - i,
+// recomputed each iteration from a SHRINKING array while the loop bound is fixed at the ORIGINAL
+// size -- goes negative whenever 2+ levels expire on the same bar (confirmed live: RE10045,
+// "array.get() Index -1 is out of bounds, array size is 1", bar 2113). Fixed by iterating the index
+// directly from size-1 down to 0, so a deletion never invalidates a not-yet-visited index.
+expire_old_glows(outer_lines, middle_lines, core_lines, levels, bars, divcounts, expire_bars)=>
+    if expire_bars > 0 and array.size(levels) > 0
+        for i = array.size(levels) - 1 to 0
+            if bar_index - array.get(bars, i) > expire_bars
+                delete_glow_at(outer_lines, middle_lines, core_lines, levels, bars, divcounts, i)
+
+trim_glows_to_max(outer_lines, middle_lines, core_lines, levels, bars, divcounts, max_count)=>
+    if array.size(levels) > max_count
+        delete_glow_at(outer_lines, middle_lines, core_lines, levels, bars, divcounts, 0)
+
+// CHANGE 2: confluence-scaled intensity. tier = how many regular divergences beyond the minimum
+// gate promoted this level, capped at badgeglow_max_intensity_tier. Base tier (0) renders
+// IDENTICAL to the original's fixed widths/opacity -- a level at the minimum threshold looks
+// exactly like it always did; only levels with MORE agreement get visually stronger.
+draw_promoted_glow(outer_lines, middle_lines, core_lines, levels, bars, divcounts, level, glow_col, glow_startpoint, divcount)=>
+    tier = badgeglow_scale_intensity ? min(max(divcount - badgeglow_min_reg_divs, 0), badgeglow_max_intensity_tier) : 0
+    outer_w = badge_glow_outer_width + tier * 2
+    middle_w = badge_glow_middle_width + tier * 1
+    core_w = badge_glow_core_width + (tier > 1 ? 1 : 0)
+    outer_trans = max(90 - tier * 12, 45)
+    middle_trans = max(68 - tier * 10, 25)
+    glow_x1 = bar_index - glow_startpoint
+    glow_x2 = glow_x1 + badgeglowbars
+    glow_extend = badgeglowextend ? extend.right : extend.none
+    array.push(outer_lines, line.new(x1 = glow_x1, y1 = level, x2 = glow_x2, y2 = level, color = color.new(glow_col, outer_trans), width = outer_w, style = line.style_solid, extend = glow_extend))
+    array.push(middle_lines, line.new(x1 = glow_x1, y1 = level, x2 = glow_x2, y2 = level, color = color.new(glow_col, middle_trans), width = middle_w, style = line.style_solid, extend = glow_extend))
+    array.push(core_lines, line.new(x1 = glow_x1, y1 = level, x2 = glow_x2, y2 = level, color = glow_col, width = core_w, style = line.style_solid, extend = glow_extend))
+    array.push(levels, level)
+    array.push(bars, bar_index)
+    array.push(divcounts, divcount)
+
+// remove old lines and labels if showlast option is enabled
+delete_old_pos_div_lines()=>
+    if array.size(pos_div_lines) > 0
+        for j = 0 to array.size(pos_div_lines) - 1
+            line.delete(array.get(pos_div_lines, j))
+        array.clear(pos_div_lines)
+
+delete_old_neg_div_lines()=>
+    if array.size(neg_div_lines) > 0
+        for j = 0 to array.size(neg_div_lines) - 1
+            line.delete(array.get(neg_div_lines, j))
+        array.clear(neg_div_lines)
+
+delete_old_pos_div_labels()=>
+    if array.size(pos_div_labels) > 0
+        for j = 0 to array.size(pos_div_labels) - 1
+            label.delete(array.get(pos_div_labels, j))
+        array.clear(pos_div_labels)
+
+delete_old_neg_div_labels()=>
+    if array.size(neg_div_labels) > 0
+        for j = 0 to array.size(neg_div_labels) - 1
+            label.delete(array.get(neg_div_labels, j))
+        array.clear(neg_div_labels)
+
+// delete last creted lines and labels until we met new PH/PV
+delete_last_pos_div_lines_label(n)=>
+    if n > 0 and array.size(pos_div_lines) >= n
+        asz = array.size(pos_div_lines)
+        for j = 1 to n
+            line.delete(array.get(pos_div_lines, asz - j))
+            array.pop(pos_div_lines)
+        if array.size(pos_div_labels) > 0
+            label.delete(array.get(pos_div_labels, array.size(pos_div_labels) - 1))
+            array.pop(pos_div_labels)
+
+delete_last_neg_div_lines_label(n)=>
+    if n > 0 and array.size(neg_div_lines) >= n
+        asz = array.size(neg_div_lines)
+        for j = 1 to n
+            line.delete(array.get(neg_div_lines, asz - j))
+            array.pop(neg_div_lines)
+        if array.size(neg_div_labels) > 0
+            label.delete(array.get(neg_div_labels, array.size(neg_div_labels) - 1))
+            array.pop(neg_div_labels)
+
+// variables for Alerts
+pos_reg_div_detected = false
+neg_reg_div_detected = false
+pos_hid_div_detected = false
+neg_hid_div_detected = false
+
+// to remove lines/labels until we met new // PH/PL
+var last_pos_div_lines = 0
+var last_neg_div_lines = 0
+var remove_last_pos_divs = false
+var remove_last_neg_divs = false
+if pl
+    remove_last_pos_divs := false
+    last_pos_div_lines := 0
+if ph
+    remove_last_neg_divs := false
+    last_neg_div_lines := 0
+
+// draw divergences lines and labels
+divergence_text_top = ""
+divergence_text_bottom = ""
+distances = array.new_int(0)
+dnumdiv_top = 0
+dnumdiv_bottom = 0
+dnumdiv_top_regular = 0
+dnumdiv_bottom_regular = 0
+top_label_col = color.white
+bottom_label_col = color.white
+old_pos_divs_can_be_removed = true
+old_neg_divs_can_be_removed = true
+bottom_yellow_badge_detected = false
+top_purple_badge_detected = false
+startpoint = dontconfirm ? 0 : 1 // used for don't confirm option
+
+for x = 0 to 10
+    div_type = -1
+    for y = 0 to 3
+        if array.get(all_divergences, x * 4 + y) > 0 // any divergence?
+            div_type := y
+            if (y % 2) == 1
+                dnumdiv_top := dnumdiv_top + 1
+                top_label_col := array.get(div_colors, y)
+                if y == 1
+                    top_purple_badge_detected := true
+                    dnumdiv_top_regular := dnumdiv_top_regular + 1
+            if (y % 2) == 0
+                dnumdiv_bottom := dnumdiv_bottom + 1
+                bottom_label_col := array.get(div_colors, y)
+                if y == 0
+                    bottom_yellow_badge_detected := true
+                    dnumdiv_bottom_regular := dnumdiv_bottom_regular + 1
+            if not array.includes(distances, array.get(all_divergences, x * 4 + y))  // line not exist ?
+                array.push(distances, array.get(all_divergences, x * 4 + y))
+                new_line = showlines ? line.new(x1 = bar_index - array.get(all_divergences, x * 4 + y),
+                          y1 = (source == "Close" ? close[array.get(all_divergences, x * 4 + y)] :
+                                           (y % 2) == 0 ? low[array.get(all_divergences, x * 4 + y)] :
+                                                          high[array.get(all_divergences, x * 4 + y)]),
+                          x2 = bar_index - startpoint,
+                          y2 = (source == "Close" ? close[startpoint] :
+                                           (y % 2) == 0 ? low[startpoint] :
+                                                          high[startpoint]),
+                          color = array.get(div_colors, y),
+                          style = y < 2 ? reg_div_l_style : hid_div_l_style,
+                          width = y < 2 ? reg_div_l_width : hid_div_l_width
+                          )
+                          : na
+                if (y % 2) == 0
+                    if old_pos_divs_can_be_removed
+                        old_pos_divs_can_be_removed := false
+                        if not showlast and remove_last_pos_divs
+                            delete_last_pos_div_lines_label(last_pos_div_lines)
+                            last_pos_div_lines := 0
+                        if showlast
+                            delete_old_pos_div_lines()
+                    array.push(pos_div_lines, new_line)
+                    last_pos_div_lines := last_pos_div_lines + 1
+                    remove_last_pos_divs := true
+
+                if (y % 2) == 1
+                    if old_neg_divs_can_be_removed
+                        old_neg_divs_can_be_removed := false
+                        if not showlast and remove_last_neg_divs
+                            delete_last_neg_div_lines_label(last_neg_div_lines)
+                            last_neg_div_lines := 0
+                        if showlast
+                            delete_old_neg_div_lines()
+                    array.push(neg_div_lines, new_line)
+                    last_neg_div_lines := last_neg_div_lines + 1
+                    remove_last_neg_divs := true
+
+            // set variables for alerts
+            if y == 0
+                pos_reg_div_detected := true
+            if y == 1
+                neg_reg_div_detected := true
+            if y == 2
+                pos_hid_div_detected := true
+            if y == 3
+                neg_hid_div_detected := true
+    // get text for labels
+    if div_type >= 0
+        divergence_text_top    := divergence_text_top    + ((div_type % 2) == 1 ? (showindis != "Don't Show" ? array.get(indicators_name, x) + "\n" : "") : "")
+        divergence_text_bottom := divergence_text_bottom + ((div_type % 2) == 0 ? (showindis != "Don't Show" ? array.get(indicators_name, x) + "\n" : "") : "")
+
+
+// CHANGE 1: refresh touched levels BEFORE expiring -- a level being touched on this exact bar
+// must not expire on this same bar just because its original clock happened to run out now.
+refresh_touched_glows(bull_glow_levels, bull_glow_bars)
+refresh_touched_glows(bear_glow_levels, bear_glow_bars)
+
+// Clean old promoted levels before drawing new ones. A value of 0 disables expiration.
+expire_old_glows(bull_glow_outer_lines, bull_glow_middle_lines, bull_glow_core_lines, bull_glow_levels, bull_glow_bars, bull_glow_divcount, badgeglow_expire_bars)
+expire_old_glows(bear_glow_outer_lines, bear_glow_middle_lines, bear_glow_core_lines, bear_glow_levels, bear_glow_bars, bear_glow_divcount, badgeglow_expire_bars)
+
+// draw labels
+if showindis != "Don't Show" or shownum
+    if shownum and dnumdiv_top > 0
+        divergence_text_top := divergence_text_top + tostring(dnumdiv_top)
+    if shownum and dnumdiv_bottom > 0
+        divergence_text_bottom := divergence_text_bottom + tostring(dnumdiv_bottom)
+    if divergence_text_top != ""
+        if showlast
+            delete_old_neg_div_labels()
+        array.push(neg_div_labels,
+                      label.new( x = bar_index,
+                                 y = max(high, high[1]),
+                                 text = divergence_text_top,
+                                 color = top_purple_badge_detected ? purple_badge_col : top_label_col,
+                                 textcolor = neg_div_text_col,
+                                 style = label.style_label_down
+                                 ))
+        if showbadgeglow and top_purple_badge_detected and dnumdiv_top_regular >= badgeglow_min_reg_divs
+            top_glow_y = high[startpoint]
+            top_glow_tol = atr(badgeglow_atr_len) * badgeglow_atr_mult
+            if not level_exists_near(bear_glow_levels, top_glow_y, top_glow_tol)
+                draw_promoted_glow(bear_glow_outer_lines, bear_glow_middle_lines, bear_glow_core_lines, bear_glow_levels, bear_glow_bars, bear_glow_divcount, top_glow_y, bear_badge_glow_col, startpoint, dnumdiv_top_regular)
+                trim_glows_to_max(bear_glow_outer_lines, bear_glow_middle_lines, bear_glow_core_lines, bear_glow_levels, bear_glow_bars, bear_glow_divcount, badgeglow_max_levels)
+
+    if divergence_text_bottom != ""
+        if showlast
+            delete_old_pos_div_labels()
+        array.push(pos_div_labels,
+                      label.new( x = bar_index,
+                                 y = min(low, low[1]),
+                                 text = divergence_text_bottom,
+                                 color = bottom_yellow_badge_detected ? yellow_badge_col : bottom_label_col,
+                                 textcolor = pos_div_text_col,
+                                 style = label.style_label_up
+                                 ))
+        if showbadgeglow and bottom_yellow_badge_detected and dnumdiv_bottom_regular >= badgeglow_min_reg_divs
+            bot_glow_y = low[startpoint]
+            bot_glow_tol = atr(badgeglow_atr_len) * badgeglow_atr_mult
+            if not level_exists_near(bull_glow_levels, bot_glow_y, bot_glow_tol)
+                draw_promoted_glow(bull_glow_outer_lines, bull_glow_middle_lines, bull_glow_core_lines, bull_glow_levels, bull_glow_bars, bull_glow_divcount, bot_glow_y, bull_badge_glow_col, startpoint, dnumdiv_bottom_regular)
+                trim_glows_to_max(bull_glow_outer_lines, bull_glow_middle_lines, bull_glow_core_lines, bull_glow_levels, bull_glow_bars, bull_glow_divcount, badgeglow_max_levels)
+
+alertcondition(pos_reg_div_detected, title='Positive Regular Divergence Detected', message='Positive Regular Divergence Detected')
+alertcondition(neg_reg_div_detected, title='Negative Regular Divergence Detected', message='Negative Regular Divergence Detected')
+alertcondition(pos_hid_div_detected, title='Positive Hidden Divergence Detected', message='Positive Hidden Divergence Detected')
+alertcondition(neg_hid_div_detected, title='Negative Hidden Divergence Detected', message='Negative Hidden Divergence Detected')
+
+alertcondition(pos_reg_div_detected or pos_hid_div_detected, title='Positive Divergence Detected', message='Positive Divergence Detected')
+alertcondition(neg_reg_div_detected or neg_hid_div_detected, title='Negative Divergence Detected', message='Negative Divergence Detected')
