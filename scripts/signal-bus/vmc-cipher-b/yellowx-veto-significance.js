@@ -53,10 +53,18 @@ async function main() {
 
   const yxBarIdx = new Set(yxEvents.map((e) => e.barIdx));
   const yxSorted = yxEvents.map((e) => e.barIdx).sort((a, b) => a - b);
+  // BUG CAUGHT 2026-07-31 (same class of mistake as the Cipher A green-dot confirmation test, see
+  // its header comment): Math.abs(yx - barIdx) <= window let a yellowCross occurring AFTER the
+  // Cipher B signal count as "vetoing" it -- look-ahead. Impact was smaller here than in the
+  // green-dot test (yellowCross is far rarer, 782 vs 32,543 events) but the flaw is the same and
+  // this result needs rechecking with the fix, not assumed still correct because it looked more
+  // modest. Fixed: only a yellowCross AT OR BEFORE the signal bar counts.
   function nearYellowX(barIdx, window) {
     if (window === 0) return yxBarIdx.has(barIdx);
-    // small linear scan is fine -- yxSorted has only hundreds of entries
-    for (const yx of yxSorted) if (Math.abs(yx - barIdx) <= window) return true;
+    for (const yx of yxSorted) {
+      if (yx > barIdx) break;
+      if (barIdx - yx <= window) return true;
+    }
     return false;
   }
 

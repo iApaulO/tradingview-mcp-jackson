@@ -2139,23 +2139,30 @@ Tested the video's specific claim — "if you see a yellow X on the same candle 
 yellow X takes precedent... stay out or short" — as a veto on 5-minute `buySignal`/`sellSignal`
 (Phase 1's real signal), at three pre-registered windows (exact same bar, ±3 bars, ±10 bars).
 
-**Result: the literal "same candle" claim does not hold, but a widened ~50-minute window does,
-briefly.** Window=0 and window=3 show no significant difference at any horizon (flagged n=693-837,
-mixed sign, wide CIs). Window=±10 bars (n=1,312 flagged) shows a real, short-lived negative effect:
-43.0% correct-direction at N=5 (z=-4.79, p<0.0001) and 46.3% at N=10 (z=-2.70, p=0.0069), fading to
-non-significant by N=20/40 — consistent with "elevated near-term risk that fades," not an
-instantaneous single-bar veto. **Checked and ruled out a clustering confound before trusting this**:
-627 of 782 yellowCross events are isolated occurrences (>50-bar gap from the next), spread across
-107 distinct months with no single month exceeding 2.7% of the total — not one bad historical
-period driving the result.
+**CORRECTED 2026-07-31, after a bug caught while building Phase 6 (see §26): the original window
+check (`Math.abs(yellowCrossBarIdx - signalBarIdx) <= window`) let a yellowCross occurring AFTER
+the buySignal/sellSignal count as "flagging" it — look-ahead, since a warning that fires later
+isn't information available at signal time. Fixed to only count a yellowCross AT OR BEFORE the
+signal bar. The corrected result REVERSES the original "veto" conclusion below — replacing it here
+rather than leaving a stale, wrong finding in place.**
 
-**Verdict: the underlying warning concept has real, short-horizon value, but the video's literal
-timing claim is imprecise.** A yellowCross doesn't invalidate a buySignal/sellSignal on the exact
-same candle — it marks roughly the next 5-10 bars (on 5m, ~25-50 minutes) as elevated-risk, closer
-to "something's currently wrong in the market structure" than a precise same-instant veto. Worth
-noting: testing 3 windows × 4 horizons = 12 comparisons, and only 2 cleared significance, both in
-the wider window and both at the shorter horizons — a coherent pattern, not scattered noise, but
-disclosed here rather than treated as fully clean given the window-size sensitivity.
+**Corrected result: a PRIOR yellowCross does not veto a subsequent buySignal/sellSignal — if
+anything it strengthens it.** Window=0 (n=23, exact same bar) is too thin to test. Window=±3 bars
+(n=743) shows a real positive effect at N=20 (57.6% correct-direction vs. clean's 55.2%, z=2.06,
+p=0.0392). Window=±10 bars (n=935) shows it more clearly: 58.3% vs. 54.9% at N=10 (z=3.14,
+p=0.0017) and 57.9% vs. 55.2% at N=20 (z=3.09, p=0.0020), both real positive gaps. **This makes
+sense on reflection, not just as a correction for its own sake**: yellowCross is documented as a
+"manipulation/trap" warning that precedes further adverse movement ("about 80% of the time it's a
+trap... a pump then a dump"); a buySignal/sellSignal firing shortly AFTER that warning is
+plausibly confirming the trap has already played out (the anticipated move already happened),
+not warning of a fresh one about to start.
+
+**Verdict, corrected: do not treat yellowCross as a veto in either the same-candle or widened
+forms.** As a PRIOR warning (~10-50 bars back), it's weak evidence FOR the subsequent signal, not
+against it. The "clustering ruled out" check (627 of 782 events isolated, spread across 107
+months) still stands and applies equally to this corrected reading. Testing discipline unchanged:
+3 windows × 4 horizons, results concentrated at the two shorter/wider-window cells, disclosed as
+such rather than treated as uniformly clean.
 
 ## 23. "Blue Wave" — Phase 5 (final) — formalized, tested, CORRECTED after a thorough reread, still null — 2026-07-31
 
@@ -2252,3 +2259,42 @@ Phases 1-5 (buySignal/sellSignal, MFI, multi-TF stacking, yellowCross, Blue Wave
 against real, checkable plot statements in the source before being built, not assumed from the
 video's narration alone — this limitation applies specifically to the untested "5th oscillator,"
 not to anything already built.
+
+## 26. Phase 6 — Cipher A green-dot confirmation — a look-ahead bug caught, a real structural finding — 2026-07-31
+
+Built `computeGreenDot()` (the `longEma`/`shortEma` EMA(11)/EMA(34) crossover, §25's identified
+gap) and tested it as a same-timeframe confirmation on 5-minute `buySignal`/`sellSignal`.
+
+**Caught a serious bug before trusting the result.** First run produced 84-89% correct-direction
+with z-scores in the 30s-40s — far beyond anything real elsewhere in this project (the best prior
+result was §21's 68%). Diagnosed immediately: the window check
+(`Math.abs(greenDotBarIdx - signalBarIdx) <= window`) let a Cipher A dot occurring AFTER the
+Cipher B signal count as "confirming" it — look-ahead, since a dot forming later is itself
+evidence the anticipated move already happened. **The exact same flaw was present in §22's
+yellow-X veto test**, built earlier with the identical symmetric-window pattern — its smaller
+effect size (yellowCross is far rarer, 782 vs 32,543 events) made it look plausible enough not to
+trigger suspicion at the time, but the bug was there regardless of how modest the result looked.
+Both fixed to only count a PAST occurrence; §22 rewritten in place with the corrected (and
+reversed) result rather than left stale.
+
+**Corrected green-dot-as-recent-event result: thin and, if anything, weak.** A green dot within
+±10 bars of a signal (n=622) shows a WEAKER, significantly worse outcome at N=40 (46.8% vs. 54.2%,
+z=-3.46, p=0.0005) than an unconfirmed signal. Recent-crossover-event framing doesn't help.
+
+**Built a second version — regime alignment (is ema2 currently above/below ema8 right now, not
+"did it just cross") — since a rare crossover EVENT is a poor proxy for an ongoing STATE, the same
+lesson §20's MFI test already taught.** This surfaced something structurally real, verified
+directly rather than assumed: `buySignal` co-occurs with a BEARISH Cipher A regime 98.5% of the
+time (21,861 of 22,196 events), and `sellSignal` with a BULLISH regime 98.7% of the time (22,694
+of 22,996) — confirmed by direct count, not inferred from the thin "aligned" bucket alone. This
+makes mechanical sense: Cipher B's WT-cross-at-oversold/overbought is designed to catch reversals
+EARLY, before a slower EMA(11)/EMA(34) trend-follower has caught up and flipped. Requiring
+same-side agreement (n=637, the rare case) doesn't help either — 50.9-53.4% correct-direction,
+weaker than the dominant "against" bucket's 54.1-55.3%.
+
+**Verdict: neither operationalization of Cipher A's own green dot adds value as same-timeframe
+confirmation for Cipher B's entries.** Unlike §21's cross-TIMEFRAME stacking (which strengthens
+the signal cleanly), cross-INDICATOR agreement with a structurally slower, lagging tool selects
+for a rare, weaker subset rather than a stronger one — Cipher B's fast-reversal design and Cipher
+A's trend-following design are frequently, by construction, on opposite sides at the exact moment
+Cipher B fires.

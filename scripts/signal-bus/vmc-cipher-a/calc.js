@@ -24,6 +24,8 @@ const OS_LEVEL3 = -80; // live-confirmed (in_9) -- differs from Cipher B's -75
 const RSI_LEN = 14; // live-confirmed (in_20)
 const MFI_PERIOD = 60; // live-confirmed (in_24)
 const MFI_MULTIPLIER = 150; // live-confirmed (in_25)
+const EMA2_LEN = 11; // live-confirmed (in_12) -- longEma/shortEma crossover, the video's OTHER "green dot"
+const EMA8_LEN = 34; // live-confirmed (in_18)
 
 function ema(values, length) {
   const out = new Array(values.length).fill(NaN);
@@ -118,4 +120,41 @@ export function computeYellowCross(candles) {
     if (yellowCross) events.push({ barIdx: i, time: candles[i].t });
   }
   return { events };
+}
+
+// Phase 6 of the video-driven plan: Cipher A's OWN "green dot" -- `longEma = crossover(ema2, ema8)`
+// / `shortEma = crossover(ema8, ema2)`, a completely separate mechanism from Cipher B's buySignal
+// (WT cross at oversold). Confirmed by a full transcript reread (§25) that the video treats these
+// as two distinct signals used differently: "I prefer Cipher B green dots for entries, I use the
+// green dots on Cipher A as more of a confirmation" (9:41). This function is that confirmation
+// signal -- tests whether it strengthens a Cipher B buySignal/sellSignal fired on the SAME bar/
+// timeframe, the one piece of the video's model never built until now.
+export function computeGreenDot(candles) {
+  const closes = candles.map((c) => c.c);
+  const ema2 = ema(closes, EMA2_LEN);
+  const ema8 = ema(closes, EMA8_LEN);
+  const n = candles.length;
+  const events = [];
+  for (let i = 1; i < n; i++) {
+    if ([ema2[i], ema8[i], ema2[i - 1], ema8[i - 1]].some(Number.isNaN)) continue;
+    const crossedUp = ema2[i - 1] <= ema8[i - 1] && ema2[i] > ema8[i]; // crossover(ema2, ema8) -- longEma
+    const crossedDown = ema8[i - 1] <= ema2[i - 1] && ema8[i] > ema2[i]; // crossover(ema8, ema2) -- shortEma
+    if (crossedUp) events.push({ side: "bullish", barIdx: i, time: candles[i].t });
+    if (crossedDown) events.push({ side: "bearish", barIdx: i, time: candles[i].t });
+  }
+  return { events };
+}
+
+// Companion to computeGreenDot(): the ongoing REGIME (which EMA is on top right now), not the
+// crossover event itself. Added after computeGreenDot's "recent crossover event" test came back
+// thin and weak (a crossover is rare and, once it happens, the market usually stays in that regime
+// for a long time -- so "did a crossover happen in the last N bars" mostly says "no," while "which
+// side is the market on right now" is answerable on almost every bar). Matches the pattern already
+// seen twice today (divergence confirmation-chasing, same-bar MFI): testing for a recent EVENT is
+// often the wrong frame when the underlying idea is a slower-moving STATE.
+export function computeEmaRegime(candles) {
+  const closes = candles.map((c) => c.c);
+  const ema2 = ema(closes, EMA2_LEN);
+  const ema8 = ema(closes, EMA8_LEN);
+  return closes.map((_, i) => (Number.isNaN(ema2[i]) || Number.isNaN(ema8[i]) ? null : ema2[i] > ema8[i] ? "bullish" : "bearish"));
 }
