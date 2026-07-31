@@ -214,48 +214,63 @@ export function computeWtCrossSignals(candles) {
 }
 
 // Phase 5 of the video-driven plan: "Blue Wave" -- the video's own top-billed technique ("I have
-// made more money off of these blue waves than any other indicator basically ever"), described
-// visually: a swing in the white/light "VWAP" area (wtVwap = wt1-wt2, the `vwapShow` plot in the
-// source), followed by a SMALLER same-direction swing, entered when price/lines "cut into" the
-// other side -- which, read against the actual Pine plots, is the SAME zero-cross event already
-// used for buySignal/sellSignal (wtVwap crossing zero IS wt1 crossing wt2), just gated by
-// "this swing was shallower than the last same-direction one" instead of a fixed OB/OS threshold.
-// This is a genuine formalization of a qualitative visual description, not a literal Pine port --
-// disclosed as such. A "swing" here is a maximal run of consecutive bars where wtVwap stays on one
-// side of zero; its magnitude is the largest |wtVwap| reached during that run. "Same-direction" a
-// full cycle back is the CORRECT skip -- swings necessarily alternate sign at each zero-cross by
-// construction, so comparing to the immediately-prior swing would compare a peak to a trough.
+// made more money off of these blue waves than any other indicator basically ever").
+//
+// CORRECTED 2026-07-31 after a thorough reread requested directly by iapaulo: the first version of
+// this function tracked swings in wtVwap (wt1-wt2, the separate white "VWAP" area), which was
+// wrong. At 20:04 the video explicitly names the oscillator behind Blue Wave: "the blue and light
+// blue area... -100 to 100... thresholds at 60 and -60" -- checked against the actual Pine plot
+// colors, WT1 is literally blue (#4994ec) and WT2 dark purple/navy (#1f1559, easily read as "light
+// blue" against WT1 on screen), and 60/-60 matches `obLevel2`/`osLevel2` exactly. "Blue Wave" is
+// WT1 itself, not a third derived series. Also missed the first time: "a nice healthy blue wave...
+// that dips below or above this blue line marker" means the REFERENCE wave must clear the 60/-60
+// threshold to count as a valid starting point -- not just any two consecutive same-direction
+// swings, only ones where the first was a genuine extreme. Still a formalization of a qualitative
+// visual description, not a literal port -- disclosed as such, same as before.
+//
+// A "wave" here is the segment between two consecutive wt1/wt2 crosses (the SAME crossing event
+// used for buySignal/sellSignal and entry timing below) -- its magnitude is the largest |wt1|
+// reached during that segment, its side is which line was on top (wt1>wt2 -> "pos"/blue-above,
+// matching a bullish-momentum wave once it later crosses back down through the setup). Entry fires
+// on the cross that ENDS a wave which is (a) smaller than the reference wave and (b) itself
+// following a reference wave that cleared +/-60 -- "big wave, then a smaller one, enter on the
+// cross back."
+const BLUE_WAVE_THRESHOLD = 60; // live-confirmed obLevel2/osLevel2 (in_11/in_14), the "blue line marker"
+
 export function computeBlueWave(candles) {
   const { wt1, wt2 } = computeWaveTrend(candles);
   const n = candles.length;
-  const vwap = new Array(n).fill(NaN);
-  for (let i = 0; i < n; i++) {
-    if (!Number.isNaN(wt1[i]) && !Number.isNaN(wt2[i])) vwap[i] = wt1[i] - wt2[i];
-  }
 
   const events = [];
-  let currentSide = null; // "pos" | "neg"
-  let currentExtreme = 0;
-  let prevPos = null, prevNeg = null; // magnitude of the last COMPLETED swing on each side
+  let currentSide = null; // "pos" (wt1 above wt2) | "neg"
+  let currentExtreme = 0; // largest |wt1| seen during the current segment
+  let prevPos = null, prevNeg = null; // { extreme } of the last COMPLETED wave on each side, only recorded if it cleared the threshold
 
   for (let i = 1; i < n; i++) {
-    if (Number.isNaN(vwap[i])) continue;
-    const side = vwap[i] >= 0 ? "pos" : "neg";
-    if (currentSide === null) { currentSide = side; currentExtreme = Math.abs(vwap[i]); continue; }
+    if (Number.isNaN(wt1[i]) || Number.isNaN(wt2[i]) || Number.isNaN(wt1[i - 1]) || Number.isNaN(wt2[i - 1])) continue;
+    const diff = wt1[i] - wt2[i];
+    const side = diff >= 0 ? "pos" : "neg";
+    if (currentSide === null) { currentSide = side; currentExtreme = Math.abs(wt1[i]); continue; }
     if (side === currentSide) {
-      currentExtreme = Math.max(currentExtreme, Math.abs(vwap[i]));
+      currentExtreme = Math.max(currentExtreme, Math.abs(wt1[i]));
       continue;
     }
-    // Side just flipped at bar i -- the just-ended swing (on currentSide) is now complete.
+    // Side just flipped at bar i (a wt1/wt2 cross) -- the just-ended wave (on currentSide) is complete.
     const prevSameSide = currentSide === "pos" ? prevPos : prevNeg;
-    if (prevSameSide != null && currentExtreme < prevSameSide) {
-      // Shallower than the last same-direction swing -> "Blue Wave" fires at the cross bar i.
-      // A shrinking NEGATIVE swing implies bullish (expect up); a shrinking POSITIVE swing bearish.
+    if (prevSameSide != null && prevSameSide.extreme >= BLUE_WAVE_THRESHOLD && currentExtreme < prevSameSide.extreme) {
+      // Reference wave cleared the "blue line marker," and this wave is shallower -> fires at the cross bar i.
+      // A shrinking POSITIVE wave (wt1 was above wt2) implies the down-move is exhausting -> bearish next; a
+      // shrinking NEGATIVE wave implies the down-thrust is exhausting -> bullish next (matches the video's
+      // "cutting into the blue... signifies a bottom" for a shrinking wave on the low side).
       events.push({ side: currentSide === "neg" ? "bullish" : "bearish", price: candles[i].c, confirmedBarIdx: i, confirmedTime: candles[i].t, ...NO_EXPIRY });
     }
-    if (currentSide === "pos") prevPos = currentExtreme; else prevNeg = currentExtreme;
+    // Only a wave that cleared the threshold becomes a valid future reference -- an already-shallow
+    // wave shouldn't set a new, even-lower bar for "smaller than the last one."
+    if (currentExtreme >= BLUE_WAVE_THRESHOLD) {
+      if (currentSide === "pos") prevPos = { extreme: currentExtreme }; else prevNeg = { extreme: currentExtreme };
+    }
     currentSide = side;
-    currentExtreme = Math.abs(vwap[i]);
+    currentExtreme = Math.abs(wt1[i]);
   }
   return { events };
 }

@@ -2157,38 +2157,41 @@ noting: testing 3 windows × 4 horizons = 12 comparisons, and only 2 cleared sig
 the wider window and both at the shorter horizons — a coherent pattern, not scattered noise, but
 disclosed here rather than treated as fully clean given the window-size sensitivity.
 
-## 23. "Blue Wave" — Phase 5 (final) — formalized, tested, comes back completely null — 2026-07-31
+## 23. "Blue Wave" — Phase 5 (final) — formalized, tested, CORRECTED after a thorough reread, still null — 2026-07-31
 
 The video's own top-billed technique ("I have made more money off of these blue waves than any
-other indicator basically ever"), formalized in `computeBlueWave()`: a shrinking-magnitude swing
-in `wtVwap` (`wt1-wt2`, the white/light "VWAP" area) compared to the PREVIOUS same-direction swing
-(correctly skipping one full cycle, since swings necessarily alternate sign at each zero-cross —
-comparing to the immediately-prior swing would compare a peak to a trough), entered on the
-zero-cross that ends the shallower swing — the same underlying event as `buySignal`/`sellSignal`'s
-`wtCross`, just gated by relative swing size instead of a fixed OB/OS threshold. **Disclosed
-plainly, and worth repeating here: this is a genuine formalization of a qualitative, visually-
-described pattern, not a literal Pine port** — no exact algorithmic definition exists in the source
-the way divergence or `buySignal` do. Sanity-checked first (1,894 events on 4h/19,587 candles,
-balanced side split 955/939, no bad prices) before testing.
+other indicator basically ever"). First version of `computeBlueWave()` tracked swings in `wtVwap`
+(`wt1-wt2`, the separate white "VWAP" area) — **wrong, caught on a full reread requested by
+iapaulo**. At 20:04 the video explicitly names the oscillator behind Blue Wave: "the blue and
+light blue area... -100 to 100... thresholds at 60 and -60." Checked against the actual Pine plot
+colors, not assumed: WT1 is literally blue (`#4994ec`), WT2 dark purple/navy (`#1f1559`, easily
+read as "light blue" against WT1 on screen), and 60/-60 matches `obLevel2`/`osLevel2` exactly —
+"Blue Wave" is about WT1 itself, not a third derived series. Also missed the first time: "a nice
+healthy blue wave... that dips below or above this blue line marker" means the REFERENCE wave must
+clear the 60/-60 threshold to count as a valid starting point, not just any two consecutive
+same-direction waves.
 
-**Result: uniformly null, every timeframe, every horizon.** Pooled (n=140,702) sits at 49.3-49.7%
-correct-direction across all four horizons, none significant (p=0.20-0.97). Stratified by
-timeframe: every single cell across all 8 timeframes × 4 horizons is within a point of a coin flip,
-with exactly ONE marginally significant cell (3h, N=40, p=0.0396) — squarely inside the ~1.6
-false-positives-by-chance the 32-cell multiple-comparisons floor predicts, and in the wrong
-direction besides. This is the cleanest, most uniform null in the entire Cipher B investigation —
-cleaner even than the divergence level-hold false-negative (§17), because this test uses the
-CORRECT forward-return framing that worked for every other signal tested today, and still finds
-nothing.
+**Corrected version**: a "wave" is the segment between two consecutive wt1/wt2 crosses (the same
+crossing event used for `buySignal`/`sellSignal`); magnitude = largest `|wt1|` reached during that
+segment; only a wave that cleared ±60 becomes a valid reference for "was the next one smaller."
+Entry fires on the cross ending a wave that is smaller than a threshold-clearing reference wave.
+Sanity-checked (3,054 events on 4h, balanced 1536/1518 split, no bad prices) before retesting.
 
-**Two honest readings, both left open rather than one asserted over the other:** (1) this specific
-formalization doesn't capture what the video actually means by "Blue Wave" — the description is
-genuinely visual/qualitative ("a nice healthy blue wave... a smaller one... white cuts into blue"),
-and a different, equally-plausible reading of that language might behave differently; or (2) the
-technique itself doesn't have a real mechanical edge, and the video's "most money ever made" claim
-reflects the same hindsight/cherry-picked-example bias that affects most discretionary trading
-narratives, not something a systematic backtest would recover. This result cannot distinguish
-between those two explanations — say so rather than pick one.
+**Result: still uniformly null — actually cleaner than before.** Pooled (n=234,331) sits at
+49.3-49.4% correct-direction across all four horizons; one marginal hit at N=5 (p=0.011). Stratified
+across 8 timeframes × 4 horizons, a handful of cells barely clear 5% (1d/3h at N=5 only, pooled at
+N=5 only) — all at the shortest horizon, none replicating to N=10+, consistent with the ~1.8
+false-positives-by-chance the 36-cell multiple-comparisons floor predicts. No timeframe shows
+anything resembling Phase 1 or Phase 3's multi-horizon consistency.
+
+**Two independently well-motivated formalizations (the original wtVwap-based one and this
+corrected WT1-based one) now both land on the same null result**, which meaningfully raises
+confidence this is a genuine property of the pattern rather than one wrong guess — though it still
+cannot fully rule out a third, untested reading of the video's visual description. Read as: the
+underlying "shrinking momentum wave" concept, mechanically formalized two different reasonable
+ways, shows no forward-return edge on this instrument; the video's "most money I've ever made"
+claim most plausibly reflects the hindsight/cherry-picked-example bias common to discretionary
+trading narratives, though that inference is not proven by this result alone.
 
 ## 24. Video-driven plan complete — all 5 phases — summary — 2026-07-31
 
@@ -2213,3 +2216,39 @@ when read literally, Blue Wave shows nothing at all. None of this has been cost/
 per iapaulo's explicit sequencing direction (2026-07-31) to complete the understanding-building
 pass first — Phase 3's multi-timeframe-stacked signal is the clear leading candidate for that step
 whenever it's requested.
+
+## 25. Full-transcript reread audit — 2026-07-31
+
+Requested directly by iapaulo after the 5-phase summary: "reread the video and check your work
+thoroughly." Full transcript reread line by line against the actual Pine sources (both
+`vmc-cipher-a-ribbon.pine` and `vmc-cipher-b-divergences.pine`), not just skimmed for
+confirmation. One real error found and fixed (§23's Blue Wave series correction, above). Two
+further findings, disclosed rather than silently absorbed:
+
+**Two distinct "green dot" signals exist, and the video is explicit that they're used
+differently.** Cipher A ALSO has its own green-circle signal (`longEma = crossover(ema2, ema8)`,
+shown directly on the price chart, discussed 6:31-9:57 before Cipher B is even introduced) — a
+completely different mechanism from Cipher B's `buySignal` (WT cross at oversold, discussed from
+12:19 onward, what Phase 1-3 actually tested). At 9:41 the video states its own preference
+explicitly: **"I prefer Cipher B green dots for entries, I use the green dots on Cipher A as more
+of a confirmation."** Phase 1's target (Cipher B `buySignal`) was correctly identified — that part
+of the build was right. But **Cipher A's own green dot as a same-timeframe confirmation signal on
+top of Cipher B's entry was never built or tested** — a real, distinct gap from Phase 3's
+cross-timeframe stacking (which confirms across TIMEFRAMES within Cipher B alone) and from Phase
+4's yellow-X veto (which only checks a negative/warning condition, not this positive
+confirmation). Flagged, not built — a natural Phase 6 if wanted.
+
+**The video's "5th oscillator" doesn't map onto a real plot in this specific clone.** At 31:41 the
+video describes a "custom v-web algorithm... displayed as the YELLOW area... doesn't interact with
+other oscillators... a leading indicator for reversals." No yellow-colored plot exists anywhere in
+`vmc-cipher-b-divergences.pine` matching that description — the only yellow-colored plot in the
+entire source is the Sommi flag's higher-timeframe VWAP line (`sommiShowVwap`), which is off by
+default and confirmed off on the live chart, and doesn't match "doesn't interact with other
+oscillators" (it's explicitly a Sommi-flag component). **Working conclusion, stated as inference
+not certainty: this open-source clone likely doesn't implement every feature of the original paid
+"Market Cipher" product the video describes** — worth remembering before assuming every technique
+in the video has a buildable, testable equivalent in this codebase. Everything actually tested in
+Phases 1-5 (buySignal/sellSignal, MFI, multi-TF stacking, yellowCross, Blue Wave/WT1) was verified
+against real, checkable plot statements in the source before being built, not assumed from the
+video's narration alone — this limitation applies specifically to the untested "5th oscillator,"
+not to anything already built.
