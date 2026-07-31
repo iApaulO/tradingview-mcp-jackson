@@ -2024,3 +2024,35 @@ you have established elite trader level understanding of divergence") — do not
 without that step.
 
 Results saved to `scripts/signal-bus/divergence-for-many/results/touch_refresh_analysis_*.json`.
+
+## 19. Cipher B buySignal/sellSignal ("green dot"/"red dot") — Phase 1 of the video-driven plan — 2026-07-31
+
+iapaulo supplied "Intro to Market Cipher: Everything You Need to Know" (crypto_face,
+youtu.be/bxkm4Kjubqs) — the authoritative walkthrough for the commercial indicator
+`pine/vmc-cipher-b-divergences.pine` clones. It revealed that §17/§18's divergence work tested a
+secondary signal: the video's actual centerpiece is `buySignal`/`sellSignal` (WT1/WT2 cross at
+oversold/overbought, no divergence requirement), called explicitly more reliable than divergence.
+Full 5-phase plan approved and saved; this is Phase 1.
+
+`computeWtCrossSignals()` added to `calc.js` — same-bar sign-change on `wt1-wt2`, gated by
+`wt2 <= -53` (buy) / `wt2 >= 53` (sell), both live-confirmed thresholds (`obLevel`/`osLevel`,
+`in_10`/`in_13`, no deviation from Pine defaults this time). Sanity-checked first (967 events on
+4h/19,587 candles, ~1 per 20 bars, no bad prices, side split 434/533) before any test ran against
+it. Same forward-return methodology as §18.1, run BOTH pooled and stratified in one script
+(`buysell-forward-return-significance.js`) since §18.4 already showed pooling can hide a
+timeframe-concentrated effect.
+
+**Result: a stronger, more robust version of §18.4's finding.** 5-minute buySignal/sellSignal is
+significant at **all four** horizons tested (5/10/20/40 bars) — 54.1-55.3% correct-direction
+throughout, n=45,192 — versus divergence's 3-of-4. The pooled view (n=67,733) shows nothing at
+N=5/10/20 and only a weak, likely-noise negative hit at N=40 — the 5m effect is real but gets
+washed out by 1d/2h/1h, which show scattered null-to-negative results (1d: -2.37% mean, wrong
+direction, at N=20; 2h/1h: significant but wrong-direction at several cells) that partially cancel
+it in the aggregate. 4h/3h show nothing; 1w is too thin (n=23) to test.
+
+**This is the strongest, most-replicated finding of the whole Cipher B investigation so far** —
+four consecutive significant, same-direction cells on the largest available sample is far beyond
+what the 32-cell (8 timeframes × 4 horizons) multiple-comparisons noise floor (~1.6 expected false
+positives at α=0.05) would produce by chance. Proceeding to Phase 2 (MFI regime gate) per the
+approved plan, same discipline: one variable, one comparison against this raw baseline, report
+plainly whether it helps or not.

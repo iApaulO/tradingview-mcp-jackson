@@ -7,13 +7,14 @@
 // Both are implemented here and tagged separately (kind: 'regular' | 'hidden') so they can be
 // tested independently before any decision about pooling them.
 //
-// Scope, deliberately narrow for this first pass: only the flagship WT-wave2 divergence signal --
-// the one the indicator is literally named after ("VuManChu B Divergences") and the one under
-// discussion on 2026-07-31 (W/D showing div lines, 4h "matured"). NOT implemented yet: RSI
-// divergence (rsiShowDiv=false live, confirmed off), Stoch divergence (stochShowDiv=false live,
-// confirmed off), buySignal/sellSignal (WT cross at OB/OS, no divergence requirement), wtGoldBuy,
-// Sommi flag/diamond (sommiFlagShow/sommiDiamondShow both false live, confirmed off). Those are
-// out of scope for this build, not forgotten -- add if/when there's a concrete reason to.
+// EXTENDED 2026-07-31 per the authoritative "Intro to Market Cipher" walkthrough (crypto_face,
+// youtu.be/bxkm4Kjubqs), which this Pine source is a faithful clone of: the divergence signal above
+// is NOT what that video's trading community treats as primary -- `buySignal`/`sellSignal` (the
+// "green dot"/"red dot", WT1/WT2 cross at oversold/overbought, no divergence requirement) is
+// called explicitly more reliable than divergence. `computeWtCrossSignals()` below adds that.
+// Still NOT implemented: RSI divergence (rsiShowDiv=false live, confirmed off), Stoch divergence
+// (stochShowDiv=false live, confirmed off), wtGoldBuy (the video itself warns against trading it:
+// "DON'T BUY WHEN GOLD CIRCLE APPEARS"), Sommi flag/diamond (both false live, confirmed off).
 //
 // This is a historical/offline reimplementation (scripts/signal-bus/), not a live-rendering one:
 // output is a "zones" list shaped identically to divergence-for-many's (side, price, confirmedBarIdx,
@@ -25,6 +26,8 @@ const WT_AVERAGE_LEN = 12; // live-confirmed (wtAverageLen, in_7)
 const WT_MA_LEN = 3; // live-confirmed (wtMALen, in_9)
 const WT_DIV_OB_LEVEL = 45; // live-confirmed (wtDivOBLevel, in_19) -- regular bearish div min
 const WT_DIV_OS_LEVEL = -65; // live-confirmed (wtDivOSLevel, in_20) -- regular bullish div min
+const OB_LEVEL = 53; // live-confirmed (obLevel, in_10) -- buySignal/sellSignal's overbought threshold
+const OS_LEVEL = -53; // live-confirmed (osLevel, in_13) -- buySignal/sellSignal's oversold threshold
 // Hidden divergence, live-confirmed showHiddenDiv_nl=true (in_18): uses the NO-LIMIT fractal variant
 // (topLimit/botLimit ignored), matching f_findDivs(wt2, 0, 0, false) in the source.
 
@@ -159,6 +162,38 @@ export function computeVmcCipherB(candles) {
     if (hidden.bullDivHidden[i]) zones.push(makeZone("bullish", "hidden", lows[i - 2], i, candles));
   }
   return { zones };
+}
+
+// buySignal = wtCross and wtCrossUp and wtOversold; sellSignal = wtCross and wtCrossDown and
+// wtOverbought. Pine's wtCross = cross(wt1, wt2) (a crossing occurred, either direction, on THIS
+// bar); wtCrossUp = wt2 - wt1 <= 0 (post-cross state: wt1 now >= wt2); wtCrossDown = wt2 - wt1 >= 0
+// (wt1 now <= wt2). Implemented directly as a same-bar sign-change check on (wt1 - wt2), which is
+// exactly what a "cross on this bar" means and avoids relying on Pine's own cross() being anything
+// more subtle than that.
+//
+// Public: buySignal/sellSignal events over a full candle series -- the video's "green dot"/"red
+// dot," called more reliable than divergence. Returns { events } shaped like divergence-for-many's
+// zones (side, price, confirmedBarIdx, confirmedTime, no expiry) for the same reuse reasons as
+// computeVmcCipherB -- `price` here is the close at the signal bar (there's no natural "level" the
+// way a divergence pivot has one; the signal is a momentum event, not a price level).
+export function computeWtCrossSignals(candles) {
+  const { wt1, wt2 } = computeWaveTrend(candles);
+  const n = candles.length;
+  const events = [];
+  for (let i = 1; i < n; i++) {
+    if (Number.isNaN(wt1[i]) || Number.isNaN(wt2[i]) || Number.isNaN(wt1[i - 1]) || Number.isNaN(wt2[i - 1])) continue;
+    const diffPrev = wt1[i - 1] - wt2[i - 1];
+    const diffNow = wt1[i] - wt2[i];
+    const crossedUp = diffPrev <= 0 && diffNow > 0; // wt1 crossed above wt2
+    const crossedDown = diffPrev >= 0 && diffNow < 0; // wt1 crossed below wt2
+    if (crossedUp && wt2[i] <= OS_LEVEL) {
+      events.push({ side: "bullish", signal: "buySignal", price: candles[i].c, confirmedBarIdx: i, confirmedTime: candles[i].t, ...NO_EXPIRY });
+    }
+    if (crossedDown && wt2[i] >= OB_LEVEL) {
+      events.push({ side: "bearish", signal: "sellSignal", price: candles[i].c, confirmedBarIdx: i, confirmedTime: candles[i].t, ...NO_EXPIRY });
+    }
+  }
+  return { events };
 }
 
 function makeZone(side, kind, price, confirmedBarIdx, candles) {
