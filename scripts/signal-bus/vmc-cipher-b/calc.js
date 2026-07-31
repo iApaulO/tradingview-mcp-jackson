@@ -28,6 +28,11 @@ const WT_DIV_OB_LEVEL = 45; // live-confirmed (wtDivOBLevel, in_19) -- regular b
 const WT_DIV_OS_LEVEL = -65; // live-confirmed (wtDivOSLevel, in_20) -- regular bullish div min
 const OB_LEVEL = 53; // live-confirmed (obLevel, in_10) -- buySignal/sellSignal's overbought threshold
 const OS_LEVEL = -53; // live-confirmed (osLevel, in_13) -- buySignal/sellSignal's oversold threshold
+const MFI_PERIOD = 60; // live-confirmed (rsiMFIperiod, in_25) -- matches Pine default, no deviation
+const MFI_MULTIPLIER = 150; // live-confirmed (rsiMFIMultiplier, in_26)
+const MFI_POS_Y = 2.5; // live-confirmed (rsiMFIPosY, in_27) -- subtracted inside Cipher B's own
+// f_rsimfi (NOTE: Cipher A's f_rsimfi does NOT subtract this -- a real, confirmed difference
+// between the two scripts' otherwise-identically-named MFI functions, relevant for Phase 4).
 // Hidden divergence, live-confirmed showHiddenDiv_nl=true (in_18): uses the NO-LIMIT fractal variant
 // (topLimit/botLimit ignored), matching f_findDivs(wt2, 0, 0, false) in the source.
 
@@ -164,6 +169,17 @@ export function computeVmcCipherB(candles) {
   return { zones };
 }
 
+// f_rsimfi(60, 150, current-tf) - 2.5: sma(((close-open)/(high-low)) * 150, 60) - 2.5. The video's
+// "environment" filter -- positive = bullish regime (long dips), negative = bearish (short peaks).
+// Guards h===l (a literal doji with zero range, essentially never real market data but defensive
+// against a divide-by-zero) by treating that bar's raw term as 0, matching how this project's other
+// per-bar ratio indicators (e.g. divergence-for-many's CMF) handle the same edge case.
+export function computeMfi(candles) {
+  const raw = candles.map((c) => (c.h === c.l ? 0 : ((c.c - c.o) / (c.h - c.l)) * MFI_MULTIPLIER));
+  const smoothed = sma(raw, MFI_PERIOD);
+  return smoothed.map((v) => (Number.isNaN(v) ? NaN : v - MFI_POS_Y));
+}
+
 // buySignal = wtCross and wtCrossUp and wtOversold; sellSignal = wtCross and wtCrossDown and
 // wtOverbought. Pine's wtCross = cross(wt1, wt2) (a crossing occurred, either direction, on THIS
 // bar); wtCrossUp = wt2 - wt1 <= 0 (post-cross state: wt1 now >= wt2); wtCrossDown = wt2 - wt1 >= 0
@@ -178,6 +194,7 @@ export function computeVmcCipherB(candles) {
 // way a divergence pivot has one; the signal is a momentum event, not a price level).
 export function computeWtCrossSignals(candles) {
   const { wt1, wt2 } = computeWaveTrend(candles);
+  const mfi = computeMfi(candles); // attached per-event below for Phase 2's regime gate -- avoids every caller recomputing it separately
   const n = candles.length;
   const events = [];
   for (let i = 1; i < n; i++) {
@@ -187,10 +204,10 @@ export function computeWtCrossSignals(candles) {
     const crossedUp = diffPrev <= 0 && diffNow > 0; // wt1 crossed above wt2
     const crossedDown = diffPrev >= 0 && diffNow < 0; // wt1 crossed below wt2
     if (crossedUp && wt2[i] <= OS_LEVEL) {
-      events.push({ side: "bullish", signal: "buySignal", price: candles[i].c, confirmedBarIdx: i, confirmedTime: candles[i].t, ...NO_EXPIRY });
+      events.push({ side: "bullish", signal: "buySignal", price: candles[i].c, confirmedBarIdx: i, confirmedTime: candles[i].t, mfi: mfi[i], ...NO_EXPIRY });
     }
     if (crossedDown && wt2[i] >= OB_LEVEL) {
-      events.push({ side: "bearish", signal: "sellSignal", price: candles[i].c, confirmedBarIdx: i, confirmedTime: candles[i].t, ...NO_EXPIRY });
+      events.push({ side: "bearish", signal: "sellSignal", price: candles[i].c, confirmedBarIdx: i, confirmedTime: candles[i].t, mfi: mfi[i], ...NO_EXPIRY });
     }
   }
   return { events };

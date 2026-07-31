@@ -2056,3 +2056,35 @@ what the 32-cell (8 timeframes × 4 horizons) multiple-comparisons noise floor (
 positives at α=0.05) would produce by chance. Proceeding to Phase 2 (MFI regime gate) per the
 approved plan, same discipline: one variable, one comparison against this raw baseline, report
 plainly whether it helps or not.
+
+## 20. MFI regime gate on buySignal/sellSignal — Phase 2 — 2026-07-31
+
+`computeMfi()` added to `calc.js`, faithfully matching Cipher B's own `f_rsimfi` (which, confirmed
+by reading both sources side by side, subtracts `rsiMFIPosY` (2.5) — Cipher A's otherwise
+identically-named function does NOT; a real, disclosed difference relevant to Phase 4). All three
+live settings (period 60, multiplier 150, posY 2.5) match Pine defaults exactly, no deviation to
+account for. Video's rule: green/positive MFI → only trust longs; red/negative → only trust
+shorts. Tested as the simplest, most literal reading — same-bar, same-timeframe MFI sign at the
+signal bar — against Phase 1's raw baseline, both "aligned" (following the rule) and "against"
+(the opposite reading), pooled and stratified.
+
+**Result on 5-minute — the one timeframe with a real, replicated signal — is the opposite of the
+video's rule.** MFI-aligned events (n=11,107) are WEAKER than raw at every horizon (51.9-53.3%
+correct vs. raw's 54.1-55.3%, not significant at 5 or 40 bars), while MFI-against events
+(n=34,085, the majority) are slightly STRONGER than raw at every horizon and significant
+throughout. A sanity check caught a related, non-obvious base-rate fact before this result could be
+misread: on 4h, `buySignal` (an oversold cross-up) co-occurs with `mfi<=0` far more often (334 vs.
+99) than `mfi>0`, and `sellSignal` the mirror image — the opposite skew from the video's simple
+heuristic, because same-bar MFI captures RECENT momentum, which is often already negative right
+before an oversold bounce triggers (and positive right before an overbought top triggers).
+
+**This does not necessarily falsify the video's actual claim — it falsifies this literal
+operationalization of it.** The video repeatedly frames MFI as a slower-moving, HIGHER-TIMEFRAME
+regime ("start with the larger time frames to identify environment") checked before trading a
+signal on a LOWER timeframe — not a same-bar, same-timeframe co-reading. That cross-timeframe
+version is a materially different, more charitable test of the actual claim and is a natural
+extension of Phase 3 (which already tests cross-timeframe agreement, just for dot-stacking rather
+than a regime filter) — flagged for a follow-up pass, not built in this phase. As tested here, the
+verdict stands: **do not gate Cipher B `buySignal`/`sellSignal` by same-bar MFI sign** — it doesn't
+help on the timeframe that matters, and the majority "against" bucket already carries the raw
+signal's edge on its own.
