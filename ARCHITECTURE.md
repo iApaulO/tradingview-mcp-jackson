@@ -2298,3 +2298,47 @@ the signal cleanly), cross-INDICATOR agreement with a structurally slower, laggi
 for a rare, weaker subset rather than a stronger one — Cipher B's fast-reversal design and Cipher
 A's trend-following design are frequently, by construction, on opposite sides at the exact moment
 Cipher B fires.
+
+## 27. Phase 7 — WT2 extremity dose-response — an inverted-U, not a straight line, and a direct reversal of the video's own claim — 2026-07-31
+
+iapaulo's request: "learn the significance of green dots occuring above 80 and below -80." Tested
+whether a `buySignal`/`sellSignal` firing at a more extreme `wt2` reading (beyond the ±53 OB/OS
+gate that defines the signal at all) predicts a stronger forward move — the same dose-response
+framing that worked cleanly for §21's confirm-count buckets. `wt2` magnitude read directly from the
+already-computed series at the signal's own bar (`computeWaveTrend`, exported, no new calc.js code
+needed) — same-bar, look-ahead-safe by construction, same as §20's same-bar MFI attribute.
+
+**Not monotonic — an inverted U, peaking well below the video's claimed threshold, then reversing
+hard past it:**
+
+| wt2 magnitude | n | correct-dir (N=5/10/20/40) |
+|---|---|---|
+| 53-60 | 12,941 | 52.8 / 53.7 / 53.5 / 52.4% (mostly not significant) |
+| 60-70 | 15,857 | 54.8 / 55.5 / 55.8 / 54.3% (significant at 3 of 4 horizons) |
+| **70-80** | **10,225** | **55.8 / 56.6 / 57.5 / 56.2% (significant at ALL 4 horizons — the peak)** |
+| 80-90 | 4,473 | 54.3 / 54.3 / 55.8 / 54.4% (weakening, mostly not significant) |
+| 90-100 | 1,313 | 50.0 / 52.7 / 50.6 / 52.6% (null) |
+| **100+** | **383** | **47.8 / 51.2 / 47.0 / 44.1% (significantly NEGATIVE at all 4 horizons, z=-2.9 to -4.3)** |
+
+The effect builds cleanly from the OB/OS gate up to a peak at 70-80, then decays and **reverses
+sign** past ~90-100 — the 100+ bucket isn't just weaker, it's a significant edge in the OPPOSITE
+direction from the signal's own side at every horizon tested. Checked the tail wasn't just thin
+noise before trusting this: n=383 at 100+ is workable (>30 threshold), and the pattern is
+monotonic across three consecutive buckets (80-90 → 90-100 → 100+, all degrading in the same
+direction), not a lone outlier cell. Max observed extremity is 127.7; the reversal is not an
+artifact of a hard ceiling in the WT2 calculation.
+
+Multiple-comparisons context: 6 buckets × 4 horizons = 24 cells, ~1.2 false positives expected by
+chance at α=0.05. 11 cells are significant, clustered coherently in exactly the two places the
+inverted-U predicts (the 60-80 rise, the 100+ reversal) — far beyond chance and structurally
+coherent, not scattered.
+
+**This directly reverses the video's specific claim.** "Above 80/below -80" is not a stronger
+signal — the 80-90 band is already past peak, and the 100+ band is a significantly worse entry than
+the raw §19 baseline, worse than doing nothing extreme at all. A plausible mechanical read (not
+independently tested, offered as a hypothesis): `wt2` this extreme means price has already moved
+unusually far before the cross even completes, so the signal is calling exhaustion into an
+already-overextended move rather than catching a fresh reversal — the opposite of what makes 70-80
+work. **Practical implication for any future trade-construction pass: prefer 60-80 as the
+"stronger" bucket, and treat 90+ readings as a caution flag, not a stronger buy/sell — the reverse
+of the video's own framing.**
