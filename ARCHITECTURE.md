@@ -1944,4 +1944,83 @@ confluence definition has limited discriminating power for Cipher B specifically
 mitigation-bounded order blocks, which meaningfully turn on and off over time) — a cleaner test
 would need a bounded "still-relevant" window for Cipher B zones, not just "ever existed before."
 
+## 18. Cipher B divergence — testing the causal mechanism directly, not just level-hold rate — 2026-07-31
+
+§17's standalone/confluence tests both used the level-hold framing borrowed from Divergence-for-Many
+and SMC ("does price defend this exact price when later revisited"). iapaulo pushed back hard and
+correctly: that's not what a momentum divergence claims. The causal story is *momentum exhaustion
+precedes price reversal* — a forward-looking prediction about what price does in the bars right
+after the signal, not a support/resistance claim about years later. Four follow-up tests, in order,
+each motivated by the last:
+
+**18.1 — Naive forward return** (`forward-return-significance.js`): for each divergence event,
+signed return over N∈{5,10,20,40} bars from the confirmation bar, vs. a same-timeframe randomly-
+sampled-bar-and-side baseline (controls for the mostly-uptrending regime, not a naive 50%). Result:
+**regular divergence shows a real, short-horizon edge** — 53.9% correct-direction at 5 bars
+(z=3.10, p=0.0019), decaying to non-significant by 10-20 bars. **Hidden divergence shows nothing**
+at any horizon. This directly refutes the §17 "no value" framing — the level-hold test was
+structurally blind to a real, if modest and short-lived, effect.
+
+**18.2 — Elite-trading-theory gates** (`gated-divergence-significance.js`): professional divergence
+use never trades the raw print — it requires (a) LOCATION at independent structure (active
+same-side SMC order block, regular divergence only — a reversal claim should matter most where the
+market already marked significance), (b) TREND CONTEXT (hidden divergence only — a continuation
+claim needs an established trend to continue; gated via price vs. a 50-bar SMA), (c) CONFIRMATION
+(don't enter on the raw print; require price to break the pivot-formation window's own high/low
+within 5 bars, or discard — no confirmation, no trade), (d) OSCILLATOR AGREEMENT (a same-side
+Divergence-for-Many zone within a TIGHTENED same-day window, not the "ever in 9 years" check §17
+correctly flagged as meaningless).
+
+**Caught and fixed a real methodological error before trusting the result, disclosed rather than
+quietly corrected**: the first version measured forward return starting at the confirmation bar
+while *also* using "does it confirm within 5 bars" as the filter for N=5 — the filter window and
+the measurement window were the same 5 bars, producing a near-tautological 81% "edge" that
+evaporated on inspection (rebuilding it with entry fixed at the divergence's own confirmation bar,
+filtering only on eventual confirmation, produces the same look-alike inflation for exactly the
+reason the overlap predicts). Corrected design: entry AT the confirmation-detection bar itself, a
+completely fresh non-overlapping forward window from there.
+
+**Real result, and it's the opposite of what the theory predicts: waiting for confirmation makes
+regular divergence WORSE, not better.** 46.3% correct-direction at 5 bars (z=-4.45, p=0.0000) vs.
+the raw signal's 53.9% — confirmation-chasing enters after a real chunk of the confirming move has
+already happened, buying the tail of that thrust right where it's likeliest to pause or give back.
+Stacking SMC location and oscillator agreement claws back toward neutral (49-53%) but never beats
+the raw signal at any horizon. Hidden divergence stays null-to-negative at every gate level,
+including fully stacked (n=1157).
+
+**18.3 — Two better-motivated confirmation designs, requested directly** (`confirmation-variants-
+significance.js`), same non-overlapping-window discipline: (A) oscillator recross — a cheaper,
+earlier confirmation than a full price breakout (WT1/WT2 crossing in the implied direction, the
+indicator's own built-in buy/sell-dot mechanism); (B) pullback-after-breakout — enter on a 30%
+retracement into the confirmed breakout instead of chasing the breakout bar itself, discarding if
+price invalidates before retracing. **Neither improved on the raw signal.** Both landed close to
+raw at short horizons (53-55%, not significantly different) and oscillator-recross turned
+significantly *worse* than raw by 40 bars (z=-4.00, p=0.0001). Across four entry-timing designs now
+tested (raw / price-break chase / oscillator recross / pullback retest), **the plain raw print,
+entered immediately with no waiting at all, remains the only one with a clean edge** — modest, and
+only at 5 bars.
+
+**18.4 — Timeframe stratification** (`timeframe-stratified-significance.js`): tests the one
+remaining untested piece of the theory, "higher timeframe divergence is more reliable." **Result
+contradicts the theory.** 1w is too data-thin to test (n=4); 1d/4h/2h show nothing significant;
+3h has one isolated 5-bar hit (p=0.007) that doesn't survive to 10 bars; 1h's one significant cell
+is in the *wrong* direction (48.7% correct, p=0.035). **5-minute is the only timeframe with a
+consistent, multi-horizon-replicating result** — significant at 5, 10, AND 20 bars (54.1-55.4%
+correct, p<0.01 each) on the largest sample (n=9,766) — and the pooled 53.9% headline from §18.1
+turns out to be mostly this one timeframe's data (65% of the pooled sample) carrying the average.
+**Multiple-comparisons caveat, stated plainly**: 8 timeframes × 2 kinds × 4 horizons = 64 tests at
+α=0.05; pure chance predicts ~3 false positives, close to what the scattered non-5m hits look like.
+The 5m result is the one worth trusting specifically because it replicates across three consecutive
+horizons on the largest sample, not because of where it sits in the timeframe ladder.
+
+**Where this leaves Cipher B, honestly:** the only signal that has survived every test run today is
+**regular WT divergence on 5-minute BTC, entered immediately on the raw print with no confirmation
+gate, held for roughly 5-20 bars** — modest (53.9-55.4% correct-direction, not a dramatic edge),
+real (consistent across three consecutive horizons, largest available sample, survives a fair
+skeptical audit including a self-caught look-ahead bug), and the opposite of what "wait for
+confirmation" and "trust higher timeframes more" would have predicted going in. Not yet cost/
+capacity tested per iapaulo's explicit direction (2026-07-31: "no point running cost analysis until
+you have established elite trader level understanding of divergence") — do not treat as tradeable
+without that step.
+
 Results saved to `scripts/signal-bus/divergence-for-many/results/touch_refresh_analysis_*.json`.

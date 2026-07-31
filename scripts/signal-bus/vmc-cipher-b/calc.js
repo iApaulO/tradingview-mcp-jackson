@@ -64,7 +64,7 @@ function sma(values, length) {
 // ci=(src-esa)/(0.015*de); wt1=ema(ci,avg); wt2=sma(wt1,malen). security(...,timeframe.period,...)
 // on the CURRENT chart timeframe is a no-op for historical (closed-bar) computation, so it's
 // dropped here.
-function computeWaveTrend(candles) {
+export function computeWaveTrend(candles) {
   const hlc3 = candles.map((c) => (c.h + c.l + c.c) / 3);
   const esa = ema(hlc3, WT_CHANNEL_LEN);
   const absDiff = hlc3.map((v, i) => Math.abs(v - esa[i]));
