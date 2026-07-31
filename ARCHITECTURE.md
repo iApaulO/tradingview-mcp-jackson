@@ -2156,3 +2156,60 @@ to "something's currently wrong in the market structure" than a precise same-ins
 noting: testing 3 windows × 4 horizons = 12 comparisons, and only 2 cleared significance, both in
 the wider window and both at the shorter horizons — a coherent pattern, not scattered noise, but
 disclosed here rather than treated as fully clean given the window-size sensitivity.
+
+## 23. "Blue Wave" — Phase 5 (final) — formalized, tested, comes back completely null — 2026-07-31
+
+The video's own top-billed technique ("I have made more money off of these blue waves than any
+other indicator basically ever"), formalized in `computeBlueWave()`: a shrinking-magnitude swing
+in `wtVwap` (`wt1-wt2`, the white/light "VWAP" area) compared to the PREVIOUS same-direction swing
+(correctly skipping one full cycle, since swings necessarily alternate sign at each zero-cross —
+comparing to the immediately-prior swing would compare a peak to a trough), entered on the
+zero-cross that ends the shallower swing — the same underlying event as `buySignal`/`sellSignal`'s
+`wtCross`, just gated by relative swing size instead of a fixed OB/OS threshold. **Disclosed
+plainly, and worth repeating here: this is a genuine formalization of a qualitative, visually-
+described pattern, not a literal Pine port** — no exact algorithmic definition exists in the source
+the way divergence or `buySignal` do. Sanity-checked first (1,894 events on 4h/19,587 candles,
+balanced side split 955/939, no bad prices) before testing.
+
+**Result: uniformly null, every timeframe, every horizon.** Pooled (n=140,702) sits at 49.3-49.7%
+correct-direction across all four horizons, none significant (p=0.20-0.97). Stratified by
+timeframe: every single cell across all 8 timeframes × 4 horizons is within a point of a coin flip,
+with exactly ONE marginally significant cell (3h, N=40, p=0.0396) — squarely inside the ~1.6
+false-positives-by-chance the 32-cell multiple-comparisons floor predicts, and in the wrong
+direction besides. This is the cleanest, most uniform null in the entire Cipher B investigation —
+cleaner even than the divergence level-hold false-negative (§17), because this test uses the
+CORRECT forward-return framing that worked for every other signal tested today, and still finds
+nothing.
+
+**Two honest readings, both left open rather than one asserted over the other:** (1) this specific
+formalization doesn't capture what the video actually means by "Blue Wave" — the description is
+genuinely visual/qualitative ("a nice healthy blue wave... a smaller one... white cuts into blue"),
+and a different, equally-plausible reading of that language might behave differently; or (2) the
+technique itself doesn't have a real mechanical edge, and the video's "most money ever made" claim
+reflects the same hindsight/cherry-picked-example bias that affects most discretionary trading
+narratives, not something a systematic backtest would recover. This result cannot distinguish
+between those two explanations — say so rather than pick one.
+
+## 24. Video-driven plan complete — all 5 phases — summary — 2026-07-31
+
+Approved plan (`C:\Users\apaul\.claude\plans\claude-continue-splendid-dewdrop.md`) fully executed.
+Net picture, phase by phase:
+
+| Phase | Signal | Result |
+|---|---|---|
+| 1 | `buySignal`/`sellSignal`, raw | **Real** — 5m, all 4 horizons significant (§19) |
+| 2 | MFI regime gate (same-bar) | **Falsified as stated** — reverses the video's rule (§20) |
+| 3 | Multi-timeframe stacking | **Strongest finding in the project** — clean dose-response (§21) |
+| 4 | Cipher A yellow-X veto | **Partially real** — not same-candle, but a real ~10-bar warning (§22) |
+| 5 | "Blue Wave" | **Null** — uniformly, across every timeframe and horizon (§23) |
+
+The house model that survives this pass, stated plainly: **Cipher B `buySignal`/`sellSignal` on
+5-minute BTC, confirmed by a same-side signal on one or more higher timeframes within a
+TF-scaled lookback window, is the one component with a clean, replicated, dose-responsive edge** —
+strongest at 3+ confirming timeframes (60.2-68.0% correct-direction). The Cipher A yellow-X veto
+adds a real, if narrower, risk flag on top of that (a ~10-bar elevated-risk window, not an instant
+veto). MFI regime filtering and Blue Wave, as tested here, do not add value — MFI actively hurts
+when read literally, Blue Wave shows nothing at all. None of this has been cost/capacity tested,
+per iapaulo's explicit sequencing direction (2026-07-31) to complete the understanding-building
+pass first — Phase 3's multi-timeframe-stacked signal is the clear leading candidate for that step
+whenever it's requested.

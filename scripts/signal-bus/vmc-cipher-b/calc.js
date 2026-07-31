@@ -213,6 +213,53 @@ export function computeWtCrossSignals(candles) {
   return { events };
 }
 
+// Phase 5 of the video-driven plan: "Blue Wave" -- the video's own top-billed technique ("I have
+// made more money off of these blue waves than any other indicator basically ever"), described
+// visually: a swing in the white/light "VWAP" area (wtVwap = wt1-wt2, the `vwapShow` plot in the
+// source), followed by a SMALLER same-direction swing, entered when price/lines "cut into" the
+// other side -- which, read against the actual Pine plots, is the SAME zero-cross event already
+// used for buySignal/sellSignal (wtVwap crossing zero IS wt1 crossing wt2), just gated by
+// "this swing was shallower than the last same-direction one" instead of a fixed OB/OS threshold.
+// This is a genuine formalization of a qualitative visual description, not a literal Pine port --
+// disclosed as such. A "swing" here is a maximal run of consecutive bars where wtVwap stays on one
+// side of zero; its magnitude is the largest |wtVwap| reached during that run. "Same-direction" a
+// full cycle back is the CORRECT skip -- swings necessarily alternate sign at each zero-cross by
+// construction, so comparing to the immediately-prior swing would compare a peak to a trough.
+export function computeBlueWave(candles) {
+  const { wt1, wt2 } = computeWaveTrend(candles);
+  const n = candles.length;
+  const vwap = new Array(n).fill(NaN);
+  for (let i = 0; i < n; i++) {
+    if (!Number.isNaN(wt1[i]) && !Number.isNaN(wt2[i])) vwap[i] = wt1[i] - wt2[i];
+  }
+
+  const events = [];
+  let currentSide = null; // "pos" | "neg"
+  let currentExtreme = 0;
+  let prevPos = null, prevNeg = null; // magnitude of the last COMPLETED swing on each side
+
+  for (let i = 1; i < n; i++) {
+    if (Number.isNaN(vwap[i])) continue;
+    const side = vwap[i] >= 0 ? "pos" : "neg";
+    if (currentSide === null) { currentSide = side; currentExtreme = Math.abs(vwap[i]); continue; }
+    if (side === currentSide) {
+      currentExtreme = Math.max(currentExtreme, Math.abs(vwap[i]));
+      continue;
+    }
+    // Side just flipped at bar i -- the just-ended swing (on currentSide) is now complete.
+    const prevSameSide = currentSide === "pos" ? prevPos : prevNeg;
+    if (prevSameSide != null && currentExtreme < prevSameSide) {
+      // Shallower than the last same-direction swing -> "Blue Wave" fires at the cross bar i.
+      // A shrinking NEGATIVE swing implies bullish (expect up); a shrinking POSITIVE swing bearish.
+      events.push({ side: currentSide === "neg" ? "bullish" : "bearish", price: candles[i].c, confirmedBarIdx: i, confirmedTime: candles[i].t, ...NO_EXPIRY });
+    }
+    if (currentSide === "pos") prevPos = currentExtreme; else prevNeg = currentExtreme;
+    currentSide = side;
+    currentExtreme = Math.abs(vwap[i]);
+  }
+  return { events };
+}
+
 function makeZone(side, kind, price, confirmedBarIdx, candles) {
   return {
     side,
