@@ -2122,3 +2122,37 @@ time frames... the more time frames that agree, the stronger the signal"). 68.0%
 at confirm-count=3+, N=20 is the single strongest number produced anywhere in this project's
 Cipher B work, though n=895 there is the thinnest of the four buckets and shouldn't be read as more
 precise than it is. Proceeding to Phase 4 (Cipher A yellow-X veto) per the approved plan.
+
+## 22. Cipher A yellow-X veto — Phase 4 — 2026-07-31
+
+`scripts/signal-bus/vmc-cipher-a/calc.js` built from scratch, porting `yellowCross` from
+`pine/vmc-cipher-a-ribbon.pine` — a fully separate script from Cipher B with its own independent
+WT/RSI/MFI calculation, confirmed by reading both sources side by side (not assumed): Cipher A uses
+`wtAverageLen=13` and `osLevel3=-80` where Cipher B uses `12`/`-75`, and Cipher A's `f_rsimfi` does
+NOT subtract `rsiMFIPosY` the way Cipher B's does. Live settings probed against entity `hVarCL`
+("VuManChu Cipher A") — all 26 inputs match the Pine author's documented defaults exactly, no
+deviation this time (unlike Cipher B's `wtShowHiddenDiv`). `yellowCross` is rare by construction
+(782 events across all of 5m history vs. 45,192 buySignal/sellSignal events, ~1 per 1,201 bars) —
+sanity-checked (non-zero, sparse, spans the full history) before testing against it.
+
+Tested the video's specific claim — "if you see a yellow X on the same candle as a green dot, the
+yellow X takes precedent... stay out or short" — as a veto on 5-minute `buySignal`/`sellSignal`
+(Phase 1's real signal), at three pre-registered windows (exact same bar, ±3 bars, ±10 bars).
+
+**Result: the literal "same candle" claim does not hold, but a widened ~50-minute window does,
+briefly.** Window=0 and window=3 show no significant difference at any horizon (flagged n=693-837,
+mixed sign, wide CIs). Window=±10 bars (n=1,312 flagged) shows a real, short-lived negative effect:
+43.0% correct-direction at N=5 (z=-4.79, p<0.0001) and 46.3% at N=10 (z=-2.70, p=0.0069), fading to
+non-significant by N=20/40 — consistent with "elevated near-term risk that fades," not an
+instantaneous single-bar veto. **Checked and ruled out a clustering confound before trusting this**:
+627 of 782 yellowCross events are isolated occurrences (>50-bar gap from the next), spread across
+107 distinct months with no single month exceeding 2.7% of the total — not one bad historical
+period driving the result.
+
+**Verdict: the underlying warning concept has real, short-horizon value, but the video's literal
+timing claim is imprecise.** A yellowCross doesn't invalidate a buySignal/sellSignal on the exact
+same candle — it marks roughly the next 5-10 bars (on 5m, ~25-50 minutes) as elevated-risk, closer
+to "something's currently wrong in the market structure" than a precise same-instant veto. Worth
+noting: testing 3 windows × 4 horizons = 12 comparisons, and only 2 cleared significance, both in
+the wider window and both at the shorter horizons — a coherent pattern, not scattered noise, but
+disclosed here rather than treated as fully clean given the window-size sensitivity.
