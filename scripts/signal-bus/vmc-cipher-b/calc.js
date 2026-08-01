@@ -426,6 +426,11 @@ export function computeStc(candles) {
 
 // Public: threshold-cross events on the STC series -- see the header note above on why this is an
 // interpretation (standard stochastic-style oversold/overbought crossing), not a literal Pine port.
+// VERIFIED 2026-08-01 against real external sources (not just asserted) after iapaulo asked whether
+// this was actually "prescribed by empirical sources" -- it wasn't checked the first time, it should
+// have been. HowToTrade's STC guide and LiteFinance both independently describe this exact
+// threshold-cross rule (buy crossing above 25, sell crossing below 75) as one of STC's two standard
+// documented strategies, with the same default settings used here (23/50 EMA, 10 stochastic period).
 export function computeStcCrossSignals(candles) {
   const stc = computeStc(candles);
   const n = candles.length;
@@ -438,6 +443,30 @@ export function computeStcCrossSignals(candles) {
     if (stc[i - 1] >= TC_OVERBOUGHT && stc[i] < TC_OVERBOUGHT) {
       events.push({ side: "bearish", signal: "stcSell", price: candles[i].c, confirmedBarIdx: i, confirmedTime: candles[i].t, stc: stc[i], ...NO_EXPIRY });
     }
+  }
+  return { events };
+}
+
+// Public: the SECOND standard documented STC strategy (HowToTrade's "trend continuation" reading,
+// found 2026-08-01 while verifying computeStcCrossSignals against real external sources): "buy when
+// indicator makes an upside U-turn within the 25-75 range; sell on downside U-turn" -- a directional
+// turn of the oscillator itself, entirely inside the neutral zone, NOT a threshold cross. Genuinely
+// distinct from computeStcCrossSignals -- fires far more often (a mid-range wiggle vs. a full
+// oversold/overbought round trip) and was never tested until this was checked.
+// Local min/max detection: a 3-bar pivot (stc[i-2] vs stc[i-1] vs stc[i]), same "confirmed one bar
+// after the pivot" convention used throughout this project (e.g. divergence's fractal offset).
+export function computeStcUTurnSignals(candles) {
+  const stc = computeStc(candles);
+  const n = candles.length;
+  const events = [];
+  for (let i = 2; i < n; i++) {
+    if ([stc[i], stc[i - 1], stc[i - 2]].some(Number.isNaN)) continue;
+    const inRange = stc[i - 1] > TC_OVERSOLD && stc[i - 1] < TC_OVERBOUGHT;
+    if (!inRange) continue;
+    const isLocalMin = stc[i - 2] > stc[i - 1] && stc[i] > stc[i - 1];
+    const isLocalMax = stc[i - 2] < stc[i - 1] && stc[i] < stc[i - 1];
+    if (isLocalMin) events.push({ side: "bullish", signal: "stcUTurn", price: candles[i].c, confirmedBarIdx: i, confirmedTime: candles[i].t, stc: stc[i - 1], ...NO_EXPIRY });
+    if (isLocalMax) events.push({ side: "bearish", signal: "stcUTurn", price: candles[i].c, confirmedBarIdx: i, confirmedTime: candles[i].t, stc: stc[i - 1], ...NO_EXPIRY });
   }
   return { events };
 }

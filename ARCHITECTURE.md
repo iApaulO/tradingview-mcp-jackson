@@ -2720,13 +2720,39 @@ only ONE scattered significant hit (15m at N=10, p=0.0128, ~1.6 false positives 
 across 32 cells at α=0.05) that does not replicate at adjacent horizons on the same timeframe.
 Correct-direction sits at 46-50% everywhere — indistinguishable from a coin flip, sometimes below it.
 
-**Verdict: falsified.** The standard threshold-cross interpretation of Schaff Trend Cycle shows no
-detectable predictive value on this data, on any timeframe tested. This doesn't rule out some other
-reading of STC (a simple directional turn rather than a threshold cross, for instance) — only the
-one, canonical interpretation actually tested here. Not pursued further absent a specific reason to
-believe a different construction would behave differently — this project's base rate (roughly 2 real
-survivors out of ~50 candidates tested) makes further variations on an already-null signal a lower
-priority than moving to Cipher A's still-unbuilt signals.
+**Verdict, first pass: falsified.** The threshold-cross interpretation showed no detectable
+predictive value on any timeframe tested — but this operationalization had been asserted ("the
+single most standard, widely-documented way STC is traded") rather than actually verified against a
+real source. iapaulo challenged this directly: "if you found no predictive value in schaff trend
+cycle, are you using it as prescribed by empirical sources." Fair, and worth checking rather than
+defending — the previous claim was unchecked.
+
+**Checked via web search (HowToTrade, LiteFinance) rather than continuing to assert it.** Confirmed
+the threshold-cross rule tested IS one of STC's two standard, independently-documented strategies,
+with the exact same default settings used here (23/50 EMA, 10 stochastic period, 25/75 levels) — the
+original construction was correct, now on real evidence instead of an assumption. But the same
+sources describe a SECOND, equally standard strategy never tested: "buy when the indicator makes an
+upside U-turn within the 25-75 range; sell on a downside U-turn" (HowToTrade) — a directional turn of
+the oscillator itself, entirely inside the neutral zone, genuinely distinct from a full oversold/
+overbought round trip. Built `computeStcUTurnSignals()` (a 3-bar local min/max pivot, same
+"confirmed one bar after the pivot" convention used throughout this project) and sanity-checked it
+first (balanced sides, zero events outside the 25-75 band by construction).
+
+**Retested both variants side by side across all 8 timeframes.** Same clean, thorough null: 56 cells
+(2 variants × 7 testable timeframes × 4 horizons), only 2 scattered non-replicating hits — right at
+the ~2.8 expected by chance at α=0.05. Correct-direction sits at 45-57% everywhere for both variants,
+indistinguishable from a coin flip.
+
+**Verdict, confirmed: falsified, now on solid ground.** Both of STC's real, independently-documented
+trading rules — not just one assumed interpretation — show no detectable predictive value on this
+data, on any timeframe, tested properly rather than assumed sufficient. One documented angle
+remains genuinely unexplored: every source consulted explicitly warns STC "should not be used
+standalone" and recommends MACD confirmation for reversal trades — not tested here, and a filter
+cannot manufacture real edge out of a signal that shows zero baseline directional information on its
+own, so this is flagged as an open question rather than a promising lead. Not pursued further absent
+a specific reason to expect a confirmation filter would behave differently — this project's base
+rate (roughly 2 real survivors out of ~50 candidates tested) makes chasing a third variant of an
+already twice-null signal a lower priority than other open threads.
 
 ## 35. Cipher A's four missing signals, built and tested — two broad, multi-timeframe leads, richer than anything else found this way — 2026-08-01
 

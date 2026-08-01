@@ -1,12 +1,18 @@
 #!/usr/bin/env node
-// Significance test for the Schaff Trend Cycle threshold-cross signal (computeStcCrossSignals,
-// calc.js) -- the indicator found live-active during the 2026-08-01 systematic re-inventory
-// (ARCHITECTURE.md §33) but never tested. Since the Pine source defines no boolean condition for
-// STC at all (see calc.js's header note), this tests the standard stochastic-style operationalization
-// (bullish on crossing up through 25, bearish on crossing down through 75) directly against the
-// same forward-return methodology used for every other signal in this project: signed return over
-// N bars from the confirmation bar, vs. a randomly-sampled-bar-and-side baseline on the same
-// timeframe (not a naive 50%, since this data's secular uptrend would bias that).
+// Significance test for the Schaff Trend Cycle signals (calc.js) -- the indicator found live-active
+// during the 2026-08-01 systematic re-inventory (ARCHITECTURE.md §33) but never tested. Since the
+// Pine source defines no boolean condition for STC at all (see calc.js's header note), this tests
+// against the same forward-return methodology used for every other signal in this project: signed
+// return over N bars from the confirmation bar, vs. a randomly-sampled-bar-and-side baseline on the
+// same timeframe (not a naive 50%, since this data's secular uptrend would bias that).
+//
+// EXTENDED 2026-08-01 after iapaulo asked whether the original threshold-cross-only test was
+// actually "using [STC] as prescribed by empirical sources" -- it hadn't been checked against real
+// sources the first time. Verified via web search (HowToTrade, LiteFinance): the threshold-cross
+// rule tested originally IS one of STC's two standard documented strategies (confirmed, not just
+// assumed). But there's a SECOND, equally standard strategy never tested until now -- "buy on an
+// upside U-turn within the 25-75 range, sell on a downside U-turn" (computeStcUTurnSignals) -- a
+// directional turn of the oscillator itself, not a threshold cross. Both tested here, side by side.
 //
 // Tests all 8 signal-bus timeframes (stratified, not just pooled) from the start -- §18.4's lesson
 // (pooling can dilute or hide a timeframe-concentrated effect) applies to every new signal in this
@@ -15,10 +21,11 @@
 // Usage: node scripts/signal-bus/vmc-cipher-b/stc-forward-return-significance.js
 
 import { loadCandles } from "../../backtest/lib/load-candles.js";
-import { computeStcCrossSignals } from "./calc.js";
+import { computeStcCrossSignals, computeStcUTurnSignals } from "./calc.js";
 
 const FORWARD_BARS = [5, 10, 20, 40];
 const LADDER = ["1w", "1d", "4h", "3h", "2h", "1h", "15m", "5m"];
+const VARIANTS = { threshold_cross: computeStcCrossSignals, u_turn: computeStcUTurnSignals };
 
 function mulberry32(seed) {
   let a = seed >>> 0;
@@ -52,34 +59,39 @@ async function main() {
     const candles = await loadCandles(tf);
     if (candles.length === 0) continue;
     const n = candles.length;
-    const { events } = computeStcCrossSignals(candles);
-    console.log(`\n=== ${tf}: ${events.length} STC threshold-cross events (${events.filter((e) => e.side === "bullish").length} bullish, ${events.filter((e) => e.side === "bearish").length} bearish) ===`);
+    console.log(`\n################ ${tf} ################`);
 
-    const baseline = {}; for (const N of FORWARD_BARS) baseline[N] = [];
-    for (let s = 0; s < events.length; s++) {
-      const i = Math.floor(rng() * (n - maxN - 1));
-      const side = rng() < 0.5 ? "bearish" : "bullish";
+    for (const [variantName, computeFn] of Object.entries(VARIANTS)) {
+      const { events } = computeFn(candles);
+      console.log(`\n=== ${variantName}: ${events.length} events (${events.filter((e) => e.side === "bullish").length} bullish, ${events.filter((e) => e.side === "bearish").length} bearish) ===`);
+      if (events.length < 30) { console.log("  too thin to test"); continue; }
+
+      const baseline = {}; for (const N of FORWARD_BARS) baseline[N] = [];
+      for (let s = 0; s < events.length; s++) {
+        const i = Math.floor(rng() * (n - maxN - 1));
+        const side = rng() < 0.5 ? "bearish" : "bullish";
+        for (const N of FORWARD_BARS) {
+          if (i + N >= n) continue;
+          const raw = (candles[i + N].c - candles[i].c) / candles[i].c;
+          baseline[N].push(side === "bearish" ? -raw : raw);
+        }
+      }
+
       for (const N of FORWARD_BARS) {
-        if (i + N >= n) continue;
-        const raw = (candles[i + N].c - candles[i].c) / candles[i].c;
-        baseline[N].push(side === "bearish" ? -raw : raw);
+        const ev = [];
+        for (const e of events) {
+          const i = e.confirmedBarIdx;
+          if (i + N >= n) continue;
+          const raw = (candles[i + N].c - candles[i].c) / candles[i].c;
+          ev.push(e.side === "bearish" ? -raw : raw);
+        }
+        if (ev.length < 30) { console.log(`  N=${N}: n=${ev.length} (too thin to test)`); continue; }
+        const evMean = mean(ev), baseMean = mean(baseline[N]);
+        const se = Math.sqrt(stderr(ev) ** 2 + stderr(baseline[N]) ** 2);
+        const z = (evMean - baseMean) / se;
+        const p = 2 * (1 - normalCdf(Math.abs(z)));
+        console.log(`  N=${String(N).padEnd(3)} n=${String(ev.length).padEnd(7)} mean=${(evMean * 100).toFixed(3)}%  correct-dir=${(pctCorrect(ev) * 100).toFixed(1)}%  z=${z.toFixed(2)}  p=${p.toFixed(4)} ${p < 0.05 ? "(significant)" : ""}`);
       }
-    }
-
-    for (const N of FORWARD_BARS) {
-      const ev = [];
-      for (const e of events) {
-        const i = e.confirmedBarIdx;
-        if (i + N >= n) continue;
-        const raw = (candles[i + N].c - candles[i].c) / candles[i].c;
-        ev.push(e.side === "bearish" ? -raw : raw);
-      }
-      if (ev.length < 30) { console.log(`  N=${N}: n=${ev.length} (too thin to test)`); continue; }
-      const evMean = mean(ev), baseMean = mean(baseline[N]);
-      const se = Math.sqrt(stderr(ev) ** 2 + stderr(baseline[N]) ** 2);
-      const z = (evMean - baseMean) / se;
-      const p = 2 * (1 - normalCdf(Math.abs(z)));
-      console.log(`  N=${String(N).padEnd(3)} n=${String(ev.length).padEnd(7)} mean=${(evMean * 100).toFixed(3)}%  correct-dir=${(pctCorrect(ev) * 100).toFixed(1)}%  z=${z.toFixed(2)}  p=${p.toFixed(4)} ${p < 0.05 ? "(significant)" : ""}`);
     }
   }
 }
