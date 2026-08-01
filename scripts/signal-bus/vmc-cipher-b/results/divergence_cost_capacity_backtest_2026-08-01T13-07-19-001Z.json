@@ -1,0 +1,123 @@
+{
+  "scope": "Cipher B regular WT divergence, 5-minute only",
+  "trade_construction": "entry = next-bar-open after the divergence zone's own confirmation bar; risk R = 0.6x ATR(14) at that bar; stop = entry -/+ R; target = entry +/- R-multiple x R; race-to-target-or-stop, max 200 bars, same-bar ambiguity scored as the stop",
+  "r_multiples_tested": [
+    1,
+    1.5,
+    2,
+    3
+  ],
+  "data_span_years": 8.94558521560575,
+  "results": {
+    "1R": {
+      "raw": {
+        "trade_count": 9766,
+        "win_rate": 0.4838214212574237,
+        "profit_factor": 0.9772376533286021,
+        "gross_expectancy_pct_per_trade": -0.000020551535530470752,
+        "costed_expectancy_pct_per_trade": -0.0014212917737719908
+      },
+      "nearBuySell": {
+        "not_near": {
+          "trade_count": 1421,
+          "win_rate": 0.5404644616467277,
+          "profit_factor": 1.1795055732796722,
+          "gross_expectancy_pct_per_trade": 0.00011980330859138896,
+          "costed_expectancy_pct_per_trade": -0.0012810792858256883
+        },
+        "near": {
+          "trade_count": 8345,
+          "win_rate": 0.47417615338526065,
+          "profit_factor": 0.9528602305466926,
+          "gross_expectancy_pct_per_trade": -0.00004445138376260547,
+          "costed_expectancy_pct_per_trade": -0.0014451673813659649
+        }
+      },
+      "inconclusive": 0,
+      "total_resolved": 9766
+    },
+    "1.5R": {
+      "raw": {
+        "trade_count": 9766,
+        "win_rate": 0.4025189432725783,
+        "profit_factor": 1.0542648370083159,
+        "gross_expectancy_pct_per_trade": 0.00005688921647285519,
+        "costed_expectancy_pct_per_trade": -0.0013444271063136884
+      },
+      "nearBuySell": {
+        "not_near": {
+          "trade_count": 1421,
+          "win_rate": 0.4630541871921182,
+          "profit_factor": 1.3002942358636906,
+          "gross_expectancy_pct_per_trade": 0.00023398253804148513,
+          "costed_expectancy_pct_per_trade": -0.001167562002188401
+        },
+        "near": {
+          "trade_count": 8345,
+          "win_rate": 0.3922109047333733,
+          "profit_factor": 1.0244319956463637,
+          "gross_expectancy_pct_per_trade": 0.00002673348130820287,
+          "costed_expectancy_pct_per_trade": -0.0013745439802456266
+        }
+      },
+      "inconclusive": 0,
+      "total_resolved": 9766
+    },
+    "2R": {
+      "raw": {
+        "trade_count": 9766,
+        "win_rate": 0.33913577718615606,
+        "profit_factor": 1.069771427294903,
+        "gross_expectancy_pct_per_trade": 0.00008114984201365489,
+        "costed_expectancy_pct_per_trade": -0.001320840694883065
+      },
+      "nearBuySell": {
+        "not_near": {
+          "trade_count": 1421,
+          "win_rate": 0.3884588318085855,
+          "profit_factor": 1.2582974943188727,
+          "gross_expectancy_pct_per_trade": 0.00023062602480673332,
+          "costed_expectancy_pct_per_trade": -0.0011716684274569295
+        },
+        "near": {
+          "trade_count": 8345,
+          "win_rate": 0.33073696824445775,
+          "profit_factor": 1.0460649276749643,
+          "gross_expectancy_pct_per_trade": 0.00005569679758597746,
+          "costed_expectancy_pct_per_trade": -0.0013462419881140446
+        }
+      },
+      "inconclusive": 0,
+      "total_resolved": 9766
+    },
+    "3R": {
+      "raw": {
+        "trade_count": 9766,
+        "win_rate": 0.2584476756092566,
+        "profit_factor": 1.0954792107013387,
+        "gross_expectancy_pct_per_trade": 0.00012485658847823236,
+        "costed_expectancy_pct_per_trade": -0.0012785889325470968
+      },
+      "nearBuySell": {
+        "not_near": {
+          "trade_count": 1421,
+          "win_rate": 0.3011963406052076,
+          "profit_factor": 1.2870865089124868,
+          "gross_expectancy_pct_per_trade": 0.00029222720920637964,
+          "costed_expectancy_pct_per_trade": -0.0011115245501180388
+        },
+        "near": {
+          "trade_count": 8345,
+          "win_rate": 0.251168364289994,
+          "profit_factor": 1.0710055408509411,
+          "gross_expectancy_pct_per_trade": 0.00009635645042494282,
+          "costed_expectancy_pct_per_trade": -0.0013070369238510715
+        }
+      },
+      "inconclusive": 0,
+      "total_resolved": 9766
+    }
+  },
+  "git_commit": "704cffca0690ec5241a6d7c0f9eb014fe7738e8c",
+  "generated_at": "2026-08-01T13:07:19.001Z"
+}

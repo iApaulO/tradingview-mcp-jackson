@@ -2441,3 +2441,53 @@ the fixed cost's share of the risk — but that changes the trade's character aw
 significance-tested and would need its own fresh test, not an assumption it still works. **Net
 position: understanding-building (§19-§28) is complete and the findings are real; none of them, in
 this construction, are currently tradeable at real cost.**
+
+## 30. Cost-testing divergence as its own standalone entry — same real-but-cost-blocked profile, plus a flagged asymmetry — 2026-08-01
+
+iapaulo pushed back on §29's framing (fair pushback): "not really understanding why you are unable
+to find or see the significance of divergence." Worth being precise about this, since §29's
+"trade-construction-blocked" verdict was about every bucket in that test, and every bucket in that
+test entered off `buySignal`/`sellSignal` — divergence only ever appeared there as a CONFIRMING
+FILTER on top of that entry (§28/#45), never as its own standalone trade. That's a real gap, not
+just a clarity problem: this section closes it.
+
+**To be direct about what the record already showed, restated plainly:** divergence has repeatedly
+cleared statistical significance in this project — #33 (53.9% correct-direction at 5 bars,
+p=0.0019), #35 (54.1-55.4% correct across three horizons on 5-minute specifically, the one
+timeframe it replicates on), and #45 (58.5-61.7% correct-direction when combined with Cipher B's
+own extreme-zone signal). None of that was ever in question. §29's negative verdict is a claim
+about whether the AVERAGE DOLLAR SIZE of that edge, at 5-minute BTC's typical bar range, is larger
+than a fixed 0.14% round-trip fee — a materially different question from "is the direction call
+real," and one where the answer can legitimately be "yes to the first, no to the second."
+
+**Built `divergence-cost-capacity-backtest.js`: entry directly off a Cipher B regular WT divergence
+zone's own confirmation bar (not off buySignal), same fixed R:R construction as §29 (0.6× ATR(14)
+risk, R ∈ {1, 1.5, 2, 3}, real costs from #22).** Result: the same profile as everything else in
+this cost-testing pass. Gross expectancy is genuinely positive and PF > 1 at every R multiple
+tested (e.g. 3R: PF 1.10, gross +0.0125%/trade, pooled n=9,766) — confirming the underlying
+direction-call edge is real, exactly as §33/§35 already established. But costed expectancy is
+negative at every R multiple regardless (3R pooled: -0.1279%/trade) — the same mechanical
+cost/ATR-ratio problem as §29, not a different failure mode.
+
+**One genuinely interesting, honestly-flagged asymmetry surfaced along the way, not smoothed over:**
+splitting divergence events by whether a buySignal/sellSignal also fires within ±10 bars (either
+order — a purely descriptive split here, not a look-ahead-safety claim) shows divergence events
+WITHOUT a nearby buy/sell signal performing BETTER (54.0% win at 1R, n=1,421, the minority — 14.5%
+of all divergence events) than divergence events WITH one (47.4% win, n=8,345, the majority). This
+looks like it points the opposite direction from §28/#45, where divergence-near-buySignal made
+buySignal's own outcomes BETTER. These are not a formal contradiction — they're two different
+anchor populations (most divergence events sit near a buySignal by base-rate co-occurrence, but
+most buySignals do NOT have a preceding divergence, so the "confluent" subset is a small, possibly
+unrepresentative slice from either anchor's point of view) — but it's a real, unresolved asymmetry,
+not independently significance-tested here, flagged rather than quietly dropped. **Even the best
+sub-bucket in this new test (isolated divergence, no nearby buy/sell signal, 3R: gross
++0.0292%/trade, PF 1.29) stays solidly negative after costs (-0.1112%/trade)** — the asymmetry is
+interesting as a future research lead, not a rescue for the cost problem.
+
+**Net position, stated as plainly as possible: divergence is real. It is not tradeable on 5-minute
+BTC at real transaction costs, in a fixed-R:R ATR-based construction, no matter which specific
+entry variant (raw buySignal, raw divergence, or their confluence) is used — because the fixed
+per-trade fee is large relative to how much a 5-minute bar typically moves, not because the
+direction-prediction itself is weak or fake.** ARCHITECTURE.md §29's "what would need to change"
+list (a coarser timeframe re-tested for significance, a lower fee tier, or a deliberately wider
+stop) applies identically here.
