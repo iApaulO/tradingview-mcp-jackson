@@ -21,7 +21,7 @@
 // Usage: node scripts/signal-bus/vmc-cipher-b/multi-indicator-confluence-significance.js
 
 import { loadCandles } from "../../backtest/lib/load-candles.js";
-import { computeWtCrossSignals, computeWaveTrend as computeWaveTrendB, computeVmcCipherB } from "./calc.js";
+import { computeWtCrossSignals, computeWaveTrend as computeWaveTrendB, computeVmcCipherB, computeRegularDivergenceUnion } from "./calc.js";
 import { computeWaveTrend as computeWaveTrendA } from "../vmc-cipher-a/calc.js";
 
 const FORWARD_BARS = [5, 10, 20, 40];
@@ -116,46 +116,59 @@ async function main() {
   console.log(`  not-confluent n=${notConfluentA.length} (thin because of the near-1.0 correlation above -- not read as a real effect)\n`);
 
   // ── Part 2: Cipher B's own regular WT divergence as a genuinely distinct confirming signal ──
-  console.log("=== Part 2: same-side Cipher B regular WT divergence within the last " + DIV_WINDOW + " bars (genuinely distinct detector) ===");
+  // REBUILT 2026-08-01 after finding the "2nd WT Regular Divergence" gap (see calc.js's header note
+  // and ARCHITECTURE.md §33): 'regular' alone was confirmed the deliberately-correct filter for
+  // cost-sensitive work (the "2nd"/regular_add detector is real but dilutes when pooled in) -- run
+  // all three variants (regular, regular_add, union) side by side to check whether that same
+  // pattern holds for THIS specific finding rather than assuming it does.
   const { zones } = computeVmcCipherB(candles);
-  const regularZones = zones.filter((z) => z.kind === "regular");
-  const divBySide = {
-    bullish: regularZones.filter((z) => z.side === "bullish").map((z) => z.confirmedBarIdx).sort((a, b) => a - b),
-    bearish: regularZones.filter((z) => z.side === "bearish").map((z) => z.confirmedBarIdx).sort((a, b) => a - b),
+  const variants = {
+    regular: zones.filter((z) => z.kind === "regular"),
+    regular_add: zones.filter((z) => z.kind === "regular_add"),
+    union: computeRegularDivergenceUnion(candles).zones,
   };
-  function nearDivergence(side, barIdx, window) {
-    for (const b of divBySide[side]) {
-      if (b > barIdx) break; // future divergence -- does not count, no look-ahead (same fix as §22/§26)
-      if (barIdx - b <= window) return true;
-    }
-    return false;
-  }
-  const withD = baseEvents.map((e) => ({ ...e, extremityB: Math.abs(wt2B[e.confirmedBarIdx]), divConfluent: nearDivergence(e.side, e.confirmedBarIdx, DIV_WINDOW) }));
-  const divConfluent = withD.filter((e) => e.divConfluent);
-  const divNot = withD.filter((e) => !e.divConfluent);
-  console.log(`div-confluent n=${divConfluent.length}, not n=${divNot.length}\n`);
-  for (const N of FORWARD_BARS) {
-    console.log(`  N=${N}:`);
-    report("no recent divergence", forwardReturns(divNot)[N], baseline[N]);
-    report("recent same-side divergence", forwardReturns(divConfluent)[N], baseline[N]);
-  }
 
-  console.log("\n=== Part 2 interaction with §27's wt2-extremity buckets ===");
   const BUCKETS = [
     { label: "53-70 (below peak)", min: 53, max: 70 },
     { label: "70-80 (§27 peak)", min: 70, max: 80 },
     { label: "80-100 (decaying)", min: 80, max: 100 },
     { label: "100+ (§27 reversal)", min: 100, max: Infinity },
   ];
-  for (const b of BUCKETS) {
-    const inBucket = withD.filter((e) => e.extremityB >= b.min && e.extremityB < b.max);
-    const bConfluent = inBucket.filter((e) => e.divConfluent);
-    const bNot = inBucket.filter((e) => !e.divConfluent);
-    console.log(`\n  bucket ${b.label}: div-confluent n=${bConfluent.length}, not n=${bNot.length}`);
+
+  for (const [variantName, divZones] of Object.entries(variants)) {
+    console.log(`\n########## Part 2 divergence source: ${variantName} (n=${divZones.length}) ##########`);
+    const divBySide = {
+      bullish: divZones.filter((z) => z.side === "bullish").map((z) => z.confirmedBarIdx).sort((a, b) => a - b),
+      bearish: divZones.filter((z) => z.side === "bearish").map((z) => z.confirmedBarIdx).sort((a, b) => a - b),
+    };
+    function nearDivergence(side, barIdx, window) {
+      for (const b of divBySide[side]) {
+        if (b > barIdx) break; // future divergence -- does not count, no look-ahead (same fix as §22/§26)
+        if (barIdx - b <= window) return true;
+      }
+      return false;
+    }
+    const withD = baseEvents.map((e) => ({ ...e, extremityB: Math.abs(wt2B[e.confirmedBarIdx]), divConfluent: nearDivergence(e.side, e.confirmedBarIdx, DIV_WINDOW) }));
+    const divConfluent = withD.filter((e) => e.divConfluent);
+    const divNot = withD.filter((e) => !e.divConfluent);
+    console.log(`div-confluent n=${divConfluent.length}, not n=${divNot.length}\n`);
     for (const N of FORWARD_BARS) {
-      console.log(`    N=${N}:`);
-      report("not confluent", forwardReturns(bNot)[N], baseline[N]);
-      report("confluent", forwardReturns(bConfluent)[N], baseline[N]);
+      console.log(`  N=${N}:`);
+      report("no recent divergence", forwardReturns(divNot)[N], baseline[N]);
+      report("recent same-side divergence", forwardReturns(divConfluent)[N], baseline[N]);
+    }
+
+    console.log(`\n=== ${variantName}: interaction with §27's wt2-extremity buckets ===`);
+    for (const b of BUCKETS) {
+      const inBucket = withD.filter((e) => e.extremityB >= b.min && e.extremityB < b.max);
+      const bConfluent = inBucket.filter((e) => e.divConfluent);
+      const bNot = inBucket.filter((e) => !e.divConfluent);
+      console.log(`\n  bucket ${b.label}: div-confluent n=${bConfluent.length}, not n=${bNot.length}`);
+      for (const N of FORWARD_BARS) {
+        console.log(`    N=${N}:`);
+        report("not confluent", forwardReturns(bNot)[N], baseline[N]);
+        report("confluent", forwardReturns(bConfluent)[N], baseline[N]);
+      }
     }
   }
 }

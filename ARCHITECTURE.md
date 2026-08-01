@@ -2671,3 +2671,26 @@ recross/pullback) is specific to `regular`/`hidden`'s own theoretical claims and
 NOT extended to `regular_add` here — excluded from their queries with a documented reason rather
 than left to crash on the new kind, a scope decision, not an oversight. **Net result: §17/§18's
 findings are fully intact, verified against the rebuilt database rather than assumed unaffected.**
+
+**Last piece: §28/#45 Part 2 (buySignal's confluence with a recent same-side divergence).** Reran
+`multi-indicator-confluence-significance.js` against all three divergence sources (`regular`,
+`regular_add`, `union`) side by side. `regular` alone reproduces byte-for-byte identical to the
+original report (70-80 peak bucket, n=711, 58.5-61.7% correct-direction across all 4 horizons).
+**Unlike the standalone cost tests, `regular_add` ALSO compounds the effect here** (peak bucket
+n=820, 57.7-60.5% correct-direction, all 4 horizons significant) — a meaningfully different result
+from §29/§30/§31's finding that `regular_add` isn't tradeable on its own. The distinction makes
+sense once stated plainly: `regular_add`'s directional information is too small to survive its OWN
+transaction cost as a standalone entry, but costs no money to consult once you're already taking the
+`buySignal` trade — using it as a confirming FILTER, not a separate position, sidesteps the exact
+problem that sank it standalone. The `union` (n=1028 in the peak bucket, the largest sample of the
+three) confirms this: 57.5-60.9% correct-direction across all 4 horizons, all significant — slightly
+larger sample, comparable strength to `regular` alone. **Practical implication, different from
+§29-§31's "always prefer `regular` alone" guidance: for a CONFIRMATION role specifically (not a
+standalone entry), the union is a reasonable or even preferable choice** — the two roles call for
+different filters, now checked rather than assumed to be the same answer.
+
+**This closes out the full re-verification prompted by iapaulo catching the original undercount:
+§31/§32 unchanged, §17/§18 unchanged, §28/#45 Part 2 unchanged for `regular` and meaningfully
+extended (not weakened) once `regular_add`/`union` are properly checked. No finding in this whole
+investigation was reversed by the fix — the fix corrected an incomplete inventory, and closer
+checking made several results either unchanged or stronger.**
