@@ -2491,3 +2491,67 @@ per-trade fee is large relative to how much a 5-minute bar typically moves, not 
 direction-prediction itself is weak or fake.** ARCHITECTURE.md §29's "what would need to change"
 list (a coarser timeframe re-tested for significance, a lower fee tier, or a deliberately wider
 stop) applies identically here.
+
+## 31. Coarser timeframes for divergence, done right — a real significance catch, then a second finding to ever clear real costs — 2026-08-01
+
+iapaulo's direct request: "let's test a coarser timeframe for divergence significance." §18.4/#35
+already tested this per-timeframe and found nothing above 5-minute — rerun fresh
+(`timeframe-stratified-significance.js`, unchanged: 1d/4h/2h/15m null, 3h/1h single non-replicating
+hits, only 5m replicates across horizons). But that test is individually underpowered on coarser
+timeframes: over 8.95 years, regular divergence fires only 224 times on 4h and 44 on 1d, vs. 9,766
+on 5m — nowhere near enough to detect an effect the size seen on 5m (4-5 points) with the standard
+mean-based z-test used throughout this project. Absence of significance there isn't strong evidence
+of absence.
+
+**Built `coarser-tf-pooled-significance.js`: pooled 15m/1h/2h/3h/4h/1d (excludes 5m, already
+established; excludes 1w, only 4 events) into one combined, well-powered sample (n=5,182) and
+tested it the same way.** First pass (mean-based z-test, the project's standard) came back mixed
+and NOT trustworthy on its face: significant positive at N=5, null at N=10/20, significant NEGATIVE
+at N=40. **Checked before reporting it, per this project's standing discipline** — traced the N=40
+"negative" result to five specific trades with raw uncapped returns of -44% to -104% (signed against
+a bearish divergence call). Verified these are REAL price action, not a data bug: BTC genuinely ran
+from $5,477→$11,165 in Oct-Dec 2017 and $15,297→$36,742 in Nov 2020-Jan 2021, blowing through
+several bearish divergence signals during two of BTC's most extreme historical blow-off phases.
+Confirmed the mean-based test's negative N=40 result was an artifact of these five trades inflating
+variance, not a real effect: 1%-trimmed mean flips from -0.28% to -0.20% and the median is
+slightly POSITIVE (+0.03%). Re-ran with a magnitude-robust proportion (correct-direction) test
+instead: **53.3-54.0% correct-direction at N=5/10/20 (all p<0.0001), only fading at N=40 (50.7%,
+p=0.32)** — the same shape and magnitude as 5m's own established effect (#35), just invisible to
+the standard test at this sample size until outlier-robustness was accounted for.
+
+**This mattered enough to cost-test directly, because the economics are much more favorable here:**
+checked first (not assumed) that the round-trip fee is 88.6% of 0.6×ATR(14) risk on 5m, but only
+24.3% on 1h and 11.9% on 4h — a real edge has a much better shot at clearing costs on these
+timeframes. Built `coarser-tf-divergence-cost-capacity-backtest.js`, same fixed R:R construction as
+§29/§30. A stop caps any single trade's loss at -1R regardless of the raw uncapped move, so the
+same outlier-sensitivity that distorted the significance test's mean does NOT carry over here.
+
+**Result: 15m/1h/2h/4h all stay negative after costs at every R (matching 5m's pattern), 3h clears
+costs only at 2R (an isolated, non-replicating hit, not trusted). But 1d clears costs at EVERY R
+multiple tested, and gets MORE profitable as R increases** — 1R: costed +0.4671%/trade → 3R: costed
++1.0013%/trade, pooled n=44. That shape (monotonic improvement with R) is the same signature that
+made #27b (SMC recurrence, the only other finding to ever clear costs in this project) trustworthy.
+
+**Scrutinized hard before reporting it, given this exact leg is where the significance test's
+outlier events came from:** (a) checked year-by-year distribution of all 44 events — spread 2-7 per
+year across all 10 calendar years 2017-2026, no single year above 16% of the total, not a clustered
+artifact of the 2017/2020-21 windows already identified; (b) the 44 events split 37 bearish / 7
+bullish (BTC's secular uptrend bias, not a bug — divergence naturally fires more on the side that
+fights the prevailing trend); the thin bullish leg (n=7, below this project's own n≥30 trust
+threshold) could not be independently verified, so re-ran bearish-only (n=37, safely above
+threshold): **still clears costs at every R multiple, still monotonically improving with R** (1R:
++0.0273%/trade costed → 3R: +0.6788%/trade costed) — the result does not depend on the thin bullish
+subset.
+
+**This is the second finding in the entire project to survive both significance testing and real
+costs, after #27b.** Real, disclosed limits, same category as #27b's: n=37 (bearish-only, the
+robustly-tested subset) is genuinely small — about 4.1 trades/year, a very low-frequency setup;
+single-asset (BTC), backtest-only, idealized fills (next-bar-open, no slippage modeled beyond the
+conservative same-bar-ambiguity-favors-stop rule); the strong bearish skew reflects this specific
+10-year uptrending sample and has not been tested in a sustained downtrend regime. **Do not treat
+as fully live-ready without an explicit, deliberate decision to do so** (the same standing caveat
+as #27b) — but this is real evidence, found by taking iapaulo's pushback seriously, checking a
+dramatic-looking result before trusting it (twice — once catching the mean-test's outlier
+distortion, once verifying the 1d cost result wasn't the same distortion recurring), and following
+the diagnosis in §29/§30 (fee-vs-ATR ratio) to its logical next step instead of stopping at "nothing
+on 5m clears costs."
