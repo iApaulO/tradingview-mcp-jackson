@@ -2602,3 +2602,53 @@ finding — not a new confirmed result at the same evidentiary bar as #27b or §
 live use: would benefit from more historical data (impossible to add here — the base signal is
 capped at ~4.4 events/year) or cross-validation against a different asset/period, neither built
 here.
+
+## 33. Correction: the "2nd WT Regular Divergence" gap and its effect on §31/§32 — the finding survives, now for a documented reason instead of by accident — 2026-08-01
+
+iapaulo reported seeing far more daily bullish divergences on a live BTC/USD chart than this
+project's code detected (9 since Jun 2021 vs. this file's 5) and pushed back hard, correctly, on
+how the gap was found: "when i ask you to inventory an indicator, claude should logically return
+the inventory not part of the inventory." Investigated and found a real, structural gap — the
+actual on-chart divergence-dot signal (`buySignalDiv`/`sellSignalDiv`) is `wtBullDiv OR
+wtBullDiv_add`, an OR against a second, independently-gated "2nd WT Regular Divergence" detector
+(±40/15, much looser than the primary ±65/45) that this project's `calc.js` never implemented —
+confirmed live-active via a properties probe (entity `Ilt4Lv`, `in_21`/`in_22`/`in_23`), not a
+tuning question. **A systematic re-inventory pass (grepping every `plot`/`plotshape` line in both
+Cipher A and Cipher B, not just re-checking the one gap iapaulo caught) turned up a second live
+deviation from Pine's own defaults never caught before (Schaff Trend Cycle, `tcLine=true`) and four
+entirely unbuilt Cipher A signals (`redCross`, `blueTriangle`, `bloodDiamond`, `bullCandle`) — see
+the standing memory note this produced (`feedback_complete_indicator_inventory`) for the process
+fix going forward.**
+
+Added `computeRegularDivergenceUnion()` to `calc.js` (regular OR regular_add, deduped) as the true
+on-chart population. **Critical finding before rebuilding anything on top of it: the union DILUTES
+rather than strengthens §31/§49's daily cost-clearing result — it should NOT be used for trading,
+only for chart-inventory completeness.** Split by kind and tested independently:
+
+- **`regular` (the original ±65/45 gate, n=44 daily events) — UNCHANGED, verified identical to the
+  original §31/§49 numbers.** Clears real costs at every R multiple (1R costed +0.4671%/trade → 3R
+  costed +1.0013%/trade), exactly as originally reported. This subset was never affected by the gap
+  — the gap was a missing SECOND signal, not an error in the first one.
+- **`regular_add` (the newly-added ±40/15 gate, n=58 daily events) — a real but smaller directional
+  edge that does NOT clear costs at any R multiple tested**, and is actively negative after costs
+  (1R costed -0.2590%/trade, 3R costed -0.4153%/trade). Checked whether this is just noise before
+  concluding it's tradeable-negative rather than a null: pooled across coarser timeframes (5,182
+  `regular` vs. 7,439 `regular_add` events), `regular_add` shows 52.2-52.9% correct-direction at
+  N=5/10/20 (p<0.001) — a real, smaller version of the same directional edge, just too thin in
+  magnitude relative to a 5-minute-to-daily fixed transaction cost, the identical "real signal,
+  wrong magnitude" story already established for buySignal/sellSignal in §29/§30. Rerunning the
+  pooled coarser-timeframe significance test (§31) on the union gives 52.8-53.2% correct-direction
+  at N=5/10/20 (still significant, p<0.0001, n=8,893) — real, just more diluted than the `regular`-
+  only 53.3-54.0% originally reported, exactly as expected from averaging a stronger and a weaker
+  population together.
+
+**Net correction: §31/§49's headline finding (daily Cipher B divergence, bearish side, clears real
+costs) is fully intact and unchanged in its numbers.** What changes is WHY it should be trusted: it
+was built on the `regular`-only subset by construction (this project's original, incomplete
+implementation), which turns out — now confirmed rather than assumed — to be the higher-quality
+half of the true on-chart signal. **Going forward, `regular` alone (not the union) is the
+deliberately correct filter for any future trading construction on Cipher B divergence** — the
+"2nd"/`regular_add` detector is a real signal for inventory/completeness purposes but should be
+excluded from any cost-sensitive construction, backed now by a direct, tested reason rather than an
+accident of what got built first. §32's SMC-bias-stacking result, which already filtered to
+`regular` only, required no computational change — its numbers stand as originally reported.

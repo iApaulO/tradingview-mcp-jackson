@@ -28,7 +28,7 @@ import { execSync } from "child_process";
 import { loadCandles } from "../../backtest/lib/load-candles.js";
 import { computeMetrics } from "../../backtest/lib/metrics.js";
 import { applyCosts, FEE_TIERS, REPRESENTATIVE_FUNDING_PCT_PER_HOUR } from "../../backtest/lib/costs.js";
-import { computeVmcCipherB } from "./calc.js";
+import { computeRegularDivergenceUnion } from "./calc.js";
 
 const args = Object.fromEntries(process.argv.slice(2).map((a) => a.replace(/^--/, "").split("=")));
 const R_MULTIPLES = (args.r || "1,1.5,2,3").split(",").map(Number);
@@ -77,13 +77,16 @@ function expectancy(trades) {
 }
 
 async function main() {
+  // REBUILT 2026-08-01: computeRegularDivergenceUnion() now returns the TRUE on-chart divergence
+  // population (regular OR regular_add, deduped) -- this script previously used "regular" alone,
+  // which undercounted real divergence events (the root cause iapaulo caught against a live chart).
+  // See ARCHITECTURE.md §31 and calc.js's header note.
   const perTf = {};
-  console.log("=== Per-timeframe event counts (regular divergence) ===");
+  console.log("=== Per-timeframe event counts (regular+regular_add union divergence) ===");
   for (const tf of LADDER) {
     const candles = await loadCandles(tf);
     const atr14 = atr(candles, ATR_LEN);
-    const { zones } = computeVmcCipherB(candles);
-    const regularZones = zones.filter((z) => z.kind === "regular");
+    const { zones: regularZones } = computeRegularDivergenceUnion(candles);
     perTf[tf] = { candles, atr14, zones: regularZones };
     console.log(`  ${tf}: ${regularZones.length} events`);
   }

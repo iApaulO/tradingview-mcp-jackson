@@ -24,7 +24,7 @@
 // Usage: node scripts/signal-bus/vmc-cipher-b/coarser-tf-pooled-significance.js
 
 import { loadCandles } from "../../backtest/lib/load-candles.js";
-import { computeVmcCipherB } from "./calc.js";
+import { computeRegularDivergenceUnion } from "./calc.js";
 
 const POOLED_LADDER = ["15m", "1h", "2h", "3h", "4h", "1d"]; // coarser than 5m, excludes 1w (too thin)
 const FORWARD_BARS = [5, 10, 20, 40]; // each timeframe's OWN bar count -- same convention as every other forward-return test in this project
@@ -57,12 +57,15 @@ async function main() {
   const rng = mulberry32(42);
   const maxN = Math.max(...FORWARD_BARS);
 
-  console.log("=== Per-timeframe event counts (regular divergence, this pooled set) ===");
+  // REBUILT 2026-08-01 after finding the "2nd WT Regular Divergence" gap (iapaulo caught a real
+  // undercount vs. the live chart) -- computeRegularDivergenceUnion() now returns the TRUE on-chart
+  // divergence-dot population (regular OR regular_add, deduped), not just the stricter "regular"
+  // gate this script used before. See ARCHITECTURE.md §31 and calc.js's header note.
+  console.log("=== Per-timeframe event counts (regular+regular_add union divergence, this pooled set) ===");
   const perTf = {};
   for (const tf of POOLED_LADDER) {
     const candles = await loadCandles(tf);
-    const { zones } = computeVmcCipherB(candles);
-    const regularZones = zones.filter((z) => z.kind === "regular");
+    const { zones: regularZones } = computeRegularDivergenceUnion(candles);
     perTf[tf] = { candles, zones: regularZones };
     console.log(`  ${tf}: ${regularZones.length} events`);
   }
