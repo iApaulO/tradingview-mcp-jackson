@@ -26,6 +26,20 @@ const WT_AVERAGE_LEN = 12; // live-confirmed (wtAverageLen, in_7)
 const WT_MA_LEN = 3; // live-confirmed (wtMALen, in_9)
 const WT_DIV_OB_LEVEL = 45; // live-confirmed (wtDivOBLevel, in_19) -- regular bearish div min
 const WT_DIV_OS_LEVEL = -65; // live-confirmed (wtDivOSLevel, in_20) -- regular bullish div min
+// BUG FOUND 2026-08-01: iapaulo reported seeing far more daily bullish divergences on the live
+// chart (9 since Jun 2021, 3 since Feb 2026) than this file's own "regular" count (5 since Jun
+// 2021, 0 since Feb 2026) -- a real, substantial undercount. Root cause, confirmed via a live
+// properties probe (entity Ilt4Lv, in_21/in_22/in_23) AND the Pine source (lines 69-71, 380-398):
+// the actual on-chart divergence dot (`buySignalDiv`/`sellSignalDiv`) is NOT just wtBullDiv/
+// wtBearDiv (this file's "regular" kind, gated at +/-65/45) -- it's
+// `(wtShowDiv and wtBullDiv) or (wtShowDiv and wtBullDiv_add) or ...`, an OR against a SECOND,
+// independently-gated divergence detector ("2nd WT Regular Divergence") this file never
+// implemented. Live-confirmed ACTIVE with Pine's own defaults (in_21=true, in_22=15, in_23=-40) --
+// not a live deviation, a straightforward missing feature. stochShowDiv/rsiShowDiv are both
+// confirmed off live (§ARCHITECTURE.md), so wtBullDiv/wtBullDiv_add (and the bear equivalents) are
+// the ONLY two live contributors to the real divergence-dot signal.
+const WT_DIV_OB_LEVEL_ADD = 15; // live-confirmed (wtDivOBLevel_add, in_22) -- 2nd bearish div min, much looser than the primary 45
+const WT_DIV_OS_LEVEL_ADD = -40; // live-confirmed (wtDivOSLevel_add, in_23) -- 2nd bullish div min, much looser than the primary -65
 const OB_LEVEL = 53; // live-confirmed (obLevel, in_10) -- buySignal/sellSignal's overbought threshold
 const OS_LEVEL = -53; // live-confirmed (osLevel, in_13) -- buySignal/sellSignal's oversold threshold
 const MFI_PERIOD = 60; // live-confirmed (rsiMFIperiod, in_25) -- matches Pine default, no deviation
@@ -144,18 +158,24 @@ function findDivergences(src, highs, lows, topLimit, botLimit, useLimits) {
   return { bearSignal, bullSignal, bearDivHidden, bullDivHidden };
 }
 
-// Public: compute WT regular + hidden divergence zones over a full candle series.
+// Public: compute WT regular + "2nd" regular + hidden divergence zones over a full candle series.
 // candles: [{t,o,h,l,c,v}, ...] chronological. Returns { zones } -- shaped for touches.js/
-// confluence.js reuse. Each zone's `kind` ('regular'|'hidden') and `price` (the actual high/low at
-// the pivot bar, i-2, matching what a trader would read off the chart as "the divergence level")
-// are the two fields specific to this indicator; everything else matches divergence-for-many's
-// zone shape so the shared machinery works unmodified.
+// confluence.js reuse. Each zone's `kind` ('regular'|'regular_add'|'hidden') and `price` (the
+// actual high/low at the pivot bar, i-2, matching what a trader would read off the chart as "the
+// divergence level") are the two fields specific to this indicator; everything else matches
+// divergence-for-many's zone shape so the shared machinery works unmodified.
+//
+// 'regular' + 'regular_add' together are what actually lights up the chart's divergence dot
+// (`buySignalDiv`/`sellSignalDiv`, both live-active) -- callers that want "the real divergence
+// signal a trader sees" should combine both kinds (see `computeRegularDivergenceUnion` below), not
+// filter to 'regular' alone the way earlier work in this project (pre-2026-08-01) did.
 export function computeVmcCipherB(candles) {
   const { wt2 } = computeWaveTrend(candles);
   const highs = candles.map((c) => c.h);
   const lows = candles.map((c) => c.l);
 
   const regular = findDivergences(wt2, highs, lows, WT_DIV_OB_LEVEL, WT_DIV_OS_LEVEL, true);
+  const regularAdd = findDivergences(wt2, highs, lows, WT_DIV_OB_LEVEL_ADD, WT_DIV_OS_LEVEL_ADD, true);
   const hidden = findDivergences(wt2, highs, lows, 0, 0, false); // showHiddenDiv_nl=true live -> no-limit variant
 
   const zones = [];
@@ -163,10 +183,29 @@ export function computeVmcCipherB(candles) {
   for (let i = 0; i < n; i++) {
     if (regular.bearSignal[i]) zones.push(makeZone("bearish", "regular", highs[i - 2], i, candles));
     if (regular.bullSignal[i]) zones.push(makeZone("bullish", "regular", lows[i - 2], i, candles));
+    if (regularAdd.bearSignal[i]) zones.push(makeZone("bearish", "regular_add", highs[i - 2], i, candles));
+    if (regularAdd.bullSignal[i]) zones.push(makeZone("bullish", "regular_add", lows[i - 2], i, candles));
     if (hidden.bearDivHidden[i]) zones.push(makeZone("bearish", "hidden", highs[i - 2], i, candles));
     if (hidden.bullDivHidden[i]) zones.push(makeZone("bullish", "hidden", lows[i - 2], i, candles));
   }
   return { zones };
+}
+
+// Public convenience: the TRUE on-chart divergence-dot population (regular OR regular_add,
+// de-duplicated when both gates fire on the same bar/side -- a stricter and looser threshold can
+// both trip on the same fractal). This is what `buySignalDiv`/`sellSignalDiv` actually is, live.
+export function computeRegularDivergenceUnion(candles) {
+  const { zones } = computeVmcCipherB(candles);
+  const seen = new Set();
+  const out = [];
+  for (const z of zones) {
+    if (z.kind !== "regular" && z.kind !== "regular_add") continue;
+    const key = `${z.side}:${z.confirmedBarIdx}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(z);
+  }
+  return { zones: out };
 }
 
 // f_rsimfi(60, 150, current-tf) - 2.5: sma(((close-open)/(high-low)) * 150, 60) - 2.5. The video's
