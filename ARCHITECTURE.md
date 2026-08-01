@@ -2393,3 +2393,51 @@ wt2-extremity sweet spot with a recent same-side regular divergence (this sectio
 single strongest, most specific entry description produced across Phases 6-8 — not yet
 cost/capacity tested, per the same standing direction that applies to every finding in this
 extension.
+
+## 29. Cost/capacity test on every surviving Cipher B finding — none clear real costs, and precisely why — 2026-07-31
+
+iapaulo's direction after Phases 6-8 landed: cost/capacity test the survivors. Built
+`scripts/signal-bus/vmc-cipher-b/cost-capacity-backtest.js`, reusing the one trade construction
+that has ever cleared real costs anywhere in this project (#27b's fixed R:R) rather than starting
+from naive construction again (which has failed every other finding tested: #2/#2a, #4a, #25a):
+entry = next-bar-open after the signal; risk = 0.6× ATR(14) at the signal bar (same convention as
+`breakout-bias-backtest.js`, not a new number); stop = entry ∓ risk; target = entry ± R×risk;
+race-to-target-or-stop, R ∈ {1, 1.5, 2, 3}, same-bar ambiguity scored as the stop. Costs reused
+directly from #22's confirmed Coinbase Advanced 1 figures (0.070% taker, both sides + hourly
+funding) — not re-derived. All 45,192 events resolved within the 200-bar backstop at every R (zero
+inconclusive), and every stratification from Phases 3/7/8 was tested in the same run: baseline,
+multi-TF confirm-count (§21), wt2-extremity bucket (§27), divergence confluence (§28), the combined
+wt2-70-80-plus-divergence construction (§28's leading candidate), and the corrected yellow-X prior
+warning (§22).
+
+**Every single bucket, at every R multiple, stays negative after costs — nothing here clears real
+costs, unlike #27b.** Best case found (wt2-70-80 + divergence confluence, 3R): gross expectancy
++0.0545%/trade, PF 1.40 — genuinely the best gross number in the whole sweep — but costed
+expectancy is still **-0.0858%/trade**. Every other bucket is worse. The 3+-confirmation bucket
+(§21's strongest single-variable finding) tops out at -0.0606%/trade costed even at 3R. The 100+
+wt2-reversal bucket (already known negative pre-cost, §27) is catastrophic once costed
+(-0.2651%/trade at 3R) — consistent, not surprising.
+
+**Diagnosed why, precisely, rather than just reporting the negative number:** on 5-minute BTC, mean
+`0.6× ATR(14)` risk is only **0.168% of price** (median 0.132%). The fee-only round-trip cost alone
+(2 × 0.070% = 0.140%) is **~83% of the average stop distance itself** — before funding is even
+added. This is a structurally different regime from #27b's 4H order-block test, where the
+underlying price swings are large enough relative to the same fixed percentage fee for a real edge
+to survive. No R-multiple scaling fixes this: raising R doesn't shrink the cost-to-risk ratio, it
+just changes how much of an already-thin edge gets diluted by the same fixed drag. **This is a
+capacity/instrument-frequency mismatch specific to trading a fast, high-frequency oscillator signal
+(~1 buySignal/sellSignal per 21 bars on 5m, 5,052/year) at real transaction costs, not evidence the
+underlying statistical edges from §19-§28 are fake** — the forward-return significance tests remain
+real, look-ahead-checked findings; they simply describe an edge too small, relative to a 5-minute
+bar's typical range, for this cost structure to trade profitably as constructed.
+
+**What would need to change for a future attempt, not built here:** (a) a coarser base timeframe
+where typical bar range is larger relative to the fixed fee — the significance tests already found
+5m to be the ONLY Cipher B timeframe with a real effect (§18.4), so this isn't a free substitution,
+it would need re-establishing significance on a different timeframe first; (b) a materially lower
+fee tier or maker-only execution (this test assumes worst-case taker fees on both sides, per
+`costs.js`'s conservative-by-design convention); (c) a wider stop (larger ATR multiple) to dilute
+the fixed cost's share of the risk — but that changes the trade's character away from what was
+significance-tested and would need its own fresh test, not an assumption it still works. **Net
+position: understanding-building (§19-§28) is complete and the findings are real; none of them, in
+this construction, are currently tradeable at real cost.**
