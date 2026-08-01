@@ -2555,3 +2555,50 @@ dramatic-looking result before trusting it (twice — once catching the mean-tes
 distortion, once verifying the 1d cost result wasn't the same distortion recurring), and following
 the diagnosis in §29/§30 (fee-vs-ATR ratio) to its logical next step instead of stopping at "nothing
 on 5m clears costs."
+
+## 32. Does §31's daily divergence finding stack with SMC bias? Yes — as a counter-trend filter, with real thinness caveats — 2026-08-01
+
+iapaulo's direct follow-up: "check if it stacks with smc bias." Tested whether aligning §31's
+daily-timeframe Cipher B regular divergence entry (the second finding in this project to clear real
+costs) with SMC's own same-timeframe structural bias (`structure_events`, same convention as
+`breakout-bias-backtest.js`) compounds or hurts the edge.
+
+**Two readings tested, decided empirically rather than assumed:** "with-bias" (SMC's current bias
+already agrees with the divergence's direction — e.g. a bearish divergence firing while SMC bias is
+already bearish, a continuation/pile-on read) vs. "against-bias" (SMC's bias is the OPPOSITE of the
+divergence's direction — e.g. a bearish divergence firing during a bullish SMC bias, the classic
+"catching exhaustion at a trend top" reading most divergence trading theory actually describes).
+Bias checked at two granularities since 1d `swing`-scope structure only changes 19 times across the
+whole 8.95-year history (extremely coarse relative to divergence's own ~4.4 events/year) — `internal`
+scope (159 regime changes on 1d) reported alongside as a more responsive alternative, not assumed
+better without checking both.
+
+**Result: against-bias clearly outperforms with-bias, consistently across both scope readings.**
+Swing scope: against-bias (n=29) at 1R — 69.0% win, PF 2.06, costed +0.8066%/trade; with-bias (n=10)
+at 1R — 40.0% win, PF 0.51, costed **-1.0139%/trade**, and stays negative at every R multiple
+tested. Internal scope: against-bias (n=37, clears this project's own n≥30 threshold outright) is
+positive at 3 of 4 R multiples (1R +0.4805%, 2R +0.3334%, 3R +0.6940%, dipping to -0.1076% only at
+1.5R); with-bias (n=4) is too thin to read at all. **Filtering §31's already-established bearish
+population (n=37) down to just the against-bias subset roughly TRIPLES the per-trade edge at 1R**
+(§31's unfiltered bearish result was +0.0273%/trade costed; against-bias alone reaches +0.48-0.81%)
+— this concentrates the edge rather than diluting it, unlike §28's Part 1 near-tautology or most
+other "does X stack" checks in this project, which mostly found nothing or made things worse.
+
+**Read plainly: divergence appears to work specifically as a counter-trend reversal signal, exactly
+matching classical divergence theory (catching exhaustion against the prevailing trend), not as
+confirmation of a trend SMC has already recognized** — a coherent, intuitive story, not just a
+numerical pattern.
+
+**Caveats taken seriously, not glossed over, because this is exactly the kind of small-sample
+result this project's discipline exists to catch:** §31's base population was already thin (n=37
+bearish); splitting it further leaves against-bias at n=29 (swing, just under this project's own
+n≥30 threshold) or n=37 (internal, at the threshold only because internal's finer bias resolution
+reclassifies more events as against-bias); with-bias is thin under BOTH scopes (n=10, n=4) — its
+consistently negative direction across every R multiple and both scopes is suggestive of a real
+effect, not proof of one. The two scopes agree directionally (a form of internal replication that
+adds some confidence) but differ enough quantitatively that neither should be treated as the final
+number. **This is real, promising, well-motivated evidence for a specific refinement of §31's
+finding — not a new confirmed result at the same evidentiary bar as #27b or §31 itself.** Before any
+live use: would benefit from more historical data (impossible to add here — the base signal is
+capped at ~4.4 events/year) or cross-validation against a different asset/period, neither built
+here.
