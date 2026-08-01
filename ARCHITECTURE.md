@@ -2812,3 +2812,57 @@ sample size" caveat already applied to daily divergence in §31.
 **Not yet cost/capacity tested — per the same standing sequencing (understanding before cost) used
 throughout this whole investigation.** `bullCandle` and `redDiamond`'s breadth of replication makes
 them the natural next candidates whenever cost-testing is the next step.
+
+## 36. Does STC extremity have predictive value as CONTEXT for other signals, even though it fails standalone? — real, but inverted from the hypothesis — 2026-08-01
+
+iapaulo's proposal, directly after §34's STC falsification: "instead of using it as a buy/sell im
+thinking that other signals such as divergence or others also happening during stc extremes would
+have a predictive edge... aligned with your current findings that stc should not be used as
+standalone." Exactly the pattern already proven twice in this project (§27's WT2-extremity dose-
+response, §28's confluence-in-extreme-ranges) — applied here with STC as the extremity variable.
+
+**Checked independence before building anything, per this project's own standing rule
+([[feedback_check_independence_before_confluence]]):** STC correlates with Cipher B's own `wt2` at
+r=0.69 — meaningfully independent (nowhere near the r=0.9993 near-duplicate that sank §28 Part 1's
+Cipher-A-wt2-vs-Cipher-B-wt2 attempt). A genuinely different construction (MACD-based double-
+stochastic vs. ATR-normalized channel deviation) sharing real momentum information, not a second
+copy of the same number — clears the bar to treat it as a real second signal.
+
+Defined "same-direction STC extremity" symmetrically for any event (bullish: `100-stc`; bearish:
+`stc`, so 100 always means "STC as far as possible in the event's own favor"), read at the event's
+own bar (a continuous state, not a recent-event check — no look-ahead risk). Tested against three
+already-established signals: Cipher B `buySignal`/`sellSignal` (5m, the flagship), Cipher B regular
+divergence (5m), and Cipher B regular divergence (1d, §31/#49's cost-clearing finding).
+
+**`buySignal`/`sellSignal`: a real, replicated dose-response — but INVERTED from the hypothesis.**
+12 of 16 cells significant (4 buckets × 4 horizons), far beyond chance — but the "STC extreme,
+aligned" bucket (75-100, the dominant population at n=41,767) is consistently the WEAKEST performer
+(54.0-55.2% correct-direction), while the rarer "STC against/neutral" buckets (n=409-2,237) run
+57-60% correct-direction at the short horizons. **Checked for a mechanical explanation before
+reporting it as simply "backwards":** STC is a much slower-moving construction (23/50-length MACD
+double-smoothed) than Cipher B's own fast WT oscillator. `buySignal`/`sellSignal` is specifically
+designed to catch a reversal EARLY (WT cross at oversold/overbought) — by the time STC's slower
+trend view has caught up and agrees, the move is already more mature, and the forward edge is
+correspondingly smaller. The same "fast signal fires before the slow one catches up" mechanism
+already verified directly in §26 (Cipher A's EMA regime is opposite `buySignal` 98.5-98.7% of the
+time) — this is a third, independent confirmation of that general pattern, not a new phenomenon.
+
+**Regular divergence (5m): no clean dose-response, inconclusive.** Only 4 of 16 cells significant,
+scattered across buckets and horizons with no coherent shape — close to the noise floor (~0.8 cells
+expected by chance), not a confirmed pattern in either direction.
+
+**Regular divergence (1d, the highest-value test — #49's cost-clearing finding): too thin to test at
+all, even collapsed to a coarse 2-way split.** 44 total events split into aligned (n=25) vs. against
+(n=19) shows correct-direction bouncing from 32% to 68% across horizons with no usable signal —
+genuinely underpowered, not evidence the effect doesn't exist. The same "absence of significance ≠
+evidence of absence" caveat already applied elsewhere to this exact population (§31's own bearish-leg
+split was already near this project's n≥30 floor; splitting it further by STC leaves both sides too
+thin to read).
+
+**Verdict: iapaulo's proposed mechanism (STC extreme = predictive value as context) is not supported
+as stated for the one signal with enough data to test it cleanly — but a real, different, mechanically
+explicable pattern emerged instead: `buySignal`/`sellSignal` is strongest specifically when STC has
+NOT yet caught up, not when it agrees.** This is a genuine, actionable refinement of the flagship
+Cipher B signal (not yet cost-tested), even though it runs opposite to the original hypothesis.
+Divergence — both 5m and daily — remains an open question, limited by sample size on daily and by a
+noisier, less coherent pattern on 5m, not resolved either way by this test.
