@@ -2727,3 +2727,62 @@ one, canonical interpretation actually tested here. Not pursued further absent a
 believe a different construction would behave differently — this project's base rate (roughly 2 real
 survivors out of ~50 candidates tested) makes further variations on an already-null signal a lower
 priority than moving to Cipher A's still-unbuilt signals.
+
+## 35. Cipher A's four missing signals, built and tested — two broad, multi-timeframe leads, richer than anything else found this way — 2026-08-01
+
+The other half of §33's re-inventory gap: `redCross`, `blueTriangle`, `bloodDiamond`, `bullCandle`
+were plotted in the Pine source the whole time (lines 102-108) but never built; `redDiamond` existed
+only as an internal gate inside `computeYellowCross`, never exposed as its own testable signal.
+Added `computeRibbonSignals()` to `vmc-cipher-a/calc.js`, porting all five faithfully:
+`redCross=crossunder(ema1,ema2)` (lengths 5/11), `blueTriangle=crossover(ema2,ema3)` (11/15),
+`redDiamond=wtCross and wtCrossDown` (Cipher A's own WT, exposed standalone), `bloodDiamond=
+redDiamond and redCross`, `bullCandle=open>ema2 and open>ema8 and prior-up-candle and this-up-candle
+and not redDiamond and not redCross`. Sanity-checked first: correct side-consistency (redCross/
+redDiamond/bloodDiamond bearish-only, blueTriangle/bullCandle bullish-only), zero NaN,
+`bloodDiamond` appropriately rare relative to either parent condition alone.
+
+**Tested across all 8 signal-bus timeframes × 4 horizons (160 cells) using the same forward-return
+methodology as every other signal in this project.** Overwhelming signal-to-noise: 59 of 124
+testable cells (39.5% coverage across signals × timeframes with n≥30) are significant — vastly
+beyond the ~6 cells (5%) expected by pure chance. Two signals show the broad, multi-timeframe
+replication this project has learned to trust (as opposed to an isolated single-cell hit); one shows
+a clean single-timeframe result; two are inconclusive.
+
+**`bullCandle` — the broadest positive replication found anywhere in this project.** Significant,
+positive, correct-direction 50-66%, on **7 of 8 timeframes** (1w, 1d, 4h, 3h, 2h, 1h, 15m — every
+horizon significant on most of them), only breaking down at 5m (where it flips to a significant
+NEGATIVE result at N=5 specifically, null elsewhere). Every other real finding in this project has
+concentrated on a single timeframe (5m for divergence, 4h for SMC recurrence) — a signal replicating
+across seven consecutive rungs of the ladder is a different, stronger kind of evidence. **Caveat,
+stated plainly rather than glossed over:** `bullCandle`'s own definition (open above both key EMAs,
+two consecutive up-candles) is inherently trend-following, and this data spans a mostly-secular BTC
+uptrend — the same "may partly just be measuring ordinary trend persistence" caveat already raised
+for row #25 in the register applies here too, not yet checked against a downtrend-heavy period.
+
+**`redDiamond` — a systematic, broadly-replicated REVERSAL, with a clean mechanical explanation
+found before trusting it.** Significant NEGATIVE (wrong-direction) results on 4h (all 4 horizons),
+3h (all 4), 2h (3 of 4), 1h (2 of 4), 15m (2 of 4), 5m (3 of 4), 1d (2 of 4) — 7 of 8 timeframes.
+Checked why before reporting it as a "reversal signal": `redDiamond` is Cipher A's own WT cross-down
+with NO overbought gate (unlike Cipher B's `sellSignal`, which requires `wt2>=53`) — verified
+directly on 4h that only 8.3% of `redDiamond` events actually fire from overbought territory, median
+wt2 at the event is -16.8 (neutral-to-oversold). This mostly captures ordinary down-crosses during
+pullbacks in an uptrending market, not genuine reversals-from-extreme — a mechanically sensible
+reason a naive "bearish" reading would systematically underperform. `redCross` (the related, faster
+EMA1/EMA2 crossunder, also unGated) shows a weaker, less consistently-replicated version of the same
+wrong-direction pattern (significant negative on 5m 3/4, 2h 2/4, 1d 2/4, 15m 2/4) — corroborating,
+not independent, evidence for the same "ungated bearish EMA/WT signal in an uptrend" story.
+
+**`blueTriangle` — one clean, single-timeframe result.** 3h shows a real, replicated (all 4 horizons
+significant, correct-direction 50.9-53.3%) positive effect; every other timeframe is null. The same
+shape as several single-timeframe leads earlier in this project (some replicated further on closer
+inspection, some didn't) — a genuine lead, not yet at the same evidentiary bar as `bullCandle`/
+`redDiamond`'s multi-timeframe replication.
+
+**`bloodDiamond` — inconclusive, too rare to read.** Requires `redDiamond` AND `redCross` on the
+SAME bar; only 5m (n=146) and 15m (n=47) clear the thinness threshold at all, and both are null.
+Not falsified, just underpowered — the same "absence of significance ≠ evidence of absence at this
+sample size" caveat already applied to daily divergence in §31.
+
+**Not yet cost/capacity tested — per the same standing sequencing (understanding before cost) used
+throughout this whole investigation.** `bullCandle` and `redDiamond`'s breadth of replication makes
+them the natural next candidates whenever cost-testing is the next step.

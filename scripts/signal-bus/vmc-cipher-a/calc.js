@@ -26,6 +26,13 @@ const MFI_PERIOD = 60; // live-confirmed (in_24)
 const MFI_MULTIPLIER = 150; // live-confirmed (in_25)
 const EMA2_LEN = 11; // live-confirmed (in_12) -- longEma/shortEma crossover, the video's OTHER "green dot"
 const EMA8_LEN = 34; // live-confirmed (in_18)
+// EMA1/EMA3, found 2026-08-01 during the systematic re-inventory prompted by iapaulo (see
+// ARCHITECTURE.md §33) -- redCross/blueTriangle/bloodDiamond/bullCandle were plotted in the source
+// the whole time (lines 102-108) but never built. Cipher A's 26 inputs were already live-confirmed
+// matching Pine defaults exactly (this file's header note) -- these two lengths are part of that
+// same confirmed set, not independently re-probed.
+const EMA1_LEN = 5;
+const EMA3_LEN = 15;
 
 function ema(values, length) {
   const out = new Array(values.length).fill(NaN);
@@ -159,4 +166,58 @@ export function computeEmaRegime(candles) {
   const ema2 = ema(closes, EMA2_LEN);
   const ema8 = ema(closes, EMA8_LEN);
   return closes.map((_, i) => (Number.isNaN(ema2[i]) || Number.isNaN(ema8[i]) ? null : ema2[i] > ema8[i] ? "bullish" : "bearish"));
+}
+
+// The four Cipher A signals found live-plotted (lines 102-108 of the Pine source) during the
+// systematic re-inventory prompted by iapaulo, 2026-08-01 (see ARCHITECTURE.md §33) -- present in
+// the source since this project first read it, never built until this pass:
+//   redCross      = crossunder(ema1, ema2)                          -- fast EMA turning down
+//   blueTriangle  = crossover(ema2, ema3)                           -- next-fastest EMA turning up
+//   redDiamond    = wtCross and wtCrossDown                         -- Cipher A's own WT bearish cross
+//                   (already computed internally inside computeYellowCross as a gate; exposed here
+//                   as its own standalone, independently testable signal for the first time)
+//   bloodDiamond  = redDiamond and redCross                         -- both bearish conditions together
+//   bullCandle    = open>ema2 and open>ema8 and close[1]>open[1] and close>open
+//                   and not redDiamond and not redCross             -- two-bar bullish continuation,
+//                   gated OUT of both bearish conditions above
+// One function computes all five (redDiamond included) together since they share the same
+// ema1/ema2/ema3/ema8/WT series -- avoids recomputing per-signal.
+export function computeRibbonSignals(candles) {
+  const closes = candles.map((c) => c.c);
+  const ema1 = ema(closes, EMA1_LEN);
+  const ema2 = ema(closes, EMA2_LEN);
+  const ema3 = ema(closes, EMA3_LEN);
+  const ema8 = ema(closes, EMA8_LEN);
+  const { wt1, wt2 } = computeWaveTrend(candles);
+  const n = candles.length;
+
+  const redCross = [], blueTriangle = [], redDiamond = [], bloodDiamond = [], bullCandle = [];
+  const redCrossAt = new Set(), redDiamondAt = new Set();
+
+  for (let i = 1; i < n; i++) {
+    if (![ema1[i], ema2[i], ema1[i - 1], ema2[i - 1]].some(Number.isNaN)) {
+      const isRedCross = ema1[i - 1] >= ema2[i - 1] && ema1[i] < ema2[i]; // crossunder(ema1, ema2)
+      if (isRedCross) { redCross.push({ side: "bearish", barIdx: i, time: candles[i].t }); redCrossAt.add(i); }
+    }
+    if (![ema2[i], ema3[i], ema2[i - 1], ema3[i - 1]].some(Number.isNaN)) {
+      const isBlueTriangle = ema2[i - 1] <= ema3[i - 1] && ema2[i] > ema3[i]; // crossover(ema2, ema3)
+      if (isBlueTriangle) blueTriangle.push({ side: "bullish", barIdx: i, time: candles[i].t });
+    }
+    if (![wt1[i], wt2[i], wt1[i - 1], wt2[i - 1]].some(Number.isNaN)) {
+      const diffPrev = wt1[i - 1] - wt2[i - 1];
+      const diffNow = wt1[i] - wt2[i];
+      const wtCross = (diffPrev <= 0 && diffNow > 0) || (diffPrev >= 0 && diffNow < 0);
+      const wtCrossDown = diffNow >= 0;
+      const isRedDiamond = wtCross && wtCrossDown;
+      if (isRedDiamond) { redDiamond.push({ side: "bearish", barIdx: i, time: candles[i].t }); redDiamondAt.add(i); }
+    }
+    if (redDiamondAt.has(i) && redCrossAt.has(i)) bloodDiamond.push({ side: "bearish", barIdx: i, time: candles[i].t });
+
+    if (i >= 1 && ![ema2[i], ema8[i]].some(Number.isNaN)) {
+      const o = candles[i].o, c = candles[i].c, prevO = candles[i - 1].o, prevC = candles[i - 1].c;
+      const isBullCandle = o > ema2[i] && o > ema8[i] && prevC > prevO && c > o && !redDiamondAt.has(i) && !redCrossAt.has(i);
+      if (isBullCandle) bullCandle.push({ side: "bullish", barIdx: i, time: candles[i].t });
+    }
+  }
+  return { redCross: { events: redCross }, blueTriangle: { events: blueTriangle }, redDiamond: { events: redDiamond }, bloodDiamond: { events: bloodDiamond }, bullCandle: { events: bullCandle } };
 }
