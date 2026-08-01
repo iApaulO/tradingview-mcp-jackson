@@ -2694,3 +2694,36 @@ different filters, now checked rather than assumed to be the same answer.
 extended (not weakened) once `regular_add`/`union` are properly checked. No finding in this whole
 investigation was reversed by the fix — the fix corrected an incomplete inventory, and closer
 checking made several results either unchanged or stronger.**
+
+## 34. Schaff Trend Cycle — built, tested, cleanly falsified — 2026-08-01
+
+The other gap found in §33's systematic re-inventory: Schaff Trend Cycle is live-active on Cipher B
+(`tcLine=true`, a second live deviation from the Pine author's own default of `false`, never caught
+before this pass). Ported `f_tc` faithfully (lines 203-220 of the source) into `computeStc()` — a
+double-stochastic-smoothed MACD, `tclength=10`, `tcfastLength=23`, `tcslowLength=50`, `tcfactor=0.5`,
+all live-confirmed matching Pine defaults. **Important disclosure: unlike every other signal in this
+project, the Pine source defines NO boolean condition for STC at all** — `tcVal` is only ever
+plotted as two overlapping lines, never fed into a `plotshape`/`plotchar` or threshold-cross
+condition anywhere in the script. There is nothing to faithfully port beyond the raw oscillator
+value. `computeStcCrossSignals()` operationalizes the single most standard, widely-documented way
+STC is traded (a stochastic-style oscillator: bullish crossing up through 25, bearish crossing down
+through 75) — an explicit interpretation, not a literal port of anything in this specific script.
+
+Sanity-checked before testing: output correctly bounded [0, 100] across all 939,135 valid 5m values
+(zero out-of-bounds), balanced sides (33,859 bullish / 33,806 bearish, consistent with a
+mean-reverting oscillator), zero NaN events.
+
+**Tested across all 8 signal-bus timeframes from the start** (not pooled-then-stratified — §18.4's
+lesson that pooling can hide a timeframe-concentrated effect now applies to every new signal, not
+just divergence). Clean, thorough null: 32 cells (8 timeframes × 4 horizons, 1w too thin to test),
+only ONE scattered significant hit (15m at N=10, p=0.0128, ~1.6 false positives expected by chance
+across 32 cells at α=0.05) that does not replicate at adjacent horizons on the same timeframe.
+Correct-direction sits at 46-50% everywhere — indistinguishable from a coin flip, sometimes below it.
+
+**Verdict: falsified.** The standard threshold-cross interpretation of Schaff Trend Cycle shows no
+detectable predictive value on this data, on any timeframe tested. This doesn't rule out some other
+reading of STC (a simple directional turn rather than a threshold cross, for instance) — only the
+one, canonical interpretation actually tested here. Not pursued further absent a specific reason to
+believe a different construction would behave differently — this project's base rate (roughly 2 real
+survivors out of ~50 candidates tested) makes further variations on an already-null signal a lower
+priority than moving to Cipher A's still-unbuilt signals.

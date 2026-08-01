@@ -327,3 +327,117 @@ function makeZone(side, kind, price, confirmedBarIdx, candles) {
     ...NO_EXPIRY,
   };
 }
+
+// Schaff Trend Cycle (f_tc in the source, lines 203-220) -- found 2026-08-01 during the systematic
+// re-inventory prompted by iapaulo (see ARCHITECTURE.md §33): live-confirmed ACTIVE (tcLine=true,
+// in_47), a second live deviation from the Pine author's own default (false) never caught before
+// this pass. tclength=10 (in_49), tcfastLength=23 (in_50), tcslowLength=50 (in_51), tcfactor=0.5
+// (in_52), source=close (in_48, tcSRC) -- all otherwise match Pine defaults exactly.
+//
+// IMPORTANT: unlike every other signal in this file, the Pine source defines NO boolean signal
+// condition for STC at all -- `tcVal` is only ever plotted as two overlapping lines (lines 469-470),
+// never fed into a plotshape/plotchar or any threshold-cross condition. There is nothing to
+// faithfully port beyond the raw oscillator value itself. `computeStcCrossSignals` below
+// operationalizes the single most standard, widely-documented way STC is traded (a stochastic-style
+// oscillator: bullish on crossing UP through the oversold line, bearish on crossing DOWN through the
+// overbought line) -- an interpretation, disclosed as such, not a literal port of anything in this
+// specific script.
+const TC_LENGTH = 10; // live-confirmed (tclength, in_49)
+const TC_FAST_LENGTH = 23; // live-confirmed (tcfastLength, in_50)
+const TC_SLOW_LENGTH = 50; // live-confirmed (tcslowLength, in_51)
+const TC_FACTOR = 0.5; // live-confirmed (tcfactor, in_52)
+const TC_OVERSOLD = 25; // standard STC convention, not Pine-source-derived (no threshold exists in the source)
+const TC_OVERBOUGHT = 75; // standard STC convention, not Pine-source-derived
+
+function rollingMin(values, length) {
+  const out = new Array(values.length).fill(NaN);
+  for (let i = length - 1; i < values.length; i++) {
+    let m = Infinity, bad = false;
+    for (let j = i - length + 1; j <= i; j++) {
+      if (Number.isNaN(values[j])) { bad = true; break; }
+      if (values[j] < m) m = values[j];
+    }
+    out[i] = bad ? NaN : m;
+  }
+  return out;
+}
+function rollingMax(values, length) {
+  const out = new Array(values.length).fill(NaN);
+  for (let i = length - 1; i < values.length; i++) {
+    let m = -Infinity, bad = false;
+    for (let j = i - length + 1; j <= i; j++) {
+      if (Number.isNaN(values[j])) { bad = true; break; }
+      if (values[j] > m) m = values[j];
+    }
+    out[i] = bad ? NaN : m;
+  }
+  return out;
+}
+
+// Public: the raw Schaff Trend Cycle series, 0-100 bounded (same clamped-stochastic construction as
+// a slow stochastic, just double-smoothed over a MACD instead of price).
+export function computeStc(candles) {
+  const src = candles.map((c) => c.c); // tcSRC = close, live-confirmed
+  const ema1 = ema(src, TC_FAST_LENGTH);
+  const ema2 = ema(src, TC_SLOW_LENGTH);
+  const n = candles.length;
+  const macdVal = new Array(n);
+  for (let i = 0; i < n; i++) macdVal[i] = ema1[i] - ema2[i];
+
+  const alpha = rollingMin(macdVal, TC_LENGTH);
+  const betaHigh = rollingMax(macdVal, TC_LENGTH);
+
+  const gamma = new Array(n).fill(NaN);
+  let prevGamma = NaN;
+  for (let i = 0; i < n; i++) {
+    if (Number.isNaN(alpha[i]) || Number.isNaN(betaHigh[i])) { gamma[i] = NaN; continue; }
+    const beta = betaHigh[i] - alpha[i];
+    const raw = beta > 0 ? ((macdVal[i] - alpha[i]) / beta) * 100 : NaN;
+    gamma[i] = beta > 0 ? raw : (Number.isNaN(prevGamma) ? 0 : prevGamma); // nz(gamma[1])
+    prevGamma = gamma[i];
+  }
+
+  const delta = new Array(n).fill(NaN);
+  for (let i = 0; i < n; i++) {
+    if (Number.isNaN(gamma[i])) { delta[i] = NaN; continue; }
+    delta[i] = Number.isNaN(delta[i - 1]) ? gamma[i] : delta[i - 1] + TC_FACTOR * (gamma[i] - delta[i - 1]);
+  }
+
+  const epsilon = rollingMin(delta, TC_LENGTH);
+  const zetaHigh = rollingMax(delta, TC_LENGTH);
+
+  const eta = new Array(n).fill(NaN);
+  let prevEta = NaN;
+  for (let i = 0; i < n; i++) {
+    if (Number.isNaN(epsilon[i]) || Number.isNaN(zetaHigh[i])) { eta[i] = NaN; continue; }
+    const zeta = zetaHigh[i] - epsilon[i];
+    const raw = zeta > 0 ? ((delta[i] - epsilon[i]) / zeta) * 100 : NaN;
+    eta[i] = zeta > 0 ? raw : (Number.isNaN(prevEta) ? 0 : prevEta); // nz(eta[1])
+    prevEta = eta[i];
+  }
+
+  const stc = new Array(n).fill(NaN);
+  for (let i = 0; i < n; i++) {
+    if (Number.isNaN(eta[i])) { stc[i] = NaN; continue; }
+    stc[i] = Number.isNaN(stc[i - 1]) ? eta[i] : stc[i - 1] + TC_FACTOR * (eta[i] - stc[i - 1]);
+  }
+  return stc;
+}
+
+// Public: threshold-cross events on the STC series -- see the header note above on why this is an
+// interpretation (standard stochastic-style oversold/overbought crossing), not a literal Pine port.
+export function computeStcCrossSignals(candles) {
+  const stc = computeStc(candles);
+  const n = candles.length;
+  const events = [];
+  for (let i = 1; i < n; i++) {
+    if (Number.isNaN(stc[i]) || Number.isNaN(stc[i - 1])) continue;
+    if (stc[i - 1] <= TC_OVERSOLD && stc[i] > TC_OVERSOLD) {
+      events.push({ side: "bullish", signal: "stcBuy", price: candles[i].c, confirmedBarIdx: i, confirmedTime: candles[i].t, stc: stc[i], ...NO_EXPIRY });
+    }
+    if (stc[i - 1] >= TC_OVERBOUGHT && stc[i] < TC_OVERBOUGHT) {
+      events.push({ side: "bearish", signal: "stcSell", price: candles[i].c, confirmedBarIdx: i, confirmedTime: candles[i].t, stc: stc[i], ...NO_EXPIRY });
+    }
+  }
+  return { events };
+}
