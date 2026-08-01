@@ -47,9 +47,12 @@ async function main() {
   for (const z of zones) { if (!byTf.has(z.timeframe)) byTf.set(z.timeframe, []); byTf.get(z.timeframe).push(z); }
 
   // signedReturn: positive = price moved in the direction the divergence predicted.
-  const eventReturns = { regular: {}, hidden: {} }; // [kind][N] -> array of signed returns
-  const baselineReturns = { regular: {}, hidden: {} };
-  for (const kind of ["regular", "hidden"]) for (const N of FORWARD_BARS) { eventReturns[kind][N] = []; baselineReturns[kind][N] = []; }
+  // 'regular_add' (the previously-missing "2nd WT Regular Divergence" detector, see calc.js's
+  // header note and ARCHITECTURE.md §33) added 2026-08-01 -- appended LAST in every kind loop below
+  // so the RNG stream feeding 'regular'/'hidden''s baseline draws is completely undisturbed.
+  const eventReturns = { regular: {}, hidden: {}, regular_add: {} }; // [kind][N] -> array of signed returns
+  const baselineReturns = { regular: {}, hidden: {}, regular_add: {} };
+  for (const kind of ["regular", "hidden", "regular_add"]) for (const N of FORWARD_BARS) { eventReturns[kind][N] = []; baselineReturns[kind][N] = []; }
 
   const rng = mulberry32(SEED);
 
@@ -74,7 +77,7 @@ async function main() {
     // with enough forward room), assign a RANDOM side (bearish/bullish, 50/50) the same way a
     // real event has a side, so the baseline experiences the same trend-regime drift a real event
     // would, without any directional prediction of its own.
-    for (const kind of ["regular", "hidden"]) {
+    for (const kind of ["regular", "hidden", "regular_add"]) {
       const kindZonesOnTf = tfZones.filter((z) => z.kind === kind).length;
       for (let s = 0; s < kindZonesOnTf; s++) {
         const maxN = Math.max(...FORWARD_BARS);
@@ -98,7 +101,7 @@ async function main() {
   function pctCorrect(arr) { return arr.filter((x) => x > 0).length / arr.length; }
 
   console.log("=== Forward-return test: does divergence predict the direction it implies? ===\n");
-  for (const kind of ["regular", "hidden"]) {
+  for (const kind of ["regular", "hidden", "regular_add"]) {
     console.log(`--- ${kind} divergence ---`);
     for (const N of FORWARD_BARS) {
       const ev = eventReturns[kind][N];

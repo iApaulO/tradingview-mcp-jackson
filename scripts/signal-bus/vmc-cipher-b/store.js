@@ -3,12 +3,16 @@
 //
 // Schema mirrors divergence-for-many's zones/touches/zone_confluences tables exactly (same shape,
 // same reuse of touches.js/confluence.js) plus one extra column on zones: `kind` ('regular' |
-// 'hidden') -- distinguishes the two WT divergence variants calc.js produces, since the live chart
-// has BOTH enabled (a real deviation from the Pine author's documented default, confirmed
-// 2026-07-31) and they need to be testable independently before any decision to pool them. No
-// `badges` table here -- Cipher B has no separate "detected but not yet a zone" concept the way
-// Divergence-for-Many's badge/promotion gate does; every qualifying divergence directly becomes a
-// zone.
+// 'regular_add' | 'hidden') -- distinguishes the WT divergence variants calc.js produces. The live
+// chart has hidden divergence enabled (a real deviation from the Pine author's documented default,
+// confirmed 2026-07-31) AND a second, independently-gated "2nd WT Regular Divergence" detector
+// live-active with Pine's own defaults (found 2026-08-01, see calc.js's header note -- iapaulo
+// caught a real undercount vs. a live chart) -- all three kinds need to be testable independently
+// before any decision to pool them; `regular` alone was confirmed the deliberately-correct filter
+// for cost-sensitive work (ARCHITECTURE.md §33), `regular_add` is a real-but-weaker signal kept
+// for completeness/inventory purposes. No `badges` table here -- Cipher B has no separate
+// "detected but not yet a zone" concept the way Divergence-for-Many's badge/promotion gate does;
+// every qualifying divergence directly becomes a zone.
 
 import { DatabaseSync } from "node:sqlite";
 import { mkdirSync } from "fs";
@@ -32,7 +36,7 @@ CREATE TABLE IF NOT EXISTS zones (
   run_id INTEGER NOT NULL REFERENCES runs(id),
   timeframe TEXT NOT NULL,
   side TEXT NOT NULL CHECK(side IN ('bullish','bearish')),
-  kind TEXT NOT NULL CHECK(kind IN ('regular','hidden')),
+  kind TEXT NOT NULL CHECK(kind IN ('regular','regular_add','hidden')),
   price REAL NOT NULL,
   created_bar_idx INTEGER NOT NULL,
   created_time INTEGER NOT NULL,

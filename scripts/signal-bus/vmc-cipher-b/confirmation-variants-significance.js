@@ -67,8 +67,12 @@ function stderr(arr) {
 function pctCorrect(arr) { return arr.filter((x) => x > 0).length / arr.length; }
 
 async function main() {
+  // EXCLUDES 'regular_add' (the previously-missing "2nd WT Regular Divergence" detector added
+  // 2026-08-01, see calc.js's header note and ARCHITECTURE.md §33) -- kept out of scope here rather
+  // than crashing on the untested third kind; the oscillator-recross/pullback designs below COULD
+  // reasonably extend to it later, just not needed to verify this script's original finding survives.
   const cbDb = new DatabaseSync(CIPHERB_DB, { readOnly: true });
-  const zones = cbDb.prepare(`SELECT timeframe, side, kind, price, created_bar_idx, confirmed_bar_idx FROM zones`).all();
+  const zones = cbDb.prepare(`SELECT timeframe, side, kind, price, created_bar_idx, confirmed_bar_idx FROM zones WHERE kind != 'regular_add'`).all();
   cbDb.close();
 
   const byTf = new Map();

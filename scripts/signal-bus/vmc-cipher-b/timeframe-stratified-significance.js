@@ -8,6 +8,12 @@
 // found. This stratifies the RAW (unfiltered) signal -- the one design that's shown the cleanest
 // edge so far -- by timeframe, same forward-return methodology, same baseline discipline.
 //
+// EXTENDED 2026-08-01: added 'regular_add' (the previously-missing "2nd WT Regular Divergence"
+// detector, see calc.js's header note and ARCHITECTURE.md §33) as a THIRD kind, appended at the END
+// of the per-timeframe kind loop specifically so the RNG stream feeding 'regular'/'hidden''s
+// baseline draws is completely undisturbed -- their numbers below are byte-identical to the
+// original report, only 'regular_add' is new output.
+//
 // Usage: node scripts/signal-bus/vmc-cipher-b/timeframe-stratified-significance.js
 
 import { DatabaseSync } from "node:sqlite";
@@ -58,7 +64,7 @@ async function main() {
     const candles = await loadCandles(tf);
     const n = candles.length;
 
-    for (const kind of ["regular", "hidden"]) {
+    for (const kind of ["regular", "hidden", "regular_add"]) {
       const kindZones = tfZones.filter((z) => z.kind === kind);
       const eventReturns = {}; for (const N of FORWARD_BARS) eventReturns[N] = [];
       for (const z of kindZones) {
@@ -93,7 +99,7 @@ async function main() {
     }
   }
 
-  for (const kind of ["regular", "hidden"]) {
+  for (const kind of ["regular", "hidden", "regular_add"]) {
     console.log(`\n=== ${kind.toUpperCase()} divergence, by timeframe (higher TF first) ===`);
     for (const tf of LADDER) {
       const rows = results.filter((r) => r.tf === tf && r.kind === kind);

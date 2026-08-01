@@ -2652,3 +2652,22 @@ deliberately correct filter for any future trading construction on Cipher B dive
 excluded from any cost-sensitive construction, backed now by a direct, tested reason rather than an
 accident of what got built first. §32's SMC-bias-stacking result, which already filtered to
 `regular` only, required no computational change — its numbers stand as originally reported.
+
+**Extended the same verification to §17/§18 (the original divergence significance chain, #31/#33/
+#34/#35) rather than assuming the pattern holds without checking.** Rebuilt `data/signal-bus/
+vmc-cipher-b.db` from scratch (the old schema's `CHECK` constraint hard-rejected the new
+`regular_add` kind — updated `store.js` first) and reran every DB-based script with `regular_add`
+added as a third bucket, appended LAST in each RNG consumption order specifically so `regular`'s and
+`hidden`'s baseline draws are undisturbed. Confirmed, not assumed: `timeframe-stratified-
+significance.js`'s headline 5m result reproduces almost exactly (54.1/54.8/55.4/54.2%
+correct-direction at N=5/10/20/40, p<0.01 at the first three, matching the original report);
+`forward-return-significance.js`'s pooled-all-8-timeframes number reproduces exactly (53.9%
+correct-direction at N=5, still significant, still decaying by N=20); `gated-divergence-
+significance.js`'s "confirmation makes it worse" result reproduces (confirmed-only drops to
+46.3-50.6% vs. raw's 53.0-54.7% at every horizon); `confirmation-variants-significance.js`'s "neither
+alternative confirmation beats raw" result reproduces (oscillator-recross still turns significantly
+negative by N=40). The latter two scripts' gate logic (SMC location, trend-context, oscillator
+recross/pullback) is specific to `regular`/`hidden`'s own theoretical claims and was deliberately
+NOT extended to `regular_add` here — excluded from their queries with a documented reason rather
+than left to crash on the new kind, a scope decision, not an oversight. **Net result: §17/§18's
+findings are fully intact, verified against the rebuilt database rather than assumed unaffected.**

@@ -76,8 +76,14 @@ function stderr(arr) {
 function pctCorrect(arr) { return arr.filter((x) => x > 0).length / arr.length; }
 
 async function main() {
+  // EXCLUDES 'regular_add' (the previously-missing "2nd WT Regular Divergence" detector added
+  // 2026-08-01, see calc.js's header note and ARCHITECTURE.md §33) deliberately, not by oversight:
+  // this script's gates (SMC location for 'regular', trend-context for 'hidden') are specific
+  // theoretical claims about those two kinds, not a design that generalizes to a third kind without
+  // its own dedicated thinking. Keeps this script's 'regular'/'hidden' output identical to the
+  // original report rather than silently crashing or misapplying an untested gate.
   const cbDb = new DatabaseSync(CIPHERB_DB, { readOnly: true });
-  const zones = cbDb.prepare(`SELECT timeframe, side, kind, price, created_bar_idx, confirmed_bar_idx, confirmed_time FROM zones`).all();
+  const zones = cbDb.prepare(`SELECT timeframe, side, kind, price, created_bar_idx, confirmed_bar_idx, confirmed_time FROM zones WHERE kind != 'regular_add'`).all();
   cbDb.close();
 
   const smcDb = new DatabaseSync(SMC_DB, { readOnly: true });
