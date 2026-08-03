@@ -2866,3 +2866,88 @@ NOT yet caught up, not when it agrees.** This is a genuine, actionable refinemen
 Cipher B signal (not yet cost-tested), even though it runs opposite to the original hypothesis.
 Divergence — both 5m and daily — remains an open question, limited by sample size on daily and by a
 noisier, less coherent pattern on 5m, not resolved either way by this test.
+
+## 37. Nested MTF confirmation on Cipher B WaveTrend divergence, built via an independent Python stack (ai-quant-workbench) against real Coinbase data — bearish clears significance AND real costs at every R multiple; bullish does not — 2026-08-03
+
+Built entirely outside this project's own Node.js signal-bus pipeline, via `ai-quant-workbench` (a
+separately-installed Claude Code skill, Python, `~/.claude/skills/ai-quant-workbench/`), pulling
+real BTC-USD candles directly from Coinbase's public Exchange API (`api.exchange.coinbase.com`) —
+not this project's Bitstamp-proxy background monitor, not its own historical CSV/DB files.
+Deliberately a second, independent implementation (own WaveTrend, own pivot/divergence detector,
+own significance-test driver) rather than a reuse of this project's own code, to see whether an
+independently-built stack reaches the same conclusions. Code persisted at
+`scripts/signal-bus/vmc-cipher-b-nested-wt/nested_confirmation_significance.py`.
+
+**Motivating question, iapaulo's own discretionary chart read:** "red dots [Cipher B `sellSignal`]
+above wt2=90 are usually anchors for divergence." [[feedback_verify_discretionary_chart_reads]]
+Checked directly rather than assumed — confirmed real (any red dot near a pivot high raises the odds
+it anchors a later bearish divergence roughly 4x, 6.8%→26.4%/37.8%, p<0.001), but the natural
+follow-up — does the resulting divergence then predict price better — went through a long chain of
+self-caught construction errors before landing on the real answer:
+
+- **Single-timeframe extremity, however defined, never held up robustly.** Symmetric ±90 buckets
+  looked significant on 1h (both statistics clear 5% at 1R/1.5R) but that turned out to be partly an
+  artifact of the wrong cutoff — the real Pine source's own author-calibrated levels are asymmetric
+  (`obLevel3=100` overbought, `osLevel3=-75` oversold, not a mirrored ±90 — read directly from
+  `pine/vmc-cipher-b-divergences.pine`, not assumed). Corrected bins downgraded the bearish result to
+  "mixed" and left bullish flat. iapaulo also caught a real measurement bug: extremity measured at a
+  Cipher B "dot" (cross+gate) event undercounts true extremity, since wt2 often keeps swinging to its
+  real peak after a cross has already fired at a less extreme value (raw wt2≥100 occurs 62x in 9yrs
+  on 1h; the dot-gated construction only counted 5). Fixed to measure the true peak/trough near each
+  pivot instead — corrected buckets are properly populated, but the qualitative answer didn't change:
+  bearish stays a modest, mixed-significance signal concentrated around 70-80 (not the extreme tail);
+  bullish (the "-90 or more" claim specifically) stays flat-to-negative at every R multiple tested,
+  including after a regime split (SuperTrend ATR(10)/3x, confirmed genuinely ~50/50 uptrend/downtrend
+  over the 9-year window) that independently confirmed the null in BOTH regimes, ruling out pooling as
+  the explanation.
+- **What actually worked: nested confirmation count, not single-TF extremity** — the same lesson
+  §38 already established for `buySignal`/`sellSignal` itself. For each 1h dot-anchored divergence
+  event, counted how many of {15m, 6h, 1d} also show a same-side Cipher B dot within a TF-scaled
+  window (15m: ±2h, 6h: ±6h, 1d: ±1day).
+
+**Trade construction and cost model identical to this project's own
+`scripts/signal-bus/vmc-cipher-b/divergence-cost-capacity-backtest.js` /
+`scripts/backtest/lib/costs.js`:** entry = next-bar-open after confirmation; risk = 0.6x ATR(14)
+(Wilder's) at the confirmation bar; stop = entry ∓ risk; target = entry ± R×risk, R∈{1, 1.5, 2, 3};
+race-to-target-or-stop, max 200 bars, same-bar ambiguity scored as the stop; costs = confirmed
+Coinbase Advanced 1 tier (0.070%/side taker, 0.14% round trip) + representative funding
+0.00125%/hr, pessimistic mode. Significance test identical in method to
+`scripts/signal-bus/smc/recurrence-fixed-rr-significance.js`: point-biserial correlation + top-vs-
+bottom-bucket win-rate gap, both against a 50,000-iteration permuted null, per R multiple
+independently.
+
+**Bearish: real and robust at 1R/1.5R/2R — a stronger result than #27b or #49 on those three, though
+3R is borderline, not clean, and disclosed as such rather than rounded up.** n≈697-698 1h divergence
+events (2017-2026, the exact count shifts by one bar day-to-day as new candles arrive);
+confirmation-count buckets 0 (n≈503-517), 1 (n≈157-166), 2 (n=23-24), 3 never occurs. The
+2-confirmation bucket, reproduced independently across two runs one day apart (23/24 events):
+
+| R | costed expectancy | PF (gross) | correlation p (run 1 / run 2) | gap p (run 1 / run 2) |
+|---|---|---|---|---|
+| 1R | +0.33-0.48%/trade | 4.9-6.0 | 0.0157 / 0.0036 | 0.0122 / 0.0423 |
+| 1.5R | +0.75%/trade | 6.3 | 0.0015 / 0.0003 | 0.0018 / 0.0090 |
+| 2R | +0.95%/trade | 6.1 | 0.0082 / 0.0035 | 0.0042 / 0.0391 |
+| 3R | +1.11%/trade | 4.7 | 0.0149 / 0.0372 | 0.0114 / 0.1007 |
+
+0-confirmation trades lose money at every R; 1-confirmation is roughly breakeven; 2-confirmation is
+dramatically and consistently profitable in raw terms at every R. Correlation clears 5% in BOTH
+independent runs at every R multiple. The gap statistic clears in both runs at 1R/1.5R/2R, but at 3R
+it clears in one run (p=0.0114-0.0178) and narrowly misses in the other (p=0.1007) — a single
+additional day of data was enough to flip it, meaning 3R's gap specifically is borderline and
+sample-sensitive, not as solid as the other three. Read 1R/1.5R/2R as the well-supported core of this
+finding; 3R is directionally consistent (correlation still clears both times) but shouldn't be quoted
+as cleanly proven the way the other three are.
+
+**Bullish: not falsified, but does not reach the same bar, and more data didn't rescue it.**
+Correlation is significant at 1.5R/2R (p=0.029/0.023) but not 1R/3R; the gap statistic never clears
+5% at any R (best p=0.061) because the top-confirmation bucket is thin (n=9, grew only from 6 when
+the 15m confirmation window was extended from 1,500 to the full 3,300-day history — real growth, but
+modest, and 1R's correlation significance actually weakened with more data rather than strengthening,
+arguing against "just underpowered" as the full explanation).
+
+**Real caveats carried forward, same as #27b/#49:** single-asset (BTC), n=24 in the winning bucket is
+below this project's usual n≥30 floor (though the same order of magnitude as #49's n=44), backtest-
+only/idealized fills, not yet at "fully live-ready" without an explicit, deliberate decision to treat
+it that way. A genuinely independent codebase and data source reaching this result is itself evidence
+worth weighing, not just a duplicate check — but it should be read alongside, not as a replacement
+for, this project's own signal-bus findings.

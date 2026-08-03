@@ -2,6 +2,7 @@ node_modules/
 screenshots/
 data/historical/
 data/signal-bus/
+scripts/signal-bus/*/_data_cache/
 scripts/current.pine
 temp_*
 *.log
