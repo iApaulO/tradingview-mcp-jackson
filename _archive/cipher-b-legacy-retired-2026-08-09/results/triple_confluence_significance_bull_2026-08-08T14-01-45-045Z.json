@@ -1,0 +1,122 @@
+{
+  "side": "bull",
+  "window": 160,
+  "results": [
+    {
+      "timeframe": "1w",
+      "nConfluence": 0,
+      "nIsolated": 14,
+      "baselineMfeMean": 5.080848253692719,
+      "tooThin": true
+    },
+    {
+      "timeframe": "1d",
+      "nConfluence": 0,
+      "nIsolated": 85,
+      "baselineMfeMean": 0.6534326803287028,
+      "tooThin": true
+    },
+    {
+      "timeframe": "4h",
+      "nConfluence": 0,
+      "nIsolated": 514,
+      "baselineMfeMean": 0.153977222264255,
+      "tooThin": true
+    },
+    {
+      "timeframe": "3h",
+      "nConfluence": 0,
+      "nIsolated": 671,
+      "baselineMfeMean": 0.12639531834427867,
+      "tooThin": true
+    },
+    {
+      "timeframe": "2h",
+      "nConfluence": 1,
+      "nIsolated": 1025,
+      "baselineMfeMean": 0.0972546180604871,
+      "tooThin": true
+    },
+    {
+      "timeframe": "1h",
+      "nConfluence": 1,
+      "nIsolated": 2081,
+      "baselineMfeMean": 0.06372471515342028,
+      "tooThin": true
+    },
+    {
+      "timeframe": "15m",
+      "nConfluence": 7,
+      "nIsolated": 7725,
+      "baselineMfeMean": 0.029150448181532795,
+      "confluenceMeanMfe": 0.0037090097680223216,
+      "isolatedMeanMfe": 0.029657607175262567,
+      "t": -16.411214617486362,
+      "p": 0,
+      "horizons": {
+        "5": {
+          "meanConfluence": -0.004806710371815253,
+          "meanIsolated": -0.00006289233139897733,
+          "t": -1.9239102400861083,
+          "p": 0.05436569814309178
+        },
+        "10": {
+          "meanConfluence": -0.007262778356710583,
+          "meanIsolated": -0.0000630088883755669,
+          "t": -2.296251554375057,
+          "p": 0.02166144278983939
+        },
+        "20": {
+          "meanConfluence": -0.007527719572626752,
+          "meanIsolated": 0.00017359697352185383,
+          "t": -2.6041514178528953,
+          "p": 0.00921027461343038
+        },
+        "40": {
+          "meanConfluence": -0.004459879581760703,
+          "meanIsolated": 0.0004932182802677719,
+          "t": -1.5537016430597996,
+          "p": 0.12025562427627445
+        }
+      }
+    },
+    {
+      "timeframe": "5m",
+      "nConfluence": 57,
+      "nIsolated": 22934,
+      "baselineMfeMean": 0.016151076403301868,
+      "confluenceMeanMfe": 0.010638592095452041,
+      "isolatedMeanMfe": 0.016443865318173274,
+      "t": -2.949640316319823,
+      "p": 0.0031815776880859126,
+      "horizons": {
+        "5": {
+          "meanConfluence": 0.0008379083709352507,
+          "meanIsolated": 0.000026227262541917007,
+          "t": 0.9466736665126958,
+          "p": 0.34380506152782453
+        },
+        "10": {
+          "meanConfluence": 0.000749769990388492,
+          "meanIsolated": 0.00009186047949455552,
+          "t": 1.0448007944537274,
+          "p": 0.29611509225302823
+        },
+        "20": {
+          "meanConfluence": 0.00023655391403001636,
+          "meanIsolated": 0.00015266106037543998,
+          "t": 0.1199982721285273,
+          "p": 0.9044844259122167
+        },
+        "40": {
+          "meanConfluence": 0.0015369467334119481,
+          "meanIsolated": 0.0001825459844981154,
+          "t": 1.3117542688887578,
+          "p": 0.18960318742340054
+        }
+      }
+    }
+  ],
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-08T14:01:45.045Z"
+}

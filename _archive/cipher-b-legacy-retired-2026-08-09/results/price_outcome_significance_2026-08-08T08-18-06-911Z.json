@@ -1,0 +1,2829 @@
+{
+  "totalEvents": 226380,
+  "horizons": [
+    5,
+    10,
+    20,
+    40
+  ],
+  "results": [
+    {
+      "side": "bull",
+      "outcomeType": "broken",
+      "timeframe": "1w",
+      "tercile": "shallow",
+      "n": 30,
+      "horizons": {
+        "5": {
+          "n": 30,
+          "meanSignedReturn": -0.002238123700940072,
+          "t": -0.06964556638814116,
+          "p": 0.9444756260458254
+        },
+        "10": {
+          "n": 29,
+          "meanSignedReturn": 0.10449618779911951,
+          "t": 2.1503421866255255,
+          "p": 0.03152804440636192
+        },
+        "20": {
+          "n": 27,
+          "meanSignedReturn": 0.34019478462133806,
+          "t": 2.7617532095564647,
+          "p": 0.005749304953275969
+        },
+        "40": {
+          "n": 22,
+          "meanSignedReturn": 0.6398154043119745,
+          "t": 4.704281615000797,
+          "p": 0.000002550581693849807
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "broken",
+      "timeframe": "1w",
+      "tercile": "mid",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "broken",
+      "timeframe": "1w",
+      "tercile": "steep",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "broken",
+      "timeframe": "1d",
+      "tercile": "shallow",
+      "n": 171,
+      "horizons": {
+        "5": {
+          "n": 170,
+          "meanSignedReturn": 0.0035101722651225092,
+          "t": 0.5233212595467768,
+          "p": 0.6007506706343375
+        },
+        "10": {
+          "n": 170,
+          "meanSignedReturn": 0.008594419190239157,
+          "t": 0.9330054081135662,
+          "p": 0.3508171336082859
+        },
+        "20": {
+          "n": 170,
+          "meanSignedReturn": 0.023007434054411035,
+          "t": 1.579587065605465,
+          "p": 0.11420147091311406
+        },
+        "40": {
+          "n": 170,
+          "meanSignedReturn": 0.07192167719747997,
+          "t": 3.1355275325534064,
+          "p": 0.0017155870687857178
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "broken",
+      "timeframe": "1d",
+      "tercile": "mid",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "broken",
+      "timeframe": "1d",
+      "tercile": "steep",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "broken",
+      "timeframe": "4h",
+      "tercile": "shallow",
+      "n": 1121,
+      "horizons": {
+        "5": {
+          "n": 1120,
+          "meanSignedReturn": 0.000027115923757580724,
+          "t": 0.02587032407508482,
+          "p": 0.9793606711253644
+        },
+        "10": {
+          "n": 1120,
+          "meanSignedReturn": -8.360008741377576e-7,
+          "t": -0.0006201971516646358,
+          "p": 0.9995051490883449
+        },
+        "20": {
+          "n": 1119,
+          "meanSignedReturn": -0.00045624909607798074,
+          "t": -0.2454023827120988,
+          "p": 0.8061449820137976
+        },
+        "40": {
+          "n": 1119,
+          "meanSignedReturn": 0.006999961511738317,
+          "t": 2.6542361214427594,
+          "p": 0.007948903671975094
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "broken",
+      "timeframe": "4h",
+      "tercile": "mid",
+      "n": 2,
+      "horizons": {
+        "5": {
+          "n": 2,
+          "tooThin": true
+        },
+        "10": {
+          "n": 2,
+          "tooThin": true
+        },
+        "20": {
+          "n": 2,
+          "tooThin": true
+        },
+        "40": {
+          "n": 2,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "broken",
+      "timeframe": "4h",
+      "tercile": "steep",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "broken",
+      "timeframe": "3h",
+      "tercile": "shallow",
+      "n": 1444,
+      "horizons": {
+        "5": {
+          "n": 1444,
+          "meanSignedReturn": -0.00045841179667102384,
+          "t": -0.5357104921670517,
+          "p": 0.5921586001607637
+        },
+        "10": {
+          "n": 1444,
+          "meanSignedReturn": 0.001622684772339022,
+          "t": 1.4038685084719158,
+          "p": 0.16035811093043684
+        },
+        "20": {
+          "n": 1444,
+          "meanSignedReturn": 0.004128590371590841,
+          "t": 2.779486346395165,
+          "p": 0.0054446110510144585
+        },
+        "40": {
+          "n": 1443,
+          "meanSignedReturn": 0.009007899514577367,
+          "t": 4.330648278584128,
+          "p": 0.000014878182180044774
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "broken",
+      "timeframe": "3h",
+      "tercile": "mid",
+      "n": 15,
+      "horizons": {
+        "5": {
+          "n": 15,
+          "tooThin": true
+        },
+        "10": {
+          "n": 15,
+          "tooThin": true
+        },
+        "20": {
+          "n": 15,
+          "tooThin": true
+        },
+        "40": {
+          "n": 15,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "broken",
+      "timeframe": "3h",
+      "tercile": "steep",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "broken",
+      "timeframe": "2h",
+      "tercile": "shallow",
+      "n": 2176,
+      "horizons": {
+        "5": {
+          "n": 2176,
+          "meanSignedReturn": -0.000589473020703273,
+          "t": -1.1433226465598283,
+          "p": 0.252904758488655
+        },
+        "10": {
+          "n": 2175,
+          "meanSignedReturn": 0.00042538111818931365,
+          "t": 0.5848287789875102,
+          "p": 0.5586627558705244
+        },
+        "20": {
+          "n": 2175,
+          "meanSignedReturn": 0.0019452986183660405,
+          "t": 2.020126822445289,
+          "p": 0.04337009563570171
+        },
+        "40": {
+          "n": 2173,
+          "meanSignedReturn": 0.0048093927707394644,
+          "t": 3.3300013517336517,
+          "p": 0.0008685684723579445
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "broken",
+      "timeframe": "2h",
+      "tercile": "mid",
+      "n": 126,
+      "horizons": {
+        "5": {
+          "n": 126,
+          "meanSignedReturn": 0.002990027602105038,
+          "t": 1.5161034944074234,
+          "p": 0.12949323042048144
+        },
+        "10": {
+          "n": 126,
+          "meanSignedReturn": 0.003060590508926866,
+          "t": 0.9916434790777279,
+          "p": 0.32137147605433714
+        },
+        "20": {
+          "n": 126,
+          "meanSignedReturn": 0.001367610294208088,
+          "t": 0.3227939668954617,
+          "p": 0.7468514105129458
+        },
+        "40": {
+          "n": 126,
+          "meanSignedReturn": -0.0009883394612728914,
+          "t": -0.18040651239295696,
+          "p": 0.8568334537868241
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "broken",
+      "timeframe": "2h",
+      "tercile": "steep",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "broken",
+      "timeframe": "1h",
+      "tercile": "shallow",
+      "n": 3681,
+      "horizons": {
+        "5": {
+          "n": 3681,
+          "meanSignedReturn": 0.00015942065169215338,
+          "t": 0.5801124935669526,
+          "p": 0.5618386674903069
+        },
+        "10": {
+          "n": 3681,
+          "meanSignedReturn": 0.0005204875191699089,
+          "t": 1.3532320915021014,
+          "p": 0.17598161534462786
+        },
+        "20": {
+          "n": 3681,
+          "meanSignedReturn": 0.0013620758153984954,
+          "t": 2.5054813694527573,
+          "p": 0.012228515345741542
+        },
+        "40": {
+          "n": 3680,
+          "meanSignedReturn": 0.0019631779316264387,
+          "t": 2.7024198817712506,
+          "p": 0.0068837763296867305
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "broken",
+      "timeframe": "1h",
+      "tercile": "mid",
+      "n": 973,
+      "horizons": {
+        "5": {
+          "n": 973,
+          "meanSignedReturn": 0.00008809680939592307,
+          "t": 0.16209703704235595,
+          "p": 0.8712294200923134
+        },
+        "10": {
+          "n": 971,
+          "meanSignedReturn": -0.0006950986491460422,
+          "t": -0.9528934113714442,
+          "p": 0.34064405210584425
+        },
+        "20": {
+          "n": 971,
+          "meanSignedReturn": -0.00014767745737673035,
+          "t": -0.14351255041388927,
+          "p": 0.8858853483352811
+        },
+        "40": {
+          "n": 970,
+          "meanSignedReturn": 0.0017432481834527363,
+          "t": 1.2098458871334303,
+          "p": 0.22633815939376478
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "broken",
+      "timeframe": "1h",
+      "tercile": "steep",
+      "n": 4,
+      "horizons": {
+        "5": {
+          "n": 4,
+          "tooThin": true
+        },
+        "10": {
+          "n": 4,
+          "tooThin": true
+        },
+        "20": {
+          "n": 4,
+          "tooThin": true
+        },
+        "40": {
+          "n": 4,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "broken",
+      "timeframe": "15m",
+      "tercile": "shallow",
+      "n": 7248,
+      "horizons": {
+        "5": {
+          "n": 7248,
+          "meanSignedReturn": 0.00029572689373804734,
+          "t": 2.515982966862661,
+          "p": 0.011870127525642538
+        },
+        "10": {
+          "n": 7248,
+          "meanSignedReturn": 0.0003548001753461305,
+          "t": 2.3144701715583946,
+          "p": 0.020641893839467684
+        },
+        "20": {
+          "n": 7248,
+          "meanSignedReturn": 0.0009301078743877886,
+          "t": 4.313895101897644,
+          "p": 0.000016052006590827617
+        },
+        "40": {
+          "n": 7248,
+          "meanSignedReturn": 0.0010303093534379572,
+          "t": 3.5303985801815307,
+          "p": 0.00041501823186074205
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "broken",
+      "timeframe": "15m",
+      "tercile": "mid",
+      "n": 7003,
+      "horizons": {
+        "5": {
+          "n": 7002,
+          "meanSignedReturn": 0.0005461010642347637,
+          "t": 4.933953477542452,
+          "p": 8.070106092272766e-7
+        },
+        "10": {
+          "n": 7002,
+          "meanSignedReturn": 0.00060470974487467,
+          "t": 4.24696150721651,
+          "p": 0.000021683372700476156
+        },
+        "20": {
+          "n": 7002,
+          "meanSignedReturn": 0.0012860874215900047,
+          "t": 6.291854914672545,
+          "p": 3.150562033482629e-10
+        },
+        "40": {
+          "n": 7002,
+          "meanSignedReturn": 0.0016328966628236317,
+          "t": 6.178775067100147,
+          "p": 6.486167158925582e-10
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "broken",
+      "timeframe": "15m",
+      "tercile": "steep",
+      "n": 2767,
+      "horizons": {
+        "5": {
+          "n": 2767,
+          "meanSignedReturn": 0.00008969588144036413,
+          "t": 0.5556885140730742,
+          "p": 0.578423739632588
+        },
+        "10": {
+          "n": 2767,
+          "meanSignedReturn": 0.00011192917647918244,
+          "t": 0.4941289623039796,
+          "p": 0.6212150975842303
+        },
+        "20": {
+          "n": 2767,
+          "meanSignedReturn": 0.0005161731109359458,
+          "t": 1.6568202773748173,
+          "p": 0.09755577781064573
+        },
+        "40": {
+          "n": 2767,
+          "meanSignedReturn": 0.0004164697061536326,
+          "t": 0.9813713863684925,
+          "p": 0.32640962744706403
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "broken",
+      "timeframe": "5m",
+      "tercile": "shallow",
+      "n": 10122,
+      "horizons": {
+        "5": {
+          "n": 10122,
+          "meanSignedReturn": -0.000001906512450277576,
+          "t": -0.031071881110422653,
+          "p": 0.9752121035723351
+        },
+        "10": {
+          "n": 10122,
+          "meanSignedReturn": 0.00008551126122444796,
+          "t": 1.039211418582295,
+          "p": 0.2987064616855546
+        },
+        "20": {
+          "n": 10122,
+          "meanSignedReturn": 0.00017918203560915251,
+          "t": 1.7318384249132317,
+          "p": 0.08330225631332588
+        },
+        "40": {
+          "n": 10122,
+          "meanSignedReturn": 0.00034154306219377604,
+          "t": 2.4847272360747006,
+          "p": 0.012965095944180494
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "broken",
+      "timeframe": "5m",
+      "tercile": "mid",
+      "n": 17874,
+      "horizons": {
+        "5": {
+          "n": 17874,
+          "meanSignedReturn": -0.00002642936130957956,
+          "t": -0.633703091649062,
+          "p": 0.5262744791131491
+        },
+        "10": {
+          "n": 17873,
+          "meanSignedReturn": 0.000018465250522598333,
+          "t": 0.3277643495129472,
+          "p": 0.7430899719596218
+        },
+        "20": {
+          "n": 17873,
+          "meanSignedReturn": 0.00019888226410840463,
+          "t": 2.559563409647887,
+          "p": 0.010480426170448087
+        },
+        "40": {
+          "n": 17873,
+          "meanSignedReturn": 0.0003037491909669792,
+          "t": 2.904921624215614,
+          "p": 0.003673584823933318
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "broken",
+      "timeframe": "5m",
+      "tercile": "steep",
+      "n": 23224,
+      "horizons": {
+        "5": {
+          "n": 23224,
+          "meanSignedReturn": 0.000020289325249058384,
+          "t": 0.5321320047586896,
+          "p": 0.594634524926259
+        },
+        "10": {
+          "n": 23224,
+          "meanSignedReturn": 0.00012638511719870142,
+          "t": 2.4577948774680274,
+          "p": 0.013979310575239046
+        },
+        "20": {
+          "n": 23224,
+          "meanSignedReturn": 0.00027926743306127513,
+          "t": 4.003707455896218,
+          "p": 0.00006238676041636637
+        },
+        "40": {
+          "n": 23224,
+          "meanSignedReturn": 0.00038379956011755525,
+          "t": 4.067515163382499,
+          "p": 0.000047541696490904783
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "held",
+      "timeframe": "1w",
+      "tercile": "shallow",
+      "n": 13,
+      "horizons": {
+        "5": {
+          "n": 12,
+          "tooThin": true
+        },
+        "10": {
+          "n": 12,
+          "tooThin": true
+        },
+        "20": {
+          "n": 12,
+          "tooThin": true
+        },
+        "40": {
+          "n": 12,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "held",
+      "timeframe": "1w",
+      "tercile": "mid",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "held",
+      "timeframe": "1w",
+      "tercile": "steep",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "held",
+      "timeframe": "1d",
+      "tercile": "shallow",
+      "n": 84,
+      "horizons": {
+        "5": {
+          "n": 84,
+          "meanSignedReturn": 0.05059397073927108,
+          "t": 7.384227040570699,
+          "p": 1.545430450278218e-13
+        },
+        "10": {
+          "n": 84,
+          "meanSignedReturn": 0.06626423665971268,
+          "t": 5.708303946062324,
+          "p": 1.144387806739644e-8
+        },
+        "20": {
+          "n": 83,
+          "meanSignedReturn": 0.10760551402751971,
+          "t": 5.428523522632601,
+          "p": 5.695431881669322e-8
+        },
+        "40": {
+          "n": 80,
+          "meanSignedReturn": 0.22811849441096005,
+          "t": 5.036567104436958,
+          "p": 4.7473170461387326e-7
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "held",
+      "timeframe": "1d",
+      "tercile": "mid",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "held",
+      "timeframe": "1d",
+      "tercile": "steep",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "held",
+      "timeframe": "4h",
+      "tercile": "shallow",
+      "n": 424,
+      "horizons": {
+        "5": {
+          "n": 423,
+          "meanSignedReturn": 0.016108880300631696,
+          "t": 10.064130464003338,
+          "p": 0
+        },
+        "10": {
+          "n": 423,
+          "meanSignedReturn": 0.02045405741703161,
+          "t": 8.709836597731849,
+          "p": 0
+        },
+        "20": {
+          "n": 423,
+          "meanSignedReturn": 0.031622687657713554,
+          "t": 8.840164976946964,
+          "p": 0
+        },
+        "40": {
+          "n": 422,
+          "meanSignedReturn": 0.040737703976203216,
+          "t": 8.39099304647305,
+          "p": 0
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "held",
+      "timeframe": "4h",
+      "tercile": "mid",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "held",
+      "timeframe": "4h",
+      "tercile": "steep",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "held",
+      "timeframe": "3h",
+      "tercile": "shallow",
+      "n": 556,
+      "horizons": {
+        "5": {
+          "n": 555,
+          "meanSignedReturn": 0.012437457613312242,
+          "t": 12.196507195647289,
+          "p": 0
+        },
+        "10": {
+          "n": 555,
+          "meanSignedReturn": 0.018463088871081466,
+          "t": 12.22939986854328,
+          "p": 0
+        },
+        "20": {
+          "n": 555,
+          "meanSignedReturn": 0.02395601127052867,
+          "t": 9.736095364669586,
+          "p": 0
+        },
+        "40": {
+          "n": 553,
+          "meanSignedReturn": 0.03259230548515964,
+          "t": 9.575897237408922,
+          "p": 0
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "held",
+      "timeframe": "3h",
+      "tercile": "mid",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "held",
+      "timeframe": "3h",
+      "tercile": "steep",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "held",
+      "timeframe": "2h",
+      "tercile": "shallow",
+      "n": 779,
+      "horizons": {
+        "5": {
+          "n": 778,
+          "meanSignedReturn": 0.009970338842938352,
+          "t": 12.233116147337201,
+          "p": 0
+        },
+        "10": {
+          "n": 778,
+          "meanSignedReturn": 0.013930454231862146,
+          "t": 12.662061331956048,
+          "p": 0
+        },
+        "20": {
+          "n": 778,
+          "meanSignedReturn": 0.017522125140187552,
+          "t": 11.11115944665183,
+          "p": 0
+        },
+        "40": {
+          "n": 778,
+          "meanSignedReturn": 0.02693692599710939,
+          "t": 11.622125308720127,
+          "p": 0
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "held",
+      "timeframe": "2h",
+      "tercile": "mid",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "held",
+      "timeframe": "2h",
+      "tercile": "steep",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "held",
+      "timeframe": "1h",
+      "tercile": "shallow",
+      "n": 1459,
+      "horizons": {
+        "5": {
+          "n": 1458,
+          "meanSignedReturn": 0.00726221112091164,
+          "t": 19.99686864134596,
+          "p": 0
+        },
+        "10": {
+          "n": 1458,
+          "meanSignedReturn": 0.009616294969064538,
+          "t": 16.956964912214847,
+          "p": 0
+        },
+        "20": {
+          "n": 1458,
+          "meanSignedReturn": 0.01307641261589748,
+          "t": 16.6217851187194,
+          "p": 0
+        },
+        "40": {
+          "n": 1458,
+          "meanSignedReturn": 0.015851433630257518,
+          "t": 13.851437547784364,
+          "p": 0
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "held",
+      "timeframe": "1h",
+      "tercile": "mid",
+      "n": 130,
+      "horizons": {
+        "5": {
+          "n": 130,
+          "meanSignedReturn": 0.00543373223371474,
+          "t": 3.2052705299001136,
+          "p": 0.0013494836687053535
+        },
+        "10": {
+          "n": 130,
+          "meanSignedReturn": 0.006067544744016177,
+          "t": 2.574250370214417,
+          "p": 0.010045813129091918
+        },
+        "20": {
+          "n": 130,
+          "meanSignedReturn": 0.005462216140883547,
+          "t": 1.9580741265673196,
+          "p": 0.0502211753023003
+        },
+        "40": {
+          "n": 130,
+          "meanSignedReturn": 0.010089198894324225,
+          "t": 2.5372617792593903,
+          "p": 0.011172381729735559
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "held",
+      "timeframe": "1h",
+      "tercile": "steep",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "held",
+      "timeframe": "15m",
+      "tercile": "shallow",
+      "n": 2578,
+      "horizons": {
+        "5": {
+          "n": 2578,
+          "meanSignedReturn": 0.0041195934651587695,
+          "t": 31.41366957846892,
+          "p": 0
+        },
+        "10": {
+          "n": 2578,
+          "meanSignedReturn": 0.005719370347469823,
+          "t": 27.373907589088606,
+          "p": 0
+        },
+        "20": {
+          "n": 2578,
+          "meanSignedReturn": 0.007769737688320732,
+          "t": 26.70615811421648,
+          "p": 0
+        },
+        "40": {
+          "n": 2578,
+          "meanSignedReturn": 0.010029502440806567,
+          "t": 23.768106339360067,
+          "p": 0
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "held",
+      "timeframe": "15m",
+      "tercile": "mid",
+      "n": 3227,
+      "horizons": {
+        "5": {
+          "n": 3227,
+          "meanSignedReturn": 0.0031123223487888947,
+          "t": 24.00514801603771,
+          "p": 0
+        },
+        "10": {
+          "n": 3227,
+          "meanSignedReturn": 0.003821780910237762,
+          "t": 19.664072236721452,
+          "p": 0
+        },
+        "20": {
+          "n": 3227,
+          "meanSignedReturn": 0.004561651408211939,
+          "t": 16.58308228359509,
+          "p": 0
+        },
+        "40": {
+          "n": 3227,
+          "meanSignedReturn": 0.005134195454800997,
+          "t": 13.291727833102685,
+          "p": 0
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "held",
+      "timeframe": "15m",
+      "tercile": "steep",
+      "n": 375,
+      "horizons": {
+        "5": {
+          "n": 375,
+          "meanSignedReturn": 0.002456194031311346,
+          "t": 5.846009128447738,
+          "p": 5.051246310117108e-9
+        },
+        "10": {
+          "n": 375,
+          "meanSignedReturn": 0.001877696223180469,
+          "t": 2.8412731536713127,
+          "p": 0.004493507772597161
+        },
+        "20": {
+          "n": 375,
+          "meanSignedReturn": 0.0014727687567075698,
+          "t": 1.43591935849019,
+          "p": 0.1510253774645649
+        },
+        "40": {
+          "n": 375,
+          "meanSignedReturn": 0.0024761069325157227,
+          "t": 1.8833168253566004,
+          "p": 0.05965731358661208
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "held",
+      "timeframe": "5m",
+      "tercile": "shallow",
+      "n": 3233,
+      "horizons": {
+        "5": {
+          "n": 3233,
+          "meanSignedReturn": 0.002265655435786756,
+          "t": 29.770348892733363,
+          "p": 0
+        },
+        "10": {
+          "n": 3233,
+          "meanSignedReturn": 0.0031746630568807222,
+          "t": 28.856677727031514,
+          "p": 0
+        },
+        "20": {
+          "n": 3233,
+          "meanSignedReturn": 0.004438207553546646,
+          "t": 28.201367503329923,
+          "p": 0
+        },
+        "40": {
+          "n": 3233,
+          "meanSignedReturn": 0.005735814894321238,
+          "t": 25.215863606190503,
+          "p": 0
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "held",
+      "timeframe": "5m",
+      "tercile": "mid",
+      "n": 5769,
+      "horizons": {
+        "5": {
+          "n": 5769,
+          "meanSignedReturn": 0.002357746209269143,
+          "t": 39.92859120721468,
+          "p": 0
+        },
+        "10": {
+          "n": 5769,
+          "meanSignedReturn": 0.00294918029302006,
+          "t": 34.94804928629695,
+          "p": 0
+        },
+        "20": {
+          "n": 5769,
+          "meanSignedReturn": 0.0034919728553444523,
+          "t": 29.06458241326056,
+          "p": 0
+        },
+        "40": {
+          "n": 5769,
+          "meanSignedReturn": 0.003954327307724756,
+          "t": 23.22244273576904,
+          "p": 0
+        }
+      }
+    },
+    {
+      "side": "bull",
+      "outcomeType": "held",
+      "timeframe": "5m",
+      "tercile": "steep",
+      "n": 8753,
+      "horizons": {
+        "5": {
+          "n": 8753,
+          "meanSignedReturn": 0.0017116947127382043,
+          "t": 34.526770695060826,
+          "p": 0
+        },
+        "10": {
+          "n": 8753,
+          "meanSignedReturn": 0.0017867555482781801,
+          "t": 25.524161869636767,
+          "p": 0
+        },
+        "20": {
+          "n": 8753,
+          "meanSignedReturn": 0.0018695418880986647,
+          "t": 18.69597102869582,
+          "p": 0
+        },
+        "40": {
+          "n": 8753,
+          "meanSignedReturn": 0.002006884639120117,
+          "t": 14.96353424996304,
+          "p": 0
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "broken",
+      "timeframe": "1w",
+      "tercile": "shallow",
+      "n": 27,
+      "horizons": {
+        "5": {
+          "n": 27,
+          "meanSignedReturn": -0.039905416980480744,
+          "t": -1.0538949733814507,
+          "p": 0.2919310555294723
+        },
+        "10": {
+          "n": 26,
+          "meanSignedReturn": -0.13811154522494434,
+          "t": -1.5810208815679994,
+          "p": 0.11387327006123615
+        },
+        "20": {
+          "n": 23,
+          "meanSignedReturn": -0.5109615191741995,
+          "t": -1.944037265374569,
+          "p": 0.05189081826422237
+        },
+        "40": {
+          "n": 22,
+          "meanSignedReturn": -0.43373995290758605,
+          "t": -2.2655887646194417,
+          "p": 0.023476501348874024
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "broken",
+      "timeframe": "1w",
+      "tercile": "mid",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "broken",
+      "timeframe": "1w",
+      "tercile": "steep",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "broken",
+      "timeframe": "1d",
+      "tercile": "shallow",
+      "n": 269,
+      "horizons": {
+        "5": {
+          "n": 267,
+          "meanSignedReturn": -0.013195567495103961,
+          "t": -2.6452936586068834,
+          "p": 0.008162087536877083
+        },
+        "10": {
+          "n": 265,
+          "meanSignedReturn": -0.02699791379347346,
+          "t": -3.7077581557112107,
+          "p": 0.0002091620437798536
+        },
+        "20": {
+          "n": 265,
+          "meanSignedReturn": -0.03408332873382137,
+          "t": -2.887279611087814,
+          "p": 0.0038860198105821198
+        },
+        "40": {
+          "n": 264,
+          "meanSignedReturn": -0.08251866879669194,
+          "t": -4.2103706873230005,
+          "p": 0.000025511380668197248
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "broken",
+      "timeframe": "1d",
+      "tercile": "mid",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "broken",
+      "timeframe": "1d",
+      "tercile": "steep",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "broken",
+      "timeframe": "4h",
+      "tercile": "shallow",
+      "n": 1346,
+      "horizons": {
+        "5": {
+          "n": 1346,
+          "meanSignedReturn": -0.0027285893992888242,
+          "t": -3.2017341245750575,
+          "p": 0.0013661582789064042
+        },
+        "10": {
+          "n": 1346,
+          "meanSignedReturn": -0.0031303034455717788,
+          "t": -2.5331934790771466,
+          "p": 0.011302897108148802
+        },
+        "20": {
+          "n": 1346,
+          "meanSignedReturn": -0.005849981768967098,
+          "t": -3.303939396434527,
+          "p": 0.0009534806710091992
+        },
+        "40": {
+          "n": 1344,
+          "meanSignedReturn": -0.012158995536386026,
+          "t": -4.895819366829801,
+          "p": 9.803657139428879e-7
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "broken",
+      "timeframe": "4h",
+      "tercile": "mid",
+      "n": 5,
+      "horizons": {
+        "5": {
+          "n": 5,
+          "tooThin": true
+        },
+        "10": {
+          "n": 5,
+          "tooThin": true
+        },
+        "20": {
+          "n": 5,
+          "tooThin": true
+        },
+        "40": {
+          "n": 5,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "broken",
+      "timeframe": "4h",
+      "tercile": "steep",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "broken",
+      "timeframe": "3h",
+      "tercile": "shallow",
+      "n": 1794,
+      "horizons": {
+        "5": {
+          "n": 1794,
+          "meanSignedReturn": -0.0015568990043666369,
+          "t": -2.510256484640145,
+          "p": 0.012064383204640317
+        },
+        "10": {
+          "n": 1794,
+          "meanSignedReturn": -0.003777928571490356,
+          "t": -3.9398566860529787,
+          "p": 0.00008156495797440044
+        },
+        "20": {
+          "n": 1794,
+          "meanSignedReturn": -0.006709864858780896,
+          "t": -5.074236989846216,
+          "p": 3.8971482241301203e-7
+        },
+        "40": {
+          "n": 1794,
+          "meanSignedReturn": -0.012492353117162451,
+          "t": -6.696617380627285,
+          "p": 2.1447732478918624e-11
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "broken",
+      "timeframe": "3h",
+      "tercile": "mid",
+      "n": 12,
+      "horizons": {
+        "5": {
+          "n": 12,
+          "tooThin": true
+        },
+        "10": {
+          "n": 12,
+          "tooThin": true
+        },
+        "20": {
+          "n": 12,
+          "tooThin": true
+        },
+        "40": {
+          "n": 12,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "broken",
+      "timeframe": "3h",
+      "tercile": "steep",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "broken",
+      "timeframe": "2h",
+      "tercile": "shallow",
+      "n": 2713,
+      "horizons": {
+        "5": {
+          "n": 2713,
+          "meanSignedReturn": -0.000997003926574956,
+          "t": -2.265343175799441,
+          "p": 0.02349155608563791
+        },
+        "10": {
+          "n": 2713,
+          "meanSignedReturn": -0.0014895096001537786,
+          "t": -2.3332568601340666,
+          "p": 0.019634624538086953
+        },
+        "20": {
+          "n": 2711,
+          "meanSignedReturn": -0.003439995231574514,
+          "t": -3.7584714084903883,
+          "p": 0.00017100816368720295
+        },
+        "40": {
+          "n": 2710,
+          "meanSignedReturn": -0.004920131083345771,
+          "t": -3.83887758364065,
+          "p": 0.00012364255816921244
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "broken",
+      "timeframe": "2h",
+      "tercile": "mid",
+      "n": 112,
+      "horizons": {
+        "5": {
+          "n": 112,
+          "meanSignedReturn": -0.0023952906207555663,
+          "t": -1.2343018647365045,
+          "p": 0.21709057021163503
+        },
+        "10": {
+          "n": 112,
+          "meanSignedReturn": -0.0043059826200226355,
+          "t": -1.7373387663188802,
+          "p": 0.08232731183233133
+        },
+        "20": {
+          "n": 112,
+          "meanSignedReturn": -0.00998263378822204,
+          "t": -2.2697370589169976,
+          "p": 0.023223470879702335
+        },
+        "40": {
+          "n": 112,
+          "meanSignedReturn": -0.016586122864662857,
+          "t": -2.504657622684071,
+          "p": 0.012257028726661012
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "broken",
+      "timeframe": "2h",
+      "tercile": "steep",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "broken",
+      "timeframe": "1h",
+      "tercile": "shallow",
+      "n": 4495,
+      "horizons": {
+        "5": {
+          "n": 4495,
+          "meanSignedReturn": -0.0006390935377486169,
+          "t": -2.407552646606966,
+          "p": 0.016059835690533042
+        },
+        "10": {
+          "n": 4495,
+          "meanSignedReturn": -0.001286090194991032,
+          "t": -3.5273808047241046,
+          "p": 0.00041977728558495464
+        },
+        "20": {
+          "n": 4495,
+          "meanSignedReturn": -0.001832632346331878,
+          "t": -3.582843369184724,
+          "p": 0.00033995107720041773
+        },
+        "40": {
+          "n": 4494,
+          "meanSignedReturn": -0.002210548767088122,
+          "t": -3.1047351024219028,
+          "p": 0.0019046308337293816
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "broken",
+      "timeframe": "1h",
+      "tercile": "mid",
+      "n": 983,
+      "horizons": {
+        "5": {
+          "n": 983,
+          "meanSignedReturn": -0.000026502664060171802,
+          "t": -0.04907241567225821,
+          "p": 0.9608614493941672
+        },
+        "10": {
+          "n": 983,
+          "meanSignedReturn": -0.0008801023495818214,
+          "t": -1.1684763361441242,
+          "p": 0.2426147919806403
+        },
+        "20": {
+          "n": 983,
+          "meanSignedReturn": -0.003300365698763498,
+          "t": -3.2449077906395822,
+          "p": 0.001175010098802165
+        },
+        "40": {
+          "n": 982,
+          "meanSignedReturn": -0.004872710213151166,
+          "t": -3.532776367590675,
+          "p": 0.00041130398980770977
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "broken",
+      "timeframe": "1h",
+      "tercile": "steep",
+      "n": 6,
+      "horizons": {
+        "5": {
+          "n": 6,
+          "tooThin": true
+        },
+        "10": {
+          "n": 6,
+          "tooThin": true
+        },
+        "20": {
+          "n": 6,
+          "tooThin": true
+        },
+        "40": {
+          "n": 6,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "broken",
+      "timeframe": "15m",
+      "tercile": "shallow",
+      "n": 9127,
+      "horizons": {
+        "5": {
+          "n": 9127,
+          "meanSignedReturn": -0.00005089920360411461,
+          "t": -0.5566359364792255,
+          "p": 0.5777761243586745
+        },
+        "10": {
+          "n": 9127,
+          "meanSignedReturn": 0.00008590367656378162,
+          "t": 0.6939002675773638,
+          "p": 0.4877446079432253
+        },
+        "20": {
+          "n": 9127,
+          "meanSignedReturn": -0.000048182861897857996,
+          "t": -0.27850919160250964,
+          "p": 0.7806216309430893
+        },
+        "40": {
+          "n": 9127,
+          "meanSignedReturn": -0.0002598737371518583,
+          "t": -1.082982345461101,
+          "p": 0.27881632960108127
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "broken",
+      "timeframe": "15m",
+      "tercile": "mid",
+      "n": 8569,
+      "horizons": {
+        "5": {
+          "n": 8569,
+          "meanSignedReturn": 3.443761883589975e-7,
+          "t": 0.0037589204706030927,
+          "p": 0.9970008019587375
+        },
+        "10": {
+          "n": 8569,
+          "meanSignedReturn": 0.00002462005118010938,
+          "t": 0.1938502372909227,
+          "p": 0.8462931825487252
+        },
+        "20": {
+          "n": 8569,
+          "meanSignedReturn": -0.00008390685985091876,
+          "t": -0.46208658357018556,
+          "p": 0.6440192584135129
+        },
+        "40": {
+          "n": 8569,
+          "meanSignedReturn": -0.00041336553138843435,
+          "t": -1.6850544117095296,
+          "p": 0.09197801995753063
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "broken",
+      "timeframe": "15m",
+      "tercile": "steep",
+      "n": 3306,
+      "horizons": {
+        "5": {
+          "n": 3306,
+          "meanSignedReturn": -0.0000026810574823266305,
+          "t": -0.01868825653411957,
+          "p": 0.9850897178880946
+        },
+        "10": {
+          "n": 3306,
+          "meanSignedReturn": -0.00004754048154222578,
+          "t": -0.23106758674923955,
+          "p": 0.8172623788641991
+        },
+        "20": {
+          "n": 3306,
+          "meanSignedReturn": -0.00037895955631566725,
+          "t": -1.4000440584426503,
+          "p": 0.16150022904040084
+        },
+        "40": {
+          "n": 3306,
+          "meanSignedReturn": -0.0009144859798874568,
+          "t": -2.5329006949368837,
+          "p": 0.011312341945014515
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "broken",
+      "timeframe": "5m",
+      "tercile": "shallow",
+      "n": 11679,
+      "horizons": {
+        "5": {
+          "n": 11679,
+          "meanSignedReturn": -0.00008843663493258763,
+          "t": -1.9371026414094492,
+          "p": 0.0527326591867785
+        },
+        "10": {
+          "n": 11679,
+          "meanSignedReturn": -0.00009092301524321584,
+          "t": -1.420334075068859,
+          "p": 0.15551054067231007
+        },
+        "20": {
+          "n": 11679,
+          "meanSignedReturn": -0.00011157132414624077,
+          "t": -1.2644483145744607,
+          "p": 0.20606929182416311
+        },
+        "40": {
+          "n": 11679,
+          "meanSignedReturn": -0.00005991467559045267,
+          "t": -0.4804630136844635,
+          "p": 0.6308982043243727
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "broken",
+      "timeframe": "5m",
+      "tercile": "mid",
+      "n": 21769,
+      "horizons": {
+        "5": {
+          "n": 21767,
+          "meanSignedReturn": -0.000018507864602928563,
+          "t": -0.5378019971004396,
+          "p": 0.5907137000409466
+        },
+        "10": {
+          "n": 21767,
+          "meanSignedReturn": 0.000035667682416394886,
+          "t": 0.7446153725679848,
+          "p": 0.4565041247593291
+        },
+        "20": {
+          "n": 21767,
+          "meanSignedReturn": 0.0001127033788544699,
+          "t": 1.731615349324188,
+          "p": 0.0833419933249937
+        },
+        "40": {
+          "n": 21767,
+          "meanSignedReturn": 0.00010139197831286939,
+          "t": 1.1475293639975381,
+          "p": 0.25116300894958465
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "broken",
+      "timeframe": "5m",
+      "tercile": "steep",
+      "n": 28140,
+      "horizons": {
+        "5": {
+          "n": 28139,
+          "meanSignedReturn": -0.000060816878811412505,
+          "t": -1.9602871203845098,
+          "p": 0.04996210052091854
+        },
+        "10": {
+          "n": 28139,
+          "meanSignedReturn": -0.000013925517160937861,
+          "t": -0.32505040446873706,
+          "p": 0.7451430517642352
+        },
+        "20": {
+          "n": 28138,
+          "meanSignedReturn": 0.000027639050735026783,
+          "t": 0.46981091715244716,
+          "p": 0.6384901330503143
+        },
+        "40": {
+          "n": 28138,
+          "meanSignedReturn": -0.00003693247588984708,
+          "t": -0.4543115138213339,
+          "p": 0.6496046658902044
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "held",
+      "timeframe": "1w",
+      "tercile": "shallow",
+      "n": 5,
+      "horizons": {
+        "5": {
+          "n": 5,
+          "tooThin": true
+        },
+        "10": {
+          "n": 4,
+          "tooThin": true
+        },
+        "20": {
+          "n": 4,
+          "tooThin": true
+        },
+        "40": {
+          "n": 4,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "held",
+      "timeframe": "1w",
+      "tercile": "mid",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "held",
+      "timeframe": "1w",
+      "tercile": "steep",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "held",
+      "timeframe": "1d",
+      "tercile": "shallow",
+      "n": 53,
+      "horizons": {
+        "5": {
+          "n": 53,
+          "meanSignedReturn": 0.041690647294326186,
+          "t": 3.174816829783385,
+          "p": 0.001499441776467103
+        },
+        "10": {
+          "n": 52,
+          "meanSignedReturn": 0.05603487601525726,
+          "t": 4.0025656769111135,
+          "p": 0.00006268864811120878
+        },
+        "20": {
+          "n": 51,
+          "meanSignedReturn": 0.0901395926314132,
+          "t": 5.050284195515049,
+          "p": 4.418857524335351e-7
+        },
+        "40": {
+          "n": 50,
+          "meanSignedReturn": 0.10365473474405938,
+          "t": 3.9542069286778827,
+          "p": 0.00007682232513861464
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "held",
+      "timeframe": "1d",
+      "tercile": "mid",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "held",
+      "timeframe": "1d",
+      "tercile": "steep",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "held",
+      "timeframe": "4h",
+      "tercile": "shallow",
+      "n": 380,
+      "horizons": {
+        "5": {
+          "n": 380,
+          "meanSignedReturn": 0.01878340405152779,
+          "t": 10.863579406117672,
+          "p": 0
+        },
+        "10": {
+          "n": 380,
+          "meanSignedReturn": 0.02018727016690447,
+          "t": 8.006597671732454,
+          "p": 1.1102230246251565e-15
+        },
+        "20": {
+          "n": 380,
+          "meanSignedReturn": 0.023664698511695795,
+          "t": 6.834083978107628,
+          "p": 8.30224777814692e-12
+        },
+        "40": {
+          "n": 380,
+          "meanSignedReturn": 0.01875943615190672,
+          "t": 3.990140113467433,
+          "p": 0.0000660646515129315
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "held",
+      "timeframe": "4h",
+      "tercile": "mid",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "held",
+      "timeframe": "4h",
+      "tercile": "steep",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "held",
+      "timeframe": "3h",
+      "tercile": "shallow",
+      "n": 490,
+      "horizons": {
+        "5": {
+          "n": 490,
+          "meanSignedReturn": 0.014535094281984748,
+          "t": 10.883234203456611,
+          "p": 0
+        },
+        "10": {
+          "n": 490,
+          "meanSignedReturn": 0.01866277879036436,
+          "t": 10.185031206451065,
+          "p": 0
+        },
+        "20": {
+          "n": 489,
+          "meanSignedReturn": 0.02190357084837246,
+          "t": 8.139086413848737,
+          "p": 4.440892098500626e-16
+        },
+        "40": {
+          "n": 488,
+          "meanSignedReturn": 0.02202863766696285,
+          "t": 6.1064003447009165,
+          "p": 1.0229550539975207e-9
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "held",
+      "timeframe": "3h",
+      "tercile": "mid",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "held",
+      "timeframe": "3h",
+      "tercile": "steep",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "held",
+      "timeframe": "2h",
+      "tercile": "shallow",
+      "n": 738,
+      "horizons": {
+        "5": {
+          "n": 738,
+          "meanSignedReturn": 0.01071806159660585,
+          "t": 13.28490040562945,
+          "p": 0
+        },
+        "10": {
+          "n": 738,
+          "meanSignedReturn": 0.0146710520560666,
+          "t": 11.87949148369646,
+          "p": 0
+        },
+        "20": {
+          "n": 736,
+          "meanSignedReturn": 0.015701773781566973,
+          "t": 9.437084067583179,
+          "p": 0
+        },
+        "40": {
+          "n": 735,
+          "meanSignedReturn": 0.014093959524052284,
+          "t": 6.015954084698052,
+          "p": 1.7947792141370655e-9
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "held",
+      "timeframe": "2h",
+      "tercile": "mid",
+      "n": 1,
+      "horizons": {
+        "5": {
+          "n": 1,
+          "tooThin": true
+        },
+        "10": {
+          "n": 1,
+          "tooThin": true
+        },
+        "20": {
+          "n": 1,
+          "tooThin": true
+        },
+        "40": {
+          "n": 1,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "held",
+      "timeframe": "2h",
+      "tercile": "steep",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "held",
+      "timeframe": "1h",
+      "tercile": "shallow",
+      "n": 1452,
+      "horizons": {
+        "5": {
+          "n": 1452,
+          "meanSignedReturn": 0.008568537561461356,
+          "t": 17.740935389981182,
+          "p": 0
+        },
+        "10": {
+          "n": 1451,
+          "meanSignedReturn": 0.009387604796889878,
+          "t": 14.950575311016246,
+          "p": 0
+        },
+        "20": {
+          "n": 1451,
+          "meanSignedReturn": 0.01045868415239675,
+          "t": 12.506136740499619,
+          "p": 0
+        },
+        "40": {
+          "n": 1449,
+          "meanSignedReturn": 0.01006386072218832,
+          "t": 8.831268308360075,
+          "p": 0
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "held",
+      "timeframe": "1h",
+      "tercile": "mid",
+      "n": 65,
+      "horizons": {
+        "5": {
+          "n": 65,
+          "meanSignedReturn": 0.005090975794998821,
+          "t": 2.7150677051001293,
+          "p": 0.006626324635570224
+        },
+        "10": {
+          "n": 65,
+          "meanSignedReturn": 0.005171574052986986,
+          "t": 1.6787841293533956,
+          "p": 0.09319407207320052
+        },
+        "20": {
+          "n": 65,
+          "meanSignedReturn": 0.006842478177917522,
+          "t": 1.2422379338432736,
+          "p": 0.21414891724640772
+        },
+        "40": {
+          "n": 65,
+          "meanSignedReturn": 0.004584668237071576,
+          "t": 0.6248386221061957,
+          "p": 0.5320768563398888
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "held",
+      "timeframe": "1h",
+      "tercile": "steep",
+      "n": 0,
+      "horizons": {
+        "5": {
+          "n": 0,
+          "tooThin": true
+        },
+        "10": {
+          "n": 0,
+          "tooThin": true
+        },
+        "20": {
+          "n": 0,
+          "tooThin": true
+        },
+        "40": {
+          "n": 0,
+          "tooThin": true
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "held",
+      "timeframe": "15m",
+      "tercile": "shallow",
+      "n": 2675,
+      "horizons": {
+        "5": {
+          "n": 2675,
+          "meanSignedReturn": 0.004406230137582594,
+          "t": 27.43200608506974,
+          "p": 0
+        },
+        "10": {
+          "n": 2675,
+          "meanSignedReturn": 0.005845626977374818,
+          "t": 25.14262957051726,
+          "p": 0
+        },
+        "20": {
+          "n": 2674,
+          "meanSignedReturn": 0.007215577954810389,
+          "t": 21.73446760824784,
+          "p": 0
+        },
+        "40": {
+          "n": 2672,
+          "meanSignedReturn": 0.008795605181222677,
+          "t": 19.659353663260863,
+          "p": 0
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "held",
+      "timeframe": "15m",
+      "tercile": "mid",
+      "n": 2811,
+      "horizons": {
+        "5": {
+          "n": 2811,
+          "meanSignedReturn": 0.0031582589381482797,
+          "t": 17.60733236791665,
+          "p": 0
+        },
+        "10": {
+          "n": 2810,
+          "meanSignedReturn": 0.0035472464735117355,
+          "t": 13.802216392403105,
+          "p": 0
+        },
+        "20": {
+          "n": 2810,
+          "meanSignedReturn": 0.0033306917777608976,
+          "t": 9.849754229883626,
+          "p": 0
+        },
+        "40": {
+          "n": 2810,
+          "meanSignedReturn": 0.003476185267170854,
+          "t": 7.5483678984400076,
+          "p": 4.440892098500626e-14
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "held",
+      "timeframe": "15m",
+      "tercile": "steep",
+      "n": 361,
+      "horizons": {
+        "5": {
+          "n": 361,
+          "meanSignedReturn": 0.0020110899029468794,
+          "t": 4.869829488364906,
+          "p": 0.0000011184970851729759
+        },
+        "10": {
+          "n": 361,
+          "meanSignedReturn": 0.0020435401382589246,
+          "t": 2.935388759144001,
+          "p": 0.003331436564830925
+        },
+        "20": {
+          "n": 361,
+          "meanSignedReturn": 0.0022103417963804718,
+          "t": 2.066873329115294,
+          "p": 0.03874595868555519
+        },
+        "40": {
+          "n": 361,
+          "meanSignedReturn": 0.001859004564310182,
+          "t": 1.3328544827280788,
+          "p": 0.1825796864517002
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "held",
+      "timeframe": "5m",
+      "tercile": "shallow",
+      "n": 3096,
+      "horizons": {
+        "5": {
+          "n": 3096,
+          "meanSignedReturn": 0.0024824647713621605,
+          "t": 30.190287401935667,
+          "p": 0
+        },
+        "10": {
+          "n": 3096,
+          "meanSignedReturn": 0.003405371366188384,
+          "t": 26.524762572042892,
+          "p": 0
+        },
+        "20": {
+          "n": 3094,
+          "meanSignedReturn": 0.004722593491937211,
+          "t": 26.817306824740506,
+          "p": 0
+        },
+        "40": {
+          "n": 3093,
+          "meanSignedReturn": 0.006142920264560481,
+          "t": 25.059660392889036,
+          "p": 0
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "held",
+      "timeframe": "5m",
+      "tercile": "mid",
+      "n": 6012,
+      "horizons": {
+        "5": {
+          "n": 6012,
+          "meanSignedReturn": 0.002479365755566104,
+          "t": 36.95963145433327,
+          "p": 0
+        },
+        "10": {
+          "n": 6012,
+          "meanSignedReturn": 0.003186884059799056,
+          "t": 32.98230024673831,
+          "p": 0
+        },
+        "20": {
+          "n": 6012,
+          "meanSignedReturn": 0.003672598980482315,
+          "t": 28.944310644757007,
+          "p": 0
+        },
+        "40": {
+          "n": 6012,
+          "meanSignedReturn": 0.0037663943276496927,
+          "t": 21.788646357514914,
+          "p": 0
+        }
+      }
+    },
+    {
+      "side": "bear",
+      "outcomeType": "held",
+      "timeframe": "5m",
+      "tercile": "steep",
+      "n": 8528,
+      "horizons": {
+        "5": {
+          "n": 8528,
+          "meanSignedReturn": 0.0017719253974078247,
+          "t": 31.63043426648738,
+          "p": 0
+        },
+        "10": {
+          "n": 8528,
+          "meanSignedReturn": 0.0018910281543098445,
+          "t": 22.74298904077539,
+          "p": 0
+        },
+        "20": {
+          "n": 8528,
+          "meanSignedReturn": 0.0019056706047833986,
+          "t": 16.667400266248773,
+          "p": 0
+        },
+        "40": {
+          "n": 8528,
+          "meanSignedReturn": 0.0018487816398489907,
+          "t": 12.141448969407366,
+          "p": 0
+        }
+      }
+    }
+  ],
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-08T08:18:06.911Z"
+}

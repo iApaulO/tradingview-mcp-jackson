@@ -1,0 +1,510 @@
+{
+  "out": {
+    "1w": {
+      "timeframe": "1w",
+      "window": 160,
+      "timeWindowBars": 60,
+      "results": [
+        {
+          "side": "bullish",
+          "timeframe": "1w",
+          "nPaired": 5,
+          "nIsolated": 2,
+          "nPairedByType": {
+            "choch": 3,
+            "bos": 2
+          },
+          "nStructureEventsAvailable": 6,
+          "baselineMfeMean": 5.080848253692719,
+          "paired": {
+            "n": 5,
+            "meanMfe": 3.636978724508265,
+            "meanBars": 89.8,
+            "vsBaselineP": 0.28805835291987236,
+            "vsBaselineT": -1.0623908276265552,
+            "vsIsolatedP": 0.0513002127249369,
+            "vsIsolatedT": 1.948958740452512
+          },
+          "isolated": {
+            "n": 2,
+            "meanMfe": 0.8496301812708964,
+            "meanBars": 79,
+            "vsBaselineP": 5.099957578469372e-7,
+            "vsBaselineT": -5.022823882494546
+          }
+        },
+        {
+          "side": "bearish",
+          "timeframe": "1w",
+          "nPaired": 3,
+          "nIsolated": 3,
+          "nPairedByType": {
+            "choch": 1,
+            "bos": 2
+          },
+          "nStructureEventsAvailable": 6,
+          "baselineMfeMean": 0.35576725321628905,
+          "paired": {
+            "n": 3,
+            "meanMfe": 0.45597012913833845,
+            "meanBars": 26,
+            "vsBaselineP": 0.4815425086475762,
+            "vsBaselineT": 0.7038235632406505,
+            "vsIsolatedP": 0.17404410089458144,
+            "vsIsolatedT": 1.359323870141081
+          },
+          "isolated": {
+            "n": 3,
+            "meanMfe": 0.20201728124975316,
+            "meanBars": 13,
+            "vsBaselineP": 0.23523839624028753,
+            "vsBaselineT": -1.1869729832848601
+          }
+        }
+      ]
+    },
+    "1d": {
+      "timeframe": "1d",
+      "window": 160,
+      "timeWindowBars": 60,
+      "results": [
+        {
+          "side": "bullish",
+          "timeframe": "1d",
+          "nPaired": 46,
+          "nIsolated": 21,
+          "nPairedByType": {
+            "choch": 32,
+            "bos": 14
+          },
+          "nStructureEventsAvailable": 67,
+          "baselineMfeMean": 0.6534326803287028,
+          "paired": {
+            "n": 46,
+            "meanMfe": 0.6577995925113972,
+            "meanBars": 104.67391304347827,
+            "vsBaselineP": 0.9680811584365907,
+            "vsBaselineT": 0.04001485283220037,
+            "vsIsolatedP": 0.17932802545038862,
+            "vsIsolatedT": 1.3428272933607472
+          },
+          "isolated": {
+            "n": 21,
+            "meanMfe": 0.4843918900149685,
+            "meanBars": 95.76190476190476,
+            "vsBaselineP": 0.048855776383538885,
+            "vsBaselineT": -1.9698469256323388
+          }
+        },
+        {
+          "side": "bearish",
+          "timeframe": "1d",
+          "nPaired": 41,
+          "nIsolated": 11,
+          "nPairedByType": {
+            "choch": 27,
+            "bos": 14
+          },
+          "nStructureEventsAvailable": 92,
+          "baselineMfeMean": 0.22324431623239335,
+          "paired": {
+            "n": 41,
+            "meanMfe": 0.30729635712185016,
+            "meanBars": 84.70731707317073,
+            "vsBaselineP": 0.00043787347116053255,
+            "vsBaselineT": 3.5161902001078853,
+            "vsIsolatedP": 0.001575562977178313,
+            "vsIsolatedT": 3.1604176948634017
+          },
+          "isolated": {
+            "n": 11,
+            "meanMfe": 0.16550955752953211,
+            "meanBars": 47,
+            "vsBaselineP": 0.14190516137780684,
+            "vsBaselineT": -1.4687334918578965
+          }
+        }
+      ]
+    },
+    "4h": {
+      "timeframe": "4h",
+      "window": 160,
+      "timeWindowBars": 60,
+      "results": [
+        {
+          "side": "bullish",
+          "timeframe": "4h",
+          "nPaired": 88,
+          "nIsolated": 23,
+          "nPairedByType": {
+            "choch": 58,
+            "bos": 30
+          },
+          "nStructureEventsAvailable": 450,
+          "baselineMfeMean": 0.153977222264255,
+          "paired": {
+            "n": 88,
+            "meanMfe": 0.18940105159651088,
+            "meanBars": 95.04545454545455,
+            "vsBaselineP": 0.05450473144424772,
+            "vsBaselineT": 1.922802415467571,
+            "vsIsolatedP": 0.0000013417649828983969,
+            "vsIsolatedT": 4.833731598345776
+          },
+          "isolated": {
+            "n": 23,
+            "meanMfe": 0.09037573291204362,
+            "meanBars": 67.08695652173913,
+            "vsBaselineP": 1.2413936545385695e-10,
+            "vsBaselineT": -6.434901024526217
+          }
+        },
+        {
+          "side": "bearish",
+          "timeframe": "4h",
+          "nPaired": 77,
+          "nIsolated": 12,
+          "nPairedByType": {
+            "choch": 45,
+            "bos": 32
+          },
+          "nStructureEventsAvailable": 541,
+          "baselineMfeMean": 0.10627516821813979,
+          "paired": {
+            "n": 77,
+            "meanMfe": 0.16015135223211074,
+            "meanBars": 95.32467532467533,
+            "vsBaselineP": 4.818086452029746e-7,
+            "vsBaselineT": 5.033731812188433,
+            "vsIsolatedP": 0.7909856499939845,
+            "vsIsolatedT": 0.26503105731370985
+          },
+          "isolated": {
+            "n": 12,
+            "meanMfe": 0.15136888222065023,
+            "meanBars": 59,
+            "vsBaselineP": 0.15170417701801497,
+            "vsBaselineT": 1.4335382088757103
+          }
+        }
+      ]
+    },
+    "3h": {
+      "timeframe": "3h",
+      "window": 160,
+      "timeWindowBars": 60,
+      "results": [
+        {
+          "side": "bullish",
+          "timeframe": "3h",
+          "nPaired": 82,
+          "nIsolated": 19,
+          "nPairedByType": {
+            "choch": 57,
+            "bos": 25
+          },
+          "nStructureEventsAvailable": 594,
+          "baselineMfeMean": 0.12639531834427867,
+          "paired": {
+            "n": 82,
+            "meanMfe": 0.14067660927641498,
+            "meanBars": 95.92682926829268,
+            "vsBaselineP": 0.17014799302762662,
+            "vsBaselineT": 1.3717288004146604,
+            "vsIsolatedP": 0.000726403626693406,
+            "vsIsolatedT": 3.3794547607530228
+          },
+          "isolated": {
+            "n": 19,
+            "meanMfe": 0.08993422537796043,
+            "meanBars": 85.15789473684211,
+            "vsBaselineP": 0.0011186687222850544,
+            "vsBaselineT": -3.2588756440981475
+          }
+        },
+        {
+          "side": "bearish",
+          "timeframe": "3h",
+          "nPaired": 81,
+          "nIsolated": 18,
+          "nPairedByType": {
+            "choch": 45,
+            "bos": 36
+          },
+          "nStructureEventsAvailable": 698,
+          "baselineMfeMean": 0.09320379932290294,
+          "paired": {
+            "n": 81,
+            "meanMfe": 0.12685742442419765,
+            "meanBars": 85.41975308641975,
+            "vsBaselineP": 0.0001283888619059148,
+            "vsBaselineT": 3.829616057209248,
+            "vsIsolatedP": 0.08297556956767771,
+            "vsIsolatedT": 1.7336756536385367
+          },
+          "isolated": {
+            "n": 18,
+            "meanMfe": 0.08715979310228707,
+            "meanBars": 60.5,
+            "vsBaselineP": 0.7758776802602294,
+            "vsBaselineT": -0.2846953455183597
+          }
+        }
+      ]
+    },
+    "2h": {
+      "timeframe": "2h",
+      "window": 160,
+      "timeWindowBars": 60,
+      "results": [
+        {
+          "side": "bullish",
+          "timeframe": "2h",
+          "nPaired": 98,
+          "nIsolated": 15,
+          "nPairedByType": {
+            "choch": 58,
+            "bos": 40
+          },
+          "nStructureEventsAvailable": 980,
+          "baselineMfeMean": 0.0972546180604871,
+          "paired": {
+            "n": 98,
+            "meanMfe": 0.10283725046489328,
+            "meanBars": 87.21428571428571,
+            "vsBaselineP": 0.3675695886030066,
+            "vsBaselineT": 0.9010351032425677,
+            "vsIsolatedP": 0.000038914356129238215,
+            "vsIsolatedT": 4.113960390463144
+          },
+          "isolated": {
+            "n": 15,
+            "meanMfe": 0.05790686042103458,
+            "meanBars": 79.53333333333333,
+            "vsBaselineP": 0.0000175301483540391,
+            "vsBaselineT": -4.294386638876733
+          }
+        },
+        {
+          "side": "bearish",
+          "timeframe": "2h",
+          "nPaired": 77,
+          "nIsolated": 10,
+          "nPairedByType": {
+            "choch": 48,
+            "bos": 29
+          },
+          "nStructureEventsAvailable": 1055,
+          "baselineMfeMean": 0.07730634072191611,
+          "paired": {
+            "n": 77,
+            "meanMfe": 0.08653787585045347,
+            "meanBars": 71.05194805194805,
+            "vsBaselineP": 0.14601963634147253,
+            "vsBaselineT": 1.4537358428672267,
+            "vsIsolatedP": 0.8352525377450268,
+            "vsIsolatedT": -0.2079698821003522
+          },
+          "isolated": {
+            "n": 10,
+            "meanMfe": 0.09191238237798484,
+            "meanBars": 61.3,
+            "vsBaselineP": 0.5604148879780735,
+            "vsBaselineT": 0.5822252297045395
+          }
+        }
+      ]
+    },
+    "1h": {
+      "timeframe": "1h",
+      "window": 160,
+      "timeWindowBars": 60,
+      "results": [
+        {
+          "side": "bullish",
+          "timeframe": "1h",
+          "nPaired": 89,
+          "nIsolated": 15,
+          "nPairedByType": {
+            "choch": 64,
+            "bos": 25
+          },
+          "nStructureEventsAvailable": 2005,
+          "baselineMfeMean": 0.06372471515342028,
+          "paired": {
+            "n": 89,
+            "meanMfe": 0.06529372853190922,
+            "meanBars": 87.34831460674157,
+            "vsBaselineP": 0.7200245291261791,
+            "vsBaselineT": 0.3584261669060502,
+            "vsIsolatedP": 0.00012000569499370783,
+            "vsIsolatedT": 3.8462039071758043
+          },
+          "isolated": {
+            "n": 15,
+            "meanMfe": 0.03755244657871299,
+            "meanBars": 76.4,
+            "vsBaselineP": 0.0000061348967035357305,
+            "vsBaselineT": -4.521886205401261
+          }
+        },
+        {
+          "side": "bearish",
+          "timeframe": "1h",
+          "nPaired": 84,
+          "nIsolated": 12,
+          "nPairedByType": {
+            "choch": 51,
+            "bos": 33
+          },
+          "nStructureEventsAvailable": 2146,
+          "baselineMfeMean": 0.05560153592786782,
+          "paired": {
+            "n": 84,
+            "meanMfe": 0.06681291616771148,
+            "meanBars": 89.41666666666667,
+            "vsBaselineP": 0.007977948652760025,
+            "vsBaselineT": 2.653005221279132,
+            "vsIsolatedP": 0.24757964694799983,
+            "vsIsolatedT": -1.1562484710973453
+          },
+          "isolated": {
+            "n": 12,
+            "meanMfe": 0.08941321605557262,
+            "meanBars": 88.08333333333333,
+            "vsBaselineP": 0.0766482501063217,
+            "vsBaselineT": 1.7704731954069877
+          }
+        }
+      ]
+    },
+    "15m": {
+      "timeframe": "15m",
+      "window": 160,
+      "timeWindowBars": 60,
+      "results": [
+        {
+          "side": "bullish",
+          "timeframe": "15m",
+          "nPaired": 88,
+          "nIsolated": 24,
+          "nPairedByType": {
+            "choch": 59,
+            "bos": 29
+          },
+          "nStructureEventsAvailable": 7892,
+          "baselineMfeMean": 0.029150448181532795,
+          "paired": {
+            "n": 88,
+            "meanMfe": 0.029982852729201596,
+            "meanBars": 95.86363636363636,
+            "vsBaselineP": 0.6888199206441898,
+            "vsBaselineT": 0.40045715753438166,
+            "vsIsolatedP": 0.003021186095621742,
+            "vsIsolatedT": 2.9655880563580412
+          },
+          "isolated": {
+            "n": 24,
+            "meanMfe": 0.017266217073486523,
+            "meanBars": 64.83333333333333,
+            "vsBaselineP": 0.0015541108703065465,
+            "vsBaselineT": -3.1644095951977476
+          }
+        },
+        {
+          "side": "bearish",
+          "timeframe": "15m",
+          "nPaired": 75,
+          "nIsolated": 13,
+          "nPairedByType": {
+            "choch": 53,
+            "bos": 22
+          },
+          "nStructureEventsAvailable": 8347,
+          "baselineMfeMean": 0.028286971467490138,
+          "paired": {
+            "n": 75,
+            "meanMfe": 0.03084834113377725,
+            "meanBars": 91.54666666666667,
+            "vsBaselineP": 0.17062902338238017,
+            "vsBaselineT": 1.3701858023825897,
+            "vsIsolatedP": 0.7879362131973835,
+            "vsIsolatedT": 0.26899166401643987
+          },
+          "isolated": {
+            "n": 13,
+            "meanMfe": 0.02896307942201836,
+            "meanBars": 95.38461538461539,
+            "vsBaselineP": 0.9203046694662387,
+            "vsBaselineT": 0.10004980110341498
+          }
+        }
+      ]
+    },
+    "5m": {
+      "timeframe": "5m",
+      "window": 160,
+      "timeWindowBars": 60,
+      "results": [
+        {
+          "side": "bullish",
+          "timeframe": "5m",
+          "nPaired": 87,
+          "nIsolated": 14,
+          "nPairedByType": {
+            "choch": 53,
+            "bos": 34
+          },
+          "nStructureEventsAvailable": 23673,
+          "baselineMfeMean": 0.016151076403301868,
+          "paired": {
+            "n": 87,
+            "meanMfe": 0.013991936278760463,
+            "meanBars": 86.83908045977012,
+            "vsBaselineP": 0.0387182900201859,
+            "vsBaselineT": -2.067166976545111,
+            "vsIsolatedP": 0.010961346292434282,
+            "vsIsolatedT": 2.543930168658574
+          },
+          "isolated": {
+            "n": 14,
+            "meanMfe": 0.00916610610422765,
+            "meanBars": 68.57142857142857,
+            "vsBaselineP": 0.000010479120565509703,
+            "vsBaselineT": -4.407221427941326
+          }
+        },
+        {
+          "side": "bearish",
+          "timeframe": "5m",
+          "nPaired": 82,
+          "nIsolated": 17,
+          "nPairedByType": {
+            "choch": 54,
+            "bos": 28
+          },
+          "nStructureEventsAvailable": 24815,
+          "baselineMfeMean": 0.01635160020353198,
+          "paired": {
+            "n": 82,
+            "meanMfe": 0.015301059445466315,
+            "meanBars": 86.1829268292683,
+            "vsBaselineP": 0.4006253025183386,
+            "vsBaselineT": -0.8405047999535569,
+            "vsIsolatedP": 0.017730739219950165,
+            "vsIsolatedT": 2.3711930752322
+          },
+          "isolated": {
+            "n": 17,
+            "meanMfe": 0.009977255552174605,
+            "meanBars": 58.35294117647059,
+            "vsBaselineP": 0.000637493357863006,
+            "vsBaselineT": -3.415182703138093
+          }
+        }
+      ]
+    }
+  },
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-08T16:00:53.609Z"
+}

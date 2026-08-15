@@ -1,0 +1,55 @@
+{
+  "timeframe": "1d",
+  "side": "bear",
+  "sources": [
+    "wt",
+    "wt2nd"
+  ],
+  "window": 160,
+  "baselineMfeMean": 0.22324431623239335,
+  "baselineN": 622,
+  "nAdverse": 669,
+  "nFavorable": 627,
+  "adverseMeanMfe": 0.20487586866999757,
+  "favorableMeanMfe": 0.20458370232110568,
+  "adverseVsFavorable_t": 0.029969637727191505,
+  "adverseVsFavorable_p": 0.9760911593289743,
+  "adverseMeanBarsToExtreme": 66.84005979073244,
+  "favorableMeanBarsToExtreme": 68.43540669856459,
+  "horizons": {
+    "5": {
+      "meanAdverse": -0.006438295298540707,
+      "meanFavorable": -0.0067205324887670325,
+      "t": 0.07390927107602399,
+      "p": 0.9410824379464393
+    },
+    "10": {
+      "meanAdverse": -0.01536505235418577,
+      "meanFavorable": -0.01862053585911636,
+      "t": 0.540750327569087,
+      "p": 0.5886796284359133
+    },
+    "20": {
+      "meanAdverse": -0.02571830442455295,
+      "meanFavorable": -0.030227752504865524,
+      "t": 0.4975045205565258,
+      "p": 0.6188333049282142
+    },
+    "40": {
+      "meanAdverse": -0.055144809303948966,
+      "meanFavorable": -0.051848964596153235,
+      "t": -0.23086317811040566,
+      "p": 0.8174211804958542
+    }
+  },
+  "adverseEarlyVsLate": {
+    "nEarly": 98,
+    "nLate": 571,
+    "meanEarly": 0.19789586128701528,
+    "meanLate": 0.2060738384134865,
+    "t": -0.4130392272225827,
+    "p": 0.6795779507810806
+  },
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-08T13:29:10.384Z"
+}

@@ -1,0 +1,157 @@
+{
+  "total": 226380,
+  "bySource": [
+    {
+      "name": "wt",
+      "n": 38944,
+      "nObserved": 29678,
+      "tooThin": false,
+      "meanSlope": 204.22528353043575,
+      "meanBarsToAdverse": 36.53433519778961,
+      "r": -0.23015780824368096,
+      "p": 0,
+      "censoring": [
+        {
+          "tercile": "shallow",
+          "n": 12981,
+          "meanSlope": 26.452699527621004,
+          "censoredPct": 8.604884061320393
+        },
+        {
+          "tercile": "mid",
+          "n": 12981,
+          "meanSlope": 167.40977315805438,
+          "censoredPct": 16.008011709421464
+        },
+        {
+          "tercile": "steep",
+          "n": 12982,
+          "meanSlope": 681.2292597536866,
+          "censoredPct": 46.76475119396087
+        }
+      ]
+    },
+    {
+      "name": "wt2nd",
+      "n": 34664,
+      "nObserved": 29752,
+      "tooThin": false,
+      "meanSlope": 171.06745079347453,
+      "meanBarsToAdverse": 34.35926996504437,
+      "r": -0.20498002845450594,
+      "p": 0,
+      "censoring": [
+        {
+          "tercile": "shallow",
+          "n": 11554,
+          "meanSlope": 15.581251866749517,
+          "censoredPct": 11.649645144538688
+        },
+        {
+          "tercile": "mid",
+          "n": 11554,
+          "meanSlope": 87.64306058736615,
+          "censoredPct": 19.690150597195778
+        },
+        {
+          "tercile": "steep",
+          "n": 11556,
+          "meanSlope": 389.9707399379953,
+          "censoredPct": 11.171685704395985
+        }
+      ]
+    },
+    {
+      "name": "rsi",
+      "n": 56988,
+      "nObserved": 48523,
+      "tooThin": false,
+      "meanSlope": 77.51294142261652,
+      "meanBarsToAdverse": 22.376151515776023,
+      "r": -0.1713507429466275,
+      "p": 0,
+      "censoring": [
+        {
+          "tercile": "shallow",
+          "n": 18996,
+          "meanSlope": 9.18979735146913,
+          "censoredPct": 5.527479469361971
+        },
+        {
+          "tercile": "mid",
+          "n": 18996,
+          "meanSlope": 54.16621538126878,
+          "censoredPct": 10.570646451884608
+        },
+        {
+          "tercile": "steep",
+          "n": 18996,
+          "meanSlope": 215.0698173675773,
+          "censoredPct": 28.463887134133504
+        }
+      ]
+    },
+    {
+      "name": "stoch",
+      "n": 95784,
+      "nObserved": 64380,
+      "tooThin": false,
+      "meanSlope": 331.82595999335587,
+      "meanBarsToAdverse": 13.38493320907114,
+      "r": -0.31504618508484994,
+      "p": 0,
+      "censoring": [
+        {
+          "tercile": "shallow",
+          "n": 31928,
+          "meanSlope": 47.97223973295116,
+          "censoredPct": 18.479077925331996
+        },
+        {
+          "tercile": "mid",
+          "n": 31928,
+          "meanSlope": 284.0157291833889,
+          "censoredPct": 26.196441994487596
+        },
+        {
+          "tercile": "steep",
+          "n": 31928,
+          "meanSlope": 1110.5647428888499,
+          "censoredPct": 53.68328739664244
+        }
+      ]
+    }
+  ],
+  "pooled": {
+    "name": "all_sources_pooled",
+    "n": 226380,
+    "nObserved": 172333,
+    "tooThin": false,
+    "meanSlope": 210.49196916229383,
+    "meanBarsToAdverse": 23.52424085926665,
+    "r": -0.1833541905221774,
+    "p": 0,
+    "censoring": [
+      {
+        "tercile": "shallow",
+        "n": 75460,
+        "meanSlope": 21.497602478637557,
+        "censoredPct": 10.667903525046382
+      },
+      {
+        "tercile": "mid",
+        "n": 75460,
+        "meanSlope": 136.24080561346153,
+        "censoredPct": 19.53617810760668
+      },
+      {
+        "tercile": "steep",
+        "n": 75460,
+        "meanSlope": 748.7842878524435,
+        "censoredPct": 41.41929499072356
+      }
+    ]
+  },
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-08T07:55:27.340Z"
+}
