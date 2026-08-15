@@ -63,6 +63,24 @@ bar), not just one or two of the three. Full detail: `significance-register.md` 
   confirmed twice (observational split + formal significance, #113/#114): this is fundamentally an
   exhaustion/reversal signal, and trading it WITH the daily trend is statistically no better than
   chance — don't add a regime-agreement filter, the opposite one is what works.
+  - **Open question on G's D4M component, as of #126 (2026-08-15) — do not quietly ignore this.**
+    Formal permutation testing says the Divergence-for-Many line-confluence condition listed above
+    is the one component that does NOT earn its place: it fails a selection test on both
+    adequately-powered timeframes (15m p=0.1265, 5m p=0.9864 — on 5m the D4M-filtered subset is
+    actually *below* its own unfiltered base). The swing-line condition (`computeSwingPivotSeries`,
+    OB beyond the current active swing pivot), which G does **not** currently use, clears the same
+    test on both (p=0.0008, p=0.0008) and carries the whole effect. G's numbers above are still
+    valid as measured — this is not a claim G is broken — but the D4M leg is likely dead weight
+    and swing-line is likely the better filter. **Not yet swapped**, deliberately: #121 established
+    that in-sample ranking is not forward persistence, so this needs its own OOS/walk-forward run
+    before touching `portfolio-backtest.js`. Also unsettled: #126 found the whole G chain queries
+    D4M zones without a timeframe filter (pooling all timeframes, 66% of which are 5m rows), which
+    is not the condition the prose describes — under an own-timeframe scope, D4M *does* add value
+    on 15m (p=0.0242) but not 5m. Settle the scope before concluding anything final about D4M.
+  - **15m/5m is not an arbitrary scoping.** #126's ladder check confirms it independently: above
+    1h even the BASE anchor construction fails the direction null (4h p=0.8245, 3h p=0.1139,
+    1h p=0.1910), while 15m and 5m are p=0.0000 for every variant. Higher rungs are also simply
+    too thin (4h n=13, 3h n=21, 1d n=0, 1w has no base population at all).
 
 Both are 15m/all-timeframe cross-indicator constructions, not single-indicator signals — they
 don't fit cleanly under one indicator's card below, which is why they're called out here first.
