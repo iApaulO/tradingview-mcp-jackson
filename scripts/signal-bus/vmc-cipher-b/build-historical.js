@@ -39,7 +39,7 @@ function gitCommit() {
 
 async function main() {
   const commit = gitCommit();
-  const db = openStore();
+  const db = openStore(INSTRUMENT);
   clearAll(db, INSTRUMENT);
 
   const allZones = [];

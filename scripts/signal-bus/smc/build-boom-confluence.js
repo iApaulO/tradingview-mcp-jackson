@@ -35,7 +35,20 @@
 import { DatabaseSync } from "node:sqlite";
 import { openStore, updateBoomConfluence } from "./store.js";
 
-const BOOM_DB_PATH = new URL("../../../data/signal-bus/boom-hunter.db", import.meta.url);
+// Per-instrument DB files (2026-08-15). This script is the one place that reaches into ANOTHER
+// bus's database directly rather than through its store module, so the instrument routing has to
+// be repeated here -- if it were not, an ETH run would read BTC's Boom Hunter events and write
+// them onto ETH order blocks, producing a plausible-looking but entirely cross-instrument result.
+const BOOM_DB_FILES = {
+  BTC: "boom-hunter.db",
+  ETH: "boom-hunter-eth.db",
+};
+
+function boomDbPathFor(instrument) {
+  const file = BOOM_DB_FILES[instrument];
+  if (!file) throw new Error(`unknown instrument '${instrument}'; known: ${Object.keys(BOOM_DB_FILES).join(", ")}`);
+  return new URL(`../../../data/signal-bus/${file}`, import.meta.url);
+}
 const LADDER_KEYS = ["1w", "1d", "4h", "3h", "2h", "1h", "15m", "5m"];
 const BAR_DURATION_SEC = { "1w": 604800, "1d": 86400, "4h": 14400, "3h": 10800, "2h": 7200, "1h": 3600, "15m": 900, "5m": 300 };
 // Priority when multiple tiers fire for the same OB -- lime/blue/yellow proved statistically
@@ -46,6 +59,8 @@ const TIER_LABEL = { long_lime: "lime", long_blue: "blue", long_yellow: "yellow"
 const LONG_TYPES = TIER_PRIORITY;
 
 const args = Object.fromEntries(process.argv.slice(2).map((a) => a.replace(/^--/, "").split("=")));
+// Both databases this script touches must resolve to the SAME instrument -- see boomDbPathFor.
+const INSTRUMENT = args.instrument || "BTC";
 const PRE_WINDOW = parseInt(args["pre-window"] || "50", 10);
 const POST_WINDOW = parseInt(args["post-window"] || "50", 10);
 const PRICE_TOLERANCE_PCT = parseFloat(args["price-tolerance"] || "0.01");
@@ -98,8 +113,8 @@ function nestedDepth(boomDb, ob, ownTimeframe, longsCache) {
 }
 
 function main() {
-  const smcDb = openStore();
-  const boomDb = new DatabaseSync(BOOM_DB_PATH, { readOnly: true });
+  const smcDb = openStore(INSTRUMENT);
+  const boomDb = new DatabaseSync(boomDbPathFor(INSTRUMENT), { readOnly: true });
 
   const obs = smcDb.prepare(
     "SELECT id, timeframe, origin_bar_idx, origin_time, bar_high, bar_low, recurrence_count FROM order_blocks WHERE side = 'bullish'",

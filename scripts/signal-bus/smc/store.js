@@ -6,7 +6,25 @@ import { mkdirSync } from "fs";
 import { migrateInstrument, requireInstrument } from "../lib/instrument.js";
 
 const DB_DIR = new URL("../../../data/signal-bus/", import.meta.url);
-const DB_PATH = new URL("smc.db", DB_DIR);
+// Per-instrument DB files (2026-08-15). BTC deliberately KEEPS its original filename so the ~74
+// analysis scripts that open this store keep reading BTC without a single edit -- that is the
+// whole reason separate files were chosen over a shared table with an instrument predicate. A
+// reader cannot accidentally blend instruments here, because the other instrument's rows are not
+// in the file at all.
+//
+// The `instrument` COLUMN is retained on top of this as defence in depth: it makes a mis-pointed
+// build detectable (a BTC-labelled row sitting inside smc-eth.db is a visible bug) rather than
+// silent, and clearAll stays instrument-scoped for the same reason.
+const DB_FILES = {
+  BTC: "smc.db",
+  ETH: "smc-eth.db",
+};
+
+function dbPathFor(instrument) {
+  const file = DB_FILES[instrument];
+  if (!file) throw new Error(`unknown instrument '${instrument}'; known: ${Object.keys(DB_FILES).join(", ")}`);
+  return new URL(file, DB_DIR);
+}
 
 const INSTRUMENT_TABLES = [
   { name: "runs", hasTimeframe: true },
@@ -139,9 +157,9 @@ function migrate(db) {
   }
 }
 
-export function openStore() {
+export function openStore(instrument = "BTC") {
   mkdirSync(DB_DIR, { recursive: true });
-  const db = new DatabaseSync(DB_PATH);
+  const db = new DatabaseSync(dbPathFor(instrument));
   db.exec(SCHEMA);
   migrate(db);
   migrateInstrument(db, INSTRUMENT_TABLES);

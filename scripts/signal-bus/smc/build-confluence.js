@@ -15,7 +15,7 @@ const INSTRUMENT = (process.argv.find((a) => a.startsWith("--instrument=")) || "
 
 
 function main() {
-  const db = openStore();
+  const db = openStore(INSTRUMENT);
   const { pool, targets } = loadConfluencePool(db, INSTRUMENT);
   console.log(`Loaded pool: ${pool.length} elements (${pool.filter((p) => p.type === "orderblock").length} order blocks, ${pool.filter((p) => p.type === "eqhl").length} EQH/EQL, ${pool.filter((p) => p.type === "structure").length} structure events)`);
 
