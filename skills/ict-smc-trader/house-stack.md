@@ -30,6 +30,31 @@ Two live/offline gaps to know about, not to silently paper over:
   *magnitude* is still an unconfirmed cross-exchange placeholder — don't quote a precise funding
   number as confirmed.
 
+## Validated cross-indicator strategies (2026-08-11/13 session)
+
+If forced to pick ONE thing to trust over everything else in this file, it's this pair — both
+cleared real significance, real costs, AND out-of-sample/walk-forward persistence (the full house
+bar), not just one or two of the three. Full detail: `significance-register.md` #106-125.
+
+- **Strategy A2 (SMC order-block engulfment, all timeframes)**: `recurrence_count >= 3 AND`
+  fully-engulfed-by-or-engulfing-another-same-side-OB (not just partial overlap). n=17,434,
+  costed +0.2458%/trade. Slightly LOWER in-sample average than the looser recurrence>=3-pooled
+  version (A), but roughly **3x** A's walk-forward contribution and **half** A's out-of-sample
+  loss (#120/#121) — the smaller, higher-conviction population generalizes better. Now the default
+  in `portfolio-backtest.js` (`--strategy-a-variant=a` recovers the original).
+- **Strategy G (WT2 extreme-anchor cascade, 15m/5m)**: Cipher B's WT2 hitting an extreme
+  (`computeWtExtremeFractals`, `vmc-cipher-b/calc.js`) + same-side SMC swing order-block confluence
+  at entry + held to the opposite-side OB's origin bar + Boom Hunter's q5 dropping at the anchor +
+  same-side Divergence-for-Many line confluence + **firing AGAINST the concurrent daily WT-anchor
+  regime, not with it**. n=545-668 (15m), costed ~+0.37-0.45%/trade, p=0.0000, walk-forward
+  contribution dominates every other strategy in the portfolio (#106-121). Counter-intuitive but
+  confirmed twice (observational split + formal significance, #113/#114): this is fundamentally an
+  exhaustion/reversal signal, and trading it WITH the daily trend is statistically no better than
+  chance — don't add a regime-agreement filter, the opposite one is what works.
+
+Both are 15m/all-timeframe cross-indicator constructions, not single-indicator signals — they
+don't fit cleanly under one indicator's card below, which is why they're called out here first.
+
 ## Indicator reference cards
 
 ### 1. Smart Money Concepts [LuxAlgo] — `pine/smart-money-concepts-luxalgo.pine`
@@ -57,6 +82,14 @@ Two live/offline gaps to know about, not to silently paper over:
   `grammar.md` if unsure.
   - **The classic "sweep precedes reversal" liquidity narrative is FALSIFIED on our own data.**
     Do not use a liquidity sweep as a bullish/bearish scoring input. See `significance-register.md`.
+  - **Recurrence isn't uniform — full containment beats plain overlap (#117/#118, 2026-08-12).**
+    `recurrence_count` (same-timeframe/side order blocks that overlap) treats "barely clips the
+    edge" and "fully swallows it" as identical. They're not: isolated (recurrence=1) OBs are
+    COST-NEGATIVE at every R multiple; among overlapping OBs, full containment (one range is a
+    strict superset of the other, `scripts/signal-bus/smc/engulfment.js`) beats plain partial
+    overlap by 3.6-5.0 win-rate points, p=0.0000 at every R. Not uniform across the ladder though —
+    2h/3h lean the other way (partial beats engulfment there); the pooled win is carried by
+    15m/5m/1h/4h. See the strategy box above for the validated A2 (engulfment-restricted) variant.
 - **FVG:** off by default in the source. Not analyzed in this house's signal bus.
 - **Premium/Discount/Equilibrium zones:** a live single *current-range* display, not a historical
   zone series — not part of any tested finding here, descriptive only if shown.
@@ -73,6 +106,20 @@ Two live/offline gaps to know about, not to silently paper over:
   (53.4%→60.6%, p<0.001) — this is the one Divergence-for-Many finding worth weighting in scoring.
 - Hidden divergence is disabled by default and, per source, **does not affect zone promotion even
   if enabled** — promotion gates strictly on regular-divergence count.
+- **Live indicator is the "Touch-Refresh Fork"** — a level's life extends every bar price re-touches
+  it, not a flat expiry clock. This port (`divergence-for-many/calc.js`) was MISSING that mechanism
+  entirely until 2026-08-13 (#124) — every D4M finding before that date (including the 0.2%-tolerance
+  choice below) ran on a version that dropped genuinely-still-relevant lines at a fixed 200-bar mark.
+  Fixed and rebuilt (`data/signal-bus/divergence-for-many.db`); all downstream findings re-verified
+  and hold (#125) — the qualitative conclusions didn't change, sample sizes grew and magnitudes
+  shifted modestly. If this db ever looks stale again (zones "expired" that iapaulo says are still
+  live on chart), check `data/historical/binance-btc-*.csv` freshness first (`fetch-coinbase-gapfill.js`
+  + `build-aggregated-candles.js` to refresh), then rebuild this db — don't assume the fix regressed.
+- **Price tolerance for cross-zone confluence is 1.2% of price in practice, not the coded 0.2%
+  default** (#103) — 0.2% was ~5.8x tighter than a live-confirmed spread. `confluence.js`'s
+  `computeConfluence` accepts a `pctOverride` for this; the 0.2% default is left alone (an earlier
+  finding used it and stays valid at that setting) but any NEW cross-zone confluence check should
+  pass the wider, live-calibrated value explicitly, not rely on the default.
 
 ### 3. Boom Hunter Pro — `pine/boom-hunter-pro.pine`
 
@@ -85,8 +132,16 @@ Two live/offline gaps to know about, not to silently paper over:
   setup and a bullish continuation signal — source-order analysis suggests "Break" firing most
   likely means bullish continuation, **not** the short setup, but this is still unverified against
   live UI). Never treat `break_ambiguous` as a reliable short trigger.
-- No independent backtest or signal-bus exists for Boom Hunter — treat as a live timing/trigger
-  input only, not a source of any tested statistical claim.
+- **Signal-bus reimplementation + significance testing built 2026-08-09** (`scripts/signal-bus/boom-hunter/`,
+  significance-register.md #60/#60a/#61) — Long(any tier)->OB->Continuation "full sequence" is a
+  real, tested statistical claim now; see decision-policy.md's trigger-layer quality bonus for the
+  scoring rule this replaced. `enter4` graduated to a 5th wired Long tier. Short side
+  (`break_short`/`senter3`) was tested and found too weak to wire (#60a) — still live-timing-only,
+  not a tested claim.
+- **`q5`** (`quotient(X3, K13)` series, `computeBoomHunter`'s `series.q5`) dropping at the moment of
+  a Cipher B WT2 extreme is a load-bearing filter in Strategy G (see box above) — q5 declining
+  1 bar over the anchor bar meaningfully sharpens the WT-anchor construction (#110). Not tested as
+  a standalone Boom Hunter signal on its own, only as this specific cross-indicator filter.
 
 ### 4. VuManChu Cipher A (ribbon) — `pine/vmc-cipher-a-ribbon.pine`
 
@@ -95,15 +150,41 @@ Two live/offline gaps to know about, not to silently paper over:
   wrong, stricter guess.
 - `stack_shape` (clean_bullish_stack / clean_bearish_stack / tangled) is a supplementary read, not
   the indicator's own signal — useful for gauging trend cleanliness, not a substitute for direction.
+- **Signal-bus built 2026-08-09** (`scripts/signal-bus/vmc-cipher-a/`, `cipher-a.db`) — previously
+  only computed ad-hoc, imported inline from Cipher B scripts. `bullCandle` nested cross-timeframe
+  confirmation is real and significant (significance-register.md #71) but **trade-construction-
+  blocked** at real costs (#74) — do not treat as tradeable, same status as most of this session's
+  significance-only findings.
+- Nested-confirmation testing extended to the other 6 Cipher A signals (#77): `red_cross` (the
+  strongest Cipher A nested result found, stronger than bullCandle's own) and `green_dot` are real
+  and significant; `blue_triangle`/`red_diamond` null; `yellow_cross`/`bloodDiamond` too rare to
+  test. Both real candidates cost/capacity tested (#78) — **also trade-construction-blocked** at
+  every R, though `red_cross` comes closest (gross expectancy turns slightly positive at 2R/3R
+  before fees, the first Cipher A signal to do so). A wider-stop sweep on `red_cross` (0.6x-2.0x
+  ATR) doesn't unblock it either — improves modestly to ~1.0-1.5x then reverses (#79).
+- Cross-indicator confluence with Adaptive SuperTrend's current directional state (not the
+  within-indicator nesting above) tested directly (#80) — weaker than nesting on `red_cross`/
+  `green_dot`, and `bull_candle`'s one real result (pooled, 3h, 15m) stays blocked; the cells that
+  superficially clear costs (1d/1w) were never statistically significant and are small-sample noise,
+  not a real edge. No Cipher A signal is tradeable as constructed under any angle tried so far.
 
 ### 5. VuManChu B Divergences (Cipher B) — `pine/vmc-cipher-b-divergences.pine`
 
 - Full battery available live: WT1/WT2 + VWAP spread, RSI, MFI, Stoch K/D, Schaff Trend Cycle, 4
   divergence families (WT regular + WT 2nd-range, RSI, Stoch), buy/sell circles, gold warning
   circle, Sommi higher-TF flags/diamonds.
-- Treat as **supporting context, never a sole trigger** — no sub-signal here has an independent
-  significance test behind it. Useful for confirming/questioning what SMC/Boom Hunter/Divergence
-  are already saying, not for originating a call on its own.
+- **Correction, 2026-08-11/13: this is no longer true for WT2.** WT2 hitting an extreme
+  (overbought/oversold fractal pivot, whether or not a full 2-point divergence ever confirms —
+  `computeWtExtremeFractals`, added 2026-08-11 to `vmc-cipher-b/calc.js`) is the anchor for
+  **Strategy G**, the strongest, most rigorously validated cross-indicator construction in this
+  entire project — see the box above and `significance-register.md` #106-125. 73-84% of these
+  extreme anchors go on to confirm a full divergence within ~20-25 bars, and the anchor ALONE
+  (before waiting for confirmation) is what the tradeable construction is built on — waiting for
+  the full divergence to print is systematically late.
+- Everything else in this card (RSI/MFI/Stoch divergence families, buy/sell circles, Sommi
+  flags/diamonds, gold warning circle) remains **supporting context, never a sole trigger** — no
+  independent significance test behind any of those specifically. Don't extend WT2's validated
+  status to the rest of the indicator by association.
 
 ### 6. K-Means Adaptive SuperTrend [AlgoAlpha] — `pine/ml-adaptive-supertrend-algoalpha.pine`
 
@@ -115,3 +196,10 @@ Two live/offline gaps to know about, not to silently paper over:
   (see `significance-register.md`). Use as a confirmation/veto candidate in scoring, never as a
   standalone system.
 - Always `[via BTCUSD proxy]` on this instrument.
+- **Signal-bus built 2026-08-09** (`scripts/signal-bus/adaptive-supertrend/`, `adaptive-supertrend.db`)
+  — first time this indicator entered the calc/store/build-historical pattern (previously
+  `scripts/lib/` only). Nested cross-timeframe flip confirmation is a REAL, strong finding
+  (significance-register.md #72 — the strongest significance result of this project's whole nested-
+  confirmation line of work, p=0.0000 pooled) but is also **trade-construction-blocked** at real
+  costs (#73) — the flip-alone verdict above still stands practically, even though nesting rescues
+  it statistically.

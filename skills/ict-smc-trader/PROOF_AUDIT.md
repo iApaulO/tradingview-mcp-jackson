@@ -85,10 +85,10 @@ pack's job)
   (`decision-policy.md`'s closing section, the new standing-risk section, `SKILL.md`'s persona).
   A real test would require a track record of graded setups against outcomes, which doesn't exist
   as data yet — building that is future work, not something to fake now.
-- **Boom Hunter has zero signal-bus coverage** (no reimplementation, no touches, no significance
-  test — PRIOR_ART.md §2). Correctly reflected as `missing`/live-only throughout rather than
-  quietly upgraded to match the other four indicators' depth. This is a real gap in the underlying
-  project, not something this skill pack should paper over.
+- **Boom Hunter now has signal-bus coverage** (`scripts/signal-bus/boom-hunter/`, built 2026-08-09
+  — see significance-register.md #60/#60a/#61). Stale as of that date: the sections below and in
+  PRIOR_ART.md/house-stack.md describing it as `missing`/live-only predate this build; treat those
+  as historical record of the gap that #60/#61 closed, not current status.
 - **Confluence tolerance constants (0.2% price band, 200-bar-equivalent decay for point sources)**
   are inherited from the signal-bus work, where they're already flagged as "a starting assumption,
   not validated." This skill correctly carries that same uncertainty forward rather than

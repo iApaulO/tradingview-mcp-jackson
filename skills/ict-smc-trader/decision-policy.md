@@ -68,11 +68,54 @@ reflecting that the backtest lab's own flip signal did not clear significance al
 be trusted as the deciding vote either way, but a very recent opposing flip is still worth
 downgrading confidence for.
 
-Separately, a **quality bonus** (0 to +1 per timeframe, additive on top of the base score) from
-Boom Hunter tiered long signals: `Long Lime` = full +1 (highest-quality tier, "QUALITY ENTRIES"
-per source comment), `Long blue`/`Long yellow` = +0.5, `Long gray` = +0.25 (weakest, broadest
-tier). **Never use `break_ambiguous` as a short trigger** (house-stack.md: unverified, source-order
-analysis suggests it more likely means the opposite).
+Separately, a **quality bonus** (0 to +1 per timeframe, additive on top of the base score) comes
+from Boom Hunter's full-sequence + nested-cascade pattern (significance-register.md #60/#61,
+2026-08-09) — **not** raw tier identity. The old `Long Lime`=+1/`blue`,`yellow`=+0.5/`gray`=+0.25
+discretionary split is retired: tested directly, lime/blue/yellow are statistically
+indistinguishable from each other (all p>0.15) and only gray trails meaningfully (#60). This
+applies #59's validated "nested multi-timeframe confirmation beats a single-timeframe read"
+pattern (originally found on Cipher B divergence with a foreign {15m, 6H, 1d} reference set) to
+this house's own ladder — **4H, not 6H**, since 6H has never been part of this project's 8-rung
+ladder (1w/1d/4h/3h/2h/1h/15m/5m):
+
+- **Gate (+0.5 flat):** any Long tier (lime/blue/yellow/gray/`enter4` — graduated from dead code
+  2026-08-09, #60a) fired at the order block's own price level before it formed, AND a
+  Continuation confirmed after (`order_blocks.boom_full_sequence=1`, written by
+  `scripts/signal-bus/smc/build-boom-confluence.js`).
+- **Dose-response bonus (0 to +0.5, additive):** how many SLOWER timeframes had their own Long
+  signal fire first, in sequence, near the same price (`order_blocks.boom_nested_depth`) — but
+  score this bonus **only** when `recurrence_count >= 2` (`order_blocks.boom_nested_boost=1`).
+  Nesting alone on an isolated (`recurrence_count=1`) order block tested null (#61: gap=-0.4pts,
+  p=0.60-0.61) and must not be scored as if it were real — the effect only exists inside the
+  high-recurrence stratum (#61: gap=+2.5 to +2.8pts, p=0.018-0.021). **Cost/capacity-validated
+  2026-08-09 (#69, refined #75 once the real trading venue's fees were confirmed)** — unlike the
+  flat gate above (which is trade-construction-blocked, never clears real costs at any R),
+  `boom_nested_boost=1` specifically clears real costs at ALL FOUR R multiples on Bitunix's
+  confirmed VIP1 fee tier (0.05% taker, the actual venue this project charts —
+  BITUNIX:BTCUSDT.P — not the Coinbase tier most of this project's earlier cost tests used),
+  improving monotonically with R (+0.026%/+0.067%/+0.089%/+0.104% per trade costed at 1R/1.5R/2R/3R)
+  — the strongest-margin finding in this project to survive both significance and cost/capacity
+  testing (alongside #27b/#49/#68). Weight this bonus with real confidence, not just as descriptive
+  color — but same standing caveat as #27b/#49: single-asset BTC, backtest-only, idealized fills,
+  not yet a deliberate live-ready decision.
+
+**Never use `break_ambiguous` as a short trigger** (house-stack.md: unverified, source-order
+analysis suggests it more likely means the opposite) — the short side (`break_short`/`senter3`)
+was tested this session too (#60a) and only cleared significance on 1 of 4 comparisons, too weak
+to wire in.
+
+**EOT3 (q5, Quotient5 — Boom Hunter's own "Yellow Line," genuinely distinct from the `Long yellow`
+flag despite the shared name) — small informational input, not a gate or a major score driver
+(#66/#67, 2026-08-09):** when q5 crosses down through 50 and later recovers back above it without
+ANY Long-tier flag (lime/blue/yellow/gray/enter4) firing anywhere during that whole down episode,
+treat the episode as mildly *constructive*, not a warning — real, largely timeframe-invariant
+(confirmed independently on 5m and 15m, both bias regimes), the opposite of the intuitive read that
+an "unconfirmed" bottom should be treated with more suspicion. Do **not** read this as trend-context
+-dependent — explicitly tested and rejected: the effect is not concentrated in counter-trend
+(bearish-bias) episodes, holding similarly in both bearish- and bullish-bias contexts (#67). Effect
+size is modest (mean-return gaps of 0.1–0.6pt across the tested horizons) and not yet cost/capacity
+tested — informational color only, do not weight this as heavily as the gate/dose-response bonus
+above.
 
 Independent of any TF missing data entirely (e.g. a source not readable this sweep): score that
 timeframe's contribution as **0 (neutral) and flag it explicitly** in the output — never silently
