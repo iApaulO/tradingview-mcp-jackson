@@ -1,0 +1,105 @@
+{
+  "generated_at": "2026-08-15T20:36:31.892Z",
+  "target": "#72 supertrend-flip-nested-significance",
+  "r_multiple": 1.5,
+  "iterations": 5000,
+  "seed": 42,
+  "block_sizes": [
+    10,
+    50,
+    200
+  ],
+  "groups": {
+    "POOLED": {
+      "n": 35106,
+      "n_nested": 8098,
+      "n_solo": 27008,
+      "real_gap_pts": 5.92087859737177,
+      "p": {
+        "iid": 0,
+        "circular": 0,
+        "block10": 0,
+        "block50": 0,
+        "block200": 0
+      }
+    },
+    "4h": {
+      "n": 442,
+      "n_nested": 12,
+      "n_solo": 430,
+      "real_gap_pts": 21.12403100775194,
+      "p": {
+        "iid": 0.1178,
+        "circular": 0.1114,
+        "block10": 0.12,
+        "block50": 0.1782,
+        "block200": 0.3274
+      }
+    },
+    "3h": {
+      "n": 582,
+      "n_nested": 144,
+      "n_solo": 438,
+      "real_gap_pts": 9.960045662100459,
+      "p": {
+        "iid": 0.0228,
+        "circular": 0.019,
+        "block10": 0.0242,
+        "block50": 0.01,
+        "block200": 0.162
+      }
+    },
+    "2h": {
+      "n": 832,
+      "n_nested": 220,
+      "n_solo": 612,
+      "real_gap_pts": 6.23885918003565,
+      "p": {
+        "iid": 0.0632,
+        "circular": 0.0596,
+        "block10": 0.0654,
+        "block50": 0.0594,
+        "block200": 0.0904
+      }
+    },
+    "1h": {
+      "n": 1666,
+      "n_nested": 298,
+      "n_solo": 1368,
+      "real_gap_pts": 12.493622198673416,
+      "p": {
+        "iid": 0,
+        "circular": 0,
+        "block10": 0,
+        "block50": 0,
+        "block200": 0
+      }
+    },
+    "15m": {
+      "n": 7024,
+      "n_nested": 1246,
+      "n_solo": 5778,
+      "real_gap_pts": 5.303450793317433,
+      "p": {
+        "iid": 0,
+        "circular": 0.0002,
+        "block10": 0,
+        "block50": 0.0002,
+        "block200": 0.0004
+      }
+    },
+    "5m": {
+      "n": 24469,
+      "n_nested": 6178,
+      "n_solo": 18291,
+      "real_gap_pts": 5.790129109273112,
+      "p": {
+        "iid": 0,
+        "circular": 0,
+        "block10": 0,
+        "block50": 0,
+        "block200": 0
+      }
+    }
+  }
+}
