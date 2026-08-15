@@ -127,7 +127,12 @@ async function main() {
 
   console.log("\n=== Capacity: trade frequency per bucket ===");
   const allTimes = trades.map((t) => t.entryTime);
-  const spanYears = allTimes.length ? (Math.max(...allTimes) - Math.min(...allTimes)) / (365.25 * 86400) : 0;
+  let spanYears = 0;
+  if (allTimes.length) {
+    let minT = Infinity, maxT = -Infinity;
+    for (const t of allTimes) { if (t < minT) minT = t; if (t > maxT) maxT = t; } // avoid Math.max/min(...) call-stack limit on large trade arrays
+    spanYears = (maxT - minT) / (365.25 * 86400);
+  }
   for (const [name, bucketTrades] of Object.entries(buckets)) {
     console.log(`  ${name.padEnd(12)} ${bucketTrades.length} trades over ${spanYears.toFixed(1)}yr = ${(bucketTrades.length / spanYears).toFixed(1)} trades/year`);
   }

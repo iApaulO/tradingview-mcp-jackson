@@ -1,0 +1,59 @@
+{
+  "results": {
+    "1R": {
+      "rMultiple": 1,
+      "obCount": 81932,
+      "tradeCount": 183808,
+      "overall": {
+        "realAttached": 0.4468941307418982,
+        "realUnattached": 0.43878117034073133,
+        "realGap": 0.00811296040116688,
+        "p": 0.0304,
+        "n": 20000
+      },
+      "highRecurrenceInteraction": {
+        "realAttached": 0.5381848367459878,
+        "realUnattached": 0.5439056650301523,
+        "realGap": -0.005720828284164425,
+        "p": 0.86475,
+        "n": 20000
+      },
+      "lowRecurrenceInteraction": {
+        "realAttached": 0.29866337189711334,
+        "realUnattached": 0.3071243068716221,
+        "realGap": -0.008460934974508783,
+        "p": 0.93755,
+        "n": 20000
+      }
+    },
+    "1.5R": {
+      "rMultiple": 1.5,
+      "obCount": 81886,
+      "tradeCount": 183466,
+      "overall": {
+        "realAttached": 0.3593421222141109,
+        "realUnattached": 0.35407887425942225,
+        "realGap": 0.005263247954688632,
+        "p": 0.1194,
+        "n": 20000
+      },
+      "highRecurrenceInteraction": {
+        "realAttached": 0.45457702458674815,
+        "realUnattached": 0.46316144253454666,
+        "realGap": -0.008584417947798517,
+        "p": 0.9346,
+        "n": 20000
+      },
+      "lowRecurrenceInteraction": {
+        "realAttached": 0.20508493643829454,
+        "realUnattached": 0.21765094352878359,
+        "realGap": -0.01256600709048905,
+        "p": 0.99215,
+        "n": 20000
+      }
+    }
+  },
+  "windowBars": 60,
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-08T18:46:22.655Z"
+}

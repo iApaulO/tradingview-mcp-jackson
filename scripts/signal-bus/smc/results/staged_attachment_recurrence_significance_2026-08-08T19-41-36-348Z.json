@@ -1,0 +1,75 @@
+{
+  "results": {
+    "1R": {
+      "rMultiple": 1,
+      "obCount": 81932,
+      "tradeCount": 183808,
+      "counts": {
+        "staged": 30900,
+        "unstaged": 6412,
+        "isolated": 44620
+      },
+      "stagedStats": {
+        "n": 85203,
+        "winRate": 0.5403213501872
+      },
+      "unstagedStats": {
+        "n": 18467,
+        "winRate": 0.5559646937780907
+      },
+      "isolatedStats": {
+        "n": 80138,
+        "winRate": 0.306184332027253
+      },
+      "vsUnstaged": {
+        "realA": 0.5403213501872,
+        "realB": 0.5559646937780907,
+        "realGap": -0.0156433435908907,
+        "p": 0.9993
+      },
+      "vsIsolated": {
+        "realA": 0.5403213501872,
+        "realB": 0.306184332027253,
+        "realGap": 0.23413701815994697,
+        "p": 0
+      }
+    },
+    "1.5R": {
+      "rMultiple": 1.5,
+      "obCount": 81886,
+      "tradeCount": 183466,
+      "counts": {
+        "staged": 30877,
+        "unstaged": 6410,
+        "isolated": 44599
+      },
+      "stagedStats": {
+        "n": 84988,
+        "winRate": 0.45954723019720434
+      },
+      "unstagedStats": {
+        "n": 18420,
+        "winRate": 0.4731270358306189
+      },
+      "isolatedStats": {
+        "n": 80058,
+        "winRate": 0.21625571460690998
+      },
+      "vsUnstaged": {
+        "realA": 0.45954723019720434,
+        "realB": 0.4731270358306189,
+        "realGap": -0.013579805633414543,
+        "p": 0.99565
+      },
+      "vsIsolated": {
+        "realA": 0.45954723019720434,
+        "realB": 0.21625571460690998,
+        "realGap": 0.24329151559029435,
+        "p": 0
+      }
+    }
+  },
+  "attachWindowBars": 60,
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-08T19:41:36.348Z"
+}

@@ -1,0 +1,60 @@
+{
+  "results": {
+    "4h": {
+      "trade_count": 76,
+      "trades_per_year": 9.271543086172345,
+      "win_rate": 0.4473684210526316,
+      "profit_factor": 1.6913639102822382,
+      "avg_hold_bars": 230.23684210526315,
+      "gross_expectancy_pct_per_trade": 0.04448766791991774,
+      "costed_expectancy_pct_per_trade": 0.031965299498865125
+    },
+    "3h": {
+      "trade_count": 95,
+      "trades_per_year": 10.982354802975156,
+      "win_rate": 0.3894736842105263,
+      "profit_factor": 1.7443324356478214,
+      "avg_hold_bars": 261.42105263157896,
+      "gross_expectancy_pct_per_trade": 0.04616817096640168,
+      "costed_expectancy_pct_per_trade": 0.03535461833482268
+    },
+    "2h": {
+      "trade_count": 140,
+      "trades_per_year": 15.983017295269846,
+      "win_rate": 0.34285714285714286,
+      "profit_factor": 1.8206708940006893,
+      "avg_hold_bars": 263.57142857142856,
+      "gross_expectancy_pct_per_trade": 0.03855624766719459,
+      "costed_expectancy_pct_per_trade": 0.030957497667194633
+    },
+    "1h": {
+      "trade_count": 266,
+      "trades_per_year": 29.90811143604741,
+      "win_rate": 0.3609022556390977,
+      "profit_factor": 1.3565446060518593,
+      "avg_hold_bars": 260.36842105263156,
+      "gross_expectancy_pct_per_trade": 0.011990510747559318,
+      "costed_expectancy_pct_per_trade": 0.007729843454326214
+    },
+    "15m": {
+      "trade_count": 1242,
+      "trades_per_year": 138.59509071640662,
+      "win_rate": 0.3083735909822866,
+      "profit_factor": 1.0340642923310202,
+      "avg_hold_bars": 225.01288244766505,
+      "gross_expectancy_pct_per_trade": 0.000543969834975705,
+      "costed_expectancy_pct_per_trade": -0.0011606748912722838
+    },
+    "5m": {
+      "trade_count": 3888,
+      "trades_per_year": 433.2015989797713,
+      "win_rate": 0.3004115226337449,
+      "profit_factor": 0.9345001572351249,
+      "avg_hold_bars": 215.6520061728395,
+      "gross_expectancy_pct_per_trade": -0.0006093376556666956,
+      "costed_expectancy_pct_per_trade": -0.0018344434834273243
+    }
+  },
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-11T00:59:16.725Z"
+}

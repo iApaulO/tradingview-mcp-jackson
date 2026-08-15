@@ -1,0 +1,146 @@
+{
+  "results": {
+    "1R": {
+      "rMultiple": 1,
+      "obCount": 1193,
+      "tradeCount": 2589,
+      "maxRecurrence": 6,
+      "cellsSwing": {
+        "lowRec_noAttach": {
+          "n": 1459,
+          "winRate": 0.32419465387251545
+        },
+        "lowRec_attach": {
+          "n": 76,
+          "winRate": 0.42105263157894735
+        },
+        "highRec_noAttach": {
+          "n": 1020,
+          "winRate": 0.5833333333333334
+        },
+        "highRec_attach": {
+          "n": 34,
+          "winRate": 0.6470588235294118
+        }
+      },
+      "cellsInternal": {
+        "lowRec_noAttach": {
+          "n": 1146,
+          "winRate": 0.3193717277486911
+        },
+        "lowRec_attach": {
+          "n": 389,
+          "winRate": 0.35732647814910024
+        },
+        "highRec_noAttach": {
+          "n": 825,
+          "winRate": 0.6024242424242424
+        },
+        "highRec_attach": {
+          "n": 229,
+          "winRate": 0.5240174672489083
+        }
+      },
+      "highRecurrenceInteractionSwing": {
+        "realAttached": 0.6470588235294118,
+        "realUnattached": 0.5833333333333334,
+        "realGap": 0.06372549019607843,
+        "p": 0.27215,
+        "n": 20000
+      },
+      "lowRecurrenceInteractionSwing": {
+        "realAttached": 0.42105263157894735,
+        "realUnattached": 0.32419465387251545,
+        "realGap": 0.0968579777064319,
+        "p": 0.07065,
+        "n": 20000
+      },
+      "highRecurrenceInteractionInternal": {
+        "realAttached": 0.5240174672489083,
+        "realUnattached": 0.6024242424242424,
+        "realGap": -0.07840677517533412,
+        "p": 0.95415,
+        "n": 20000
+      },
+      "lowRecurrenceInteractionInternal": {
+        "realAttached": 0.35732647814910024,
+        "realUnattached": 0.3193717277486911,
+        "realGap": 0.03795475040040913,
+        "p": 0.12095,
+        "n": 20000
+      }
+    },
+    "1.5R": {
+      "rMultiple": 1.5,
+      "obCount": 1190,
+      "tradeCount": 2583,
+      "maxRecurrence": 6,
+      "cellsSwing": {
+        "lowRec_noAttach": {
+          "n": 1456,
+          "winRate": 0.2445054945054945
+        },
+        "lowRec_attach": {
+          "n": 75,
+          "winRate": 0.30666666666666664
+        },
+        "highRec_noAttach": {
+          "n": 1018,
+          "winRate": 0.5088408644400786
+        },
+        "highRec_attach": {
+          "n": 34,
+          "winRate": 0.6470588235294118
+        }
+      },
+      "cellsInternal": {
+        "lowRec_noAttach": {
+          "n": 1142,
+          "winRate": 0.23467600700525393
+        },
+        "lowRec_attach": {
+          "n": 389,
+          "winRate": 0.2853470437017995
+        },
+        "highRec_noAttach": {
+          "n": 823,
+          "winRate": 0.5261239368165249
+        },
+        "highRec_attach": {
+          "n": 229,
+          "winRate": 0.4672489082969432
+        }
+      },
+      "highRecurrenceInteractionSwing": {
+        "realAttached": 0.6470588235294118,
+        "realUnattached": 0.5088408644400786,
+        "realGap": 0.1382179590893332,
+        "p": 0.1055,
+        "n": 20000
+      },
+      "lowRecurrenceInteractionSwing": {
+        "realAttached": 0.30666666666666664,
+        "realUnattached": 0.2445054945054945,
+        "realGap": 0.062161172161172146,
+        "p": 0.14475,
+        "n": 20000
+      },
+      "highRecurrenceInteractionInternal": {
+        "realAttached": 0.4672489082969432,
+        "realUnattached": 0.5261239368165249,
+        "realGap": -0.05887502851958171,
+        "p": 0.88415,
+        "n": 20000
+      },
+      "lowRecurrenceInteractionInternal": {
+        "realAttached": 0.2853470437017995,
+        "realUnattached": 0.23467600700525393,
+        "realGap": 0.050671036696545546,
+        "p": 0.0399,
+        "n": 20000
+      }
+    }
+  },
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-08T18:09:07.548Z"
+}

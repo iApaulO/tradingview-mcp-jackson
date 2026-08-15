@@ -1,0 +1,118 @@
+{
+  "results": {
+    "1R": {
+      "rMultiple": 1,
+      "obCount": 1193,
+      "tradeCount": 2589,
+      "maxRecurrence": 6,
+      "cellsStrict": {
+        "lowRec_noAttach": {
+          "n": 1278,
+          "winRate": 0.33411580594679186
+        },
+        "lowRec_attach": {
+          "n": 257,
+          "winRate": 0.3035019455252918
+        },
+        "highRec_noAttach": {
+          "n": 929,
+          "winRate": 0.5844994617868676
+        },
+        "highRec_attach": {
+          "n": 125,
+          "winRate": 0.592
+        }
+      },
+      "cellsLoose": {
+        "lowRec_noAttach": {
+          "n": 1360,
+          "winRate": 0.33308823529411763
+        },
+        "lowRec_attach": {
+          "n": 175,
+          "winRate": 0.29714285714285715
+        },
+        "highRec_noAttach": {
+          "n": 933,
+          "winRate": 0.5980707395498392
+        },
+        "highRec_attach": {
+          "n": 121,
+          "winRate": 0.48760330578512395
+        }
+      },
+      "highRecurrenceInteraction": {
+        "realAttached": 0.592,
+        "realUnattached": 0.5844994617868676,
+        "realGap": 0.007500538213132346,
+        "p": 0.44205,
+        "n": 20000
+      },
+      "lowRecurrenceInteraction": {
+        "realAttached": 0.3035019455252918,
+        "realUnattached": 0.33411580594679186,
+        "realGap": -0.03061386042150005,
+        "p": 0.7925,
+        "n": 20000
+      }
+    },
+    "1.5R": {
+      "rMultiple": 1.5,
+      "obCount": 1190,
+      "tradeCount": 2583,
+      "maxRecurrence": 6,
+      "cellsStrict": {
+        "lowRec_noAttach": {
+          "n": 1275,
+          "winRate": 0.25098039215686274
+        },
+        "lowRec_attach": {
+          "n": 256,
+          "winRate": 0.23046875
+        },
+        "highRec_noAttach": {
+          "n": 927,
+          "winRate": 0.505933117583603
+        },
+        "highRec_attach": {
+          "n": 125,
+          "winRate": 0.568
+        }
+      },
+      "cellsLoose": {
+        "lowRec_noAttach": {
+          "n": 1357,
+          "winRate": 0.24981577008106118
+        },
+        "lowRec_attach": {
+          "n": 174,
+          "winRate": 0.22988505747126436
+        },
+        "highRec_noAttach": {
+          "n": 931,
+          "winRate": 0.5166487647690655
+        },
+        "highRec_attach": {
+          "n": 121,
+          "winRate": 0.48760330578512395
+        }
+      },
+      "highRecurrenceInteraction": {
+        "realAttached": 0.568,
+        "realUnattached": 0.505933117583603,
+        "realGap": 0.06206688241639691,
+        "p": 0.1471,
+        "n": 20000
+      },
+      "lowRecurrenceInteraction": {
+        "realAttached": 0.23046875,
+        "realUnattached": 0.25098039215686274,
+        "realGap": -0.02051164215686274,
+        "p": 0.72905,
+        "n": 20000
+      }
+    }
+  },
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-08T17:54:38.966Z"
+}

@@ -1,0 +1,94 @@
+{
+  "results": {
+    "1R": {
+      "rMultiple": 1,
+      "obCount": 81932,
+      "tradeCount": 183808,
+      "byClass": {
+        "reclaim": 3151,
+        "continuation": 660,
+        "neither": 78121
+      },
+      "reclaimStats": {
+        "n": 7419,
+        "winRate": 0.4501954441299367
+      },
+      "continuationStats": {
+        "n": 1506,
+        "winRate": 0.5185922974767596
+      },
+      "neitherStats": {
+        "n": 174883,
+        "winRate": 0.4386932978048181
+      },
+      "vsNeither": {
+        "realA": 0.4501954441299367,
+        "realB": 0.4386932978048181,
+        "realGap": 0.01150214632511859,
+        "p": 0.05855,
+        "n": 20000
+      },
+      "vsContinuation": {
+        "realA": 0.4501954441299367,
+        "realB": 0.5185922974767596,
+        "realGap": -0.06839685334682294,
+        "p": 0.99995,
+        "n": 20000
+      },
+      "highRecReclaim": {
+        "realA": 0.5176336746302617,
+        "realB": 0.28438228438228436,
+        "realGap": 0.2332513902479773,
+        "p": 0,
+        "n": 20000
+      }
+    },
+    "1.5R": {
+      "rMultiple": 1.5,
+      "obCount": 81886,
+      "tradeCount": 183466,
+      "byClass": {
+        "reclaim": 3147,
+        "continuation": 659,
+        "neither": 78080
+      },
+      "reclaimStats": {
+        "n": 7384,
+        "winRate": 0.3678223185265439
+      },
+      "continuationStats": {
+        "n": 1495,
+        "winRate": 0.45016722408026755
+      },
+      "neitherStats": {
+        "n": 174587,
+        "winRate": 0.3533768264532869
+      },
+      "vsNeither": {
+        "realA": 0.3678223185265439,
+        "realB": 0.3533768264532869,
+        "realGap": 0.014445492073257016,
+        "p": 0.0287,
+        "n": 20000
+      },
+      "vsContinuation": {
+        "realA": 0.3678223185265439,
+        "realB": 0.45016722408026755,
+        "realGap": -0.08234490555372365,
+        "p": 1,
+        "n": 20000
+      },
+      "highRecReclaim": {
+        "realA": 0.4376430205949657,
+        "realB": 0.19672897196261682,
+        "realGap": 0.24091404863234886,
+        "p": 0,
+        "n": 20000
+      }
+    }
+  },
+  "reclaimWindowBars": 60,
+  "attachBarGap": 5,
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-08T18:58:08.999Z"
+}

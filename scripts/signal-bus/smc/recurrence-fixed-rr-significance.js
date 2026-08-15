@@ -63,7 +63,7 @@ function pointBiserial(xs, ys) {
 }
 function topVsBottomGap(xs, ys) {
   let heldTop = 0, nTop = 0, heldBottom = 0, nBottom = 0;
-  const maxX = Math.max(...xs);
+  let maxX = -Infinity; for (const x of xs) if (x > maxX) maxX = x; // avoid Math.max(...xs) call-stack limit on large trade arrays
   for (let i = 0; i < xs.length; i++) {
     if (xs[i] === 1) { nBottom++; heldBottom += ys[i]; }
     else if (xs[i] === maxX) { nTop++; heldTop += ys[i]; }
