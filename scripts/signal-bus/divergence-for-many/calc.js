@@ -362,13 +362,40 @@ export function computeDivergenceForMany(candles, options = {}) {
       plCursor++;
     }
 
-    // Expire old zones first (matches source's call order: expire before this bar's promotion)
+    // Touch-refresh (source: refresh_touched_glows, `pine/divergence-for-many-touch-refresh-
+    // intensity.pine` lines 331-341) -- runs BEFORE expiry, same call order as the source. If
+    // price is touching a level RIGHT NOW (low <= level <= high, identical test to touches.js),
+    // its EXPIRY clock resets to the current bar, extending its life another
+    // BADGEGLOW_EXPIRE_BARS from THIS touch instead of the original promotion bar. Missing here
+    // until 2026-08-13 -- confirmed via iapaulo's live example (a bullish 1h zone at
+    // ~63,732/63,747, confirmed 2026-07-25, still respected live on 2026-08-13 -- 19 days later,
+    // 4.5x past the fixed 200-bar/~8.3-day clock this port used to enforce with no refresh at
+    // all). In the Pine source, the "bars" array IS the expiry clock and has no separate original-
+    // confirmation memory -- but this port's confirmedBarIdx/confirmedTime are relied on elsewhere
+    // (touches.js's detectTouches scan-start, confluence.js's activeWindow start) as a FIXED origin
+    // for the zone's whole active lifetime, not a drifting clock. Overwriting confirmedBarIdx
+    // in-place on refresh (first attempt, reverted) broke exactly that: it made detectTouches only
+    // see touches after the LAST refresh, undercounting badly (15m touches dropped 7,389 -> 1,127
+    // in one rebuild). Fixed by keeping confirmedBarIdx/confirmedTime as the fixed origin (as
+    // every other caller expects) and tracking the drifting refresh clock in a separate field,
+    // expiryClockBarIdx/expiryClockTime, used ONLY by the expire check below.
+    for (const list of [activeBull, activeBear]) {
+      for (const idx of list) {
+        const z = zones[idx];
+        if (lows[i] <= z.price && highs[i] >= z.price) {
+          z.expiryClockBarIdx = i;
+          z.expiryClockTime = candles[i].t;
+        }
+      }
+    }
+
+    // Expire old zones (matches source's call order: expire after refresh, before this bar's promotion)
     for (const list of [activeBull, activeBear]) {
       for (let k = list.length - 1; k >= 0; k--) {
         const z = zones[list[k]];
-        if (i - z.confirmedBarIdx > BADGEGLOW_EXPIRE_BARS) {
+        if (i - z.expiryClockBarIdx > BADGEGLOW_EXPIRE_BARS) {
           z.status = "expired";
-          z.expiresBarIdx = z.confirmedBarIdx + BADGEGLOW_EXPIRE_BARS;
+          z.expiresBarIdx = z.expiryClockBarIdx + BADGEGLOW_EXPIRE_BARS;
           z.expiresTime = candles[z.expiresBarIdx]?.t ?? null;
           list.splice(k, 1);
         }
@@ -401,6 +428,8 @@ export function computeDivergenceForMany(candles, options = {}) {
           createdTime: candles[i - startpoint].t,
           confirmedBarIdx: i,
           confirmedTime: candles[i].t,
+          expiryClockBarIdx: i,
+          expiryClockTime: candles[i].t,
           expiresBarIdx: null,
           expiresTime: null,
           status: "active",
@@ -427,6 +456,8 @@ export function computeDivergenceForMany(candles, options = {}) {
           createdTime: candles[i - startpoint].t,
           confirmedBarIdx: i,
           confirmedTime: candles[i].t,
+          expiryClockBarIdx: i,
+          expiryClockTime: candles[i].t,
           expiresBarIdx: null,
           expiresTime: null,
           status: "active",

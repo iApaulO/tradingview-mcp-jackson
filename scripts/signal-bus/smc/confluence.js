@@ -71,7 +71,14 @@ export function computeSMCConfluence(orderBlocks, pool) {
     return lo;
   }
 
-  const maxTol = Math.max(...pool.map((el) => (el.type === "orderblock" ? 0 : el.price * PRICE_TOLERANCE_PCT)), 1);
+  // FIXED 2026-08-08: Math.max(...pool.map(...)) blew the call stack once the pool grew past the
+  // old 200-order-block-per-timeframe cap (spreading 180k+ elements as call arguments hits the
+  // engine's argument-count limit) -- plain loop has no such limit.
+  let maxTol = 1;
+  for (const el of pool) {
+    const tol = el.type === "orderblock" ? 0 : el.price * PRICE_TOLERANCE_PCT;
+    if (tol > maxTol) maxTol = tol;
+  }
 
   for (const ob of orderBlocks) {
     if (ob.side !== "bullish" && ob.side !== "bearish") continue;

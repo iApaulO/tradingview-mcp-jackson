@@ -36,6 +36,23 @@ export const FEE_TIERS = {
   // tier (<$10k/mo), surfaced via a third-party aggregator before the real derivatives tier was
   // confirmed. Derivatives trading never actually paid this -- do not use as a real scenario.
   coinbase_spot_tier_wrong_product_for_contrast_only: { takerFeePct: 0.006, makerFeePct: 0.004 },
+  // ADDED 2026-08-09: iapaulo pointed out Bitunix (the exchange actually charted this entire
+  // session, BITUNIX:BTCUSDT.P -- not Coinbase) is cheaper. Checked via web search before adding
+  // (Bitunix's own help center + fee blog) -- the exact "0%/0%" figure iapaulo first gave turned
+  // out to be Bitunix's P2P fee, a different product; FUTURES fees are real but still meaningfully
+  // cheaper than Coinbase's confirmed tier at every level. VIP0/base kept only as a fallback below.
+  bitunix_futures_base: { takerFeePct: 0.0006, makerFeePct: 0.0002 },
+  // CONFIRMED 2026-08-09: iapaulo's actual Bitunix tier is VIP1. Fetched directly from Bitunix's
+  // own official fee page (bitunix.com/service/handling-fee), not a third-party aggregator (two
+  // different search-result snippets disagreed slightly on other tiers' numbers, so the primary
+  // source was pulled directly rather than trusted from a snippet) -- VIP1 requires >=1,000,000
+  // USDT/30d volume OR >=300 USDT balance. This is the real number -- use as the default for
+  // Bitunix scenarios going forward, same status confirmed_derivatives has for Coinbase.
+  bitunix_futures_vip1: { takerFeePct: 0.0005, makerFeePct: 0.0002 },
+  // Bitunix's own top VIP7 tier (>=$200M/30d futures volume OR >=$2.4M balance) -- NOT iapaulo's
+  // actual tier, kept only as the cheap-end sensitivity bound, same role coinbase_spot_tier plays
+  // as the expensive-end bound.
+  bitunix_futures_vip7_unconfirmed: { takerFeePct: 0.0003, makerFeePct: 0.00006 },
 };
 
 // Widely-cited cross-exchange BTC perp funding baseline (~0.01% per 8h == 0.00125%/hr), used ONLY

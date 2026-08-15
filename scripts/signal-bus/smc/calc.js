@@ -38,7 +38,16 @@ const SWING_LEG_SIZE = 50; // swingsLengthInput default
 const EQUAL_LEG_SIZE = 3; // equalHighsLowsLengthInput default
 const EQUAL_THRESHOLD = 0.1; // equalHighsLowsThresholdInput default, x ATR(200)
 const ATR_LEN = 200;
-const ORDER_BLOCK_MAX_TRACKED = 100;
+// Raised 2026-08-08 from 100 (the live LuxAlgo indicator's own on-chart tracking limit) for the
+// HISTORICAL build specifically -- at 100/scope, the rolling eviction meant "historical" order
+// blocks for anything faster than daily were actually just a recent trailing window (5m: 6.5 weeks
+// of the 9 years of candles loaded; 15m: ~5 months), which was silently starving every attachment/
+// recurrence significance test of real sample size. A backtest has legitimate access to the full
+// historical record -- unlike a live chart's bounded memory, there's no reason a significance test
+// needs to forget order blocks the way the live indicator's on-screen state does. Set high enough
+// that it won't realistically trigger against this dataset (effectively unbounded), not tuned to a
+// specific expected count.
+const ORDER_BLOCK_MAX_TRACKED = 1000000;
 
 function atr(candles, length) {
   const tr = candles.map((c, i) => {
@@ -74,6 +83,31 @@ function legSeries(candles, size) {
     legs[i] = leg;
   }
   return legs;
+}
+
+// ── Public: continuous swing-scope high/low pivot LEVELS per bar (not break events) ─────────
+// Additive helper -- reuses the exact same swing-leg pivot tracking subset as computeSMC's main
+// loop (SWING_LEG_SIZE), but returns the CURRENT (not-yet-broken) pivot level at every bar, which
+// computeSMC itself never exposes (only structureEvents, fired when a pivot IS broken). Needed for
+// a "stop at the previous swing high/low" construction -- the relevant pivot for that is the one
+// still standing, not the one that was just crossed to trigger the current signal.
+export function computeSwingPivotSeries(candles) {
+  const n = candles.length;
+  const swingLegs = legSeries(candles, SWING_LEG_SIZE);
+  const swingHighLevel = new Array(n).fill(NaN), swingLowLevel = new Array(n).fill(NaN);
+  let curHigh = NaN, curLow = NaN;
+  for (let i = SWING_LEG_SIZE; i < n; i++) {
+    if (swingLegs[i] !== swingLegs[i - 1]) {
+      const pivotBarIdx = i - SWING_LEG_SIZE;
+      if (pivotBarIdx >= 0) {
+        if (swingLegs[i] === BULLISH_LEG) curLow = candles[pivotBarIdx].l;
+        else curHigh = candles[pivotBarIdx].h;
+      }
+    }
+    swingHighLevel[i] = curHigh;
+    swingLowLevel[i] = curLow;
+  }
+  return { swingHighLevel, swingLowLevel };
 }
 
 // ── Public: compute structure (BOS/CHoCH, both scopes), EQH/EQL, and order blocks ──────────

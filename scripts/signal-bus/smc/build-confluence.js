@@ -22,13 +22,15 @@ function main() {
 
   const isolated = targets.filter((t) => t.confluenceCount === 1).length;
   const confluent = targets.length - isolated;
-  const maxDepth = Math.max(...targets.map((t) => t.confluenceCount));
+  // Plain loops, not Math.max(...targets.map(...)) -- spreading 80k+ elements as call arguments
+  // hits the engine's argument-count limit (see confluence.js's maxTol fix, same root cause).
+  let maxDepth = -Infinity; for (const t of targets) if (t.confluenceCount > maxDepth) maxDepth = t.confluenceCount;
   console.log(`\n${isolated} isolated order blocks, ${confluent} in some confluence (${((confluent / targets.length) * 100).toFixed(1)}%)`);
   console.log(`Max confluence depth: ${maxDepth} distinct timeframes agreeing`);
 
   const noRecurrence = targets.filter((t) => t.recurrenceCount === 1).length;
   const recurrent = targets.length - noRecurrence;
-  const maxRecurrence = Math.max(...targets.map((t) => t.recurrenceCount));
+  let maxRecurrence = -Infinity; for (const t of targets) if (t.recurrenceCount > maxRecurrence) maxRecurrence = t.recurrenceCount;
   console.log(`\n${noRecurrence} order blocks with no same-timeframe recurrence, ${recurrent} with some (${((recurrent / targets.length) * 100).toFixed(1)}%)`);
   console.log(`Max recurrence depth: ${maxRecurrence} same-timeframe order blocks stacked together`);
 }

@@ -68,7 +68,11 @@ CREATE TABLE IF NOT EXISTS order_blocks (
   status TEXT NOT NULL,
   color TEXT NOT NULL,
   confluence_count INTEGER NOT NULL DEFAULT 1,
-  recurrence_count INTEGER NOT NULL DEFAULT 1
+  recurrence_count INTEGER NOT NULL DEFAULT 1,
+  boom_long_tier TEXT,
+  boom_full_sequence INTEGER NOT NULL DEFAULT 0,
+  boom_nested_depth INTEGER NOT NULL DEFAULT 0,
+  boom_nested_boost INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS idx_ob_tf ON order_blocks(timeframe);
 CREATE INDEX IF NOT EXISTS idx_ob_price ON order_blocks(bar_low, bar_high);
@@ -103,10 +107,27 @@ CREATE TABLE IF NOT EXISTS order_block_proximity_events (
 CREATE INDEX IF NOT EXISTS idx_obp_ob ON order_block_proximity_events(order_block_id);
 `;
 
+// order_blocks predates the boom_* columns (added 2026-08-09) -- CREATE TABLE IF NOT EXISTS is a
+// no-op against an existing table, so an already-built smc.db needs these added explicitly. Safe
+// to run every openStore() call: SQLite errors on a column that already exists, which is the only
+// case this swallows -- any other ALTER failure still throws.
+function migrate(db) {
+  const boomColumns = [
+    "ALTER TABLE order_blocks ADD COLUMN boom_long_tier TEXT",
+    "ALTER TABLE order_blocks ADD COLUMN boom_full_sequence INTEGER NOT NULL DEFAULT 0",
+    "ALTER TABLE order_blocks ADD COLUMN boom_nested_depth INTEGER NOT NULL DEFAULT 0",
+    "ALTER TABLE order_blocks ADD COLUMN boom_nested_boost INTEGER NOT NULL DEFAULT 0",
+  ];
+  for (const sql of boomColumns) {
+    try { db.exec(sql); } catch (err) { if (!/duplicate column name/i.test(err.message)) throw err; }
+  }
+}
+
 export function openStore() {
   mkdirSync(DB_DIR, { recursive: true });
   const db = new DatabaseSync(DB_PATH);
   db.exec(SCHEMA);
+  migrate(db);
   return db;
 }
 
@@ -189,6 +210,30 @@ export function updateConfluence(db, orderBlocks) {
   try {
     const stmt = db.prepare("UPDATE order_blocks SET confluence_count = ?, recurrence_count = ? WHERE id = ?");
     for (const ob of orderBlocks) stmt.run(ob.confluenceCount, ob.recurrenceCount, ob.id);
+    db.exec("COMMIT");
+  } catch (err) {
+    db.exec("ROLLBACK");
+    throw err;
+  }
+}
+
+// Writes back Boom Hunter cross-referencing (build-boom-confluence.js): boomLongTier (which
+// validated Long tier, if any, preceded this bullish OB at its price level -- 'lime'|'blue'|
+// 'yellow'|'gray'|'enter4'|null), boomFullSequence (that tier AND a Continuation confirmed after,
+// the exact condition validated in long-ob-continuation-significance.js / the enter4 test in
+// boom-hunter-full-signal-significance.js), boomNestedDepth (sequential slower-TF cascade count,
+// nested-cross-timeframe-significance.js), boomNestedBoost (nestedDepth>=1 AND recurrence_count>=2
+// -- the ONLY combination nested-recurrence-joint-significance.js found significant; nesting alone
+// was null on low-recurrence OBs, p=0.60-0.61, so this flag deliberately does not fire there).
+export function updateBoomConfluence(db, orderBlocks) {
+  db.exec("BEGIN");
+  try {
+    const stmt = db.prepare(
+      "UPDATE order_blocks SET boom_long_tier = ?, boom_full_sequence = ?, boom_nested_depth = ?, boom_nested_boost = ? WHERE id = ?",
+    );
+    for (const ob of orderBlocks) {
+      stmt.run(ob.boomLongTier ?? null, ob.boomFullSequence ? 1 : 0, ob.boomNestedDepth, ob.boomNestedBoost ? 1 : 0, ob.id);
+    }
     db.exec("COMMIT");
   } catch (err) {
     db.exec("ROLLBACK");

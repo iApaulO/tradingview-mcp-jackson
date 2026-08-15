@@ -158,6 +158,34 @@ function findDivergences(src, highs, lows, topLimit, botLimit, useLimits) {
   return { bearSignal, bullSignal, bearDivHidden, bullDivHidden };
 }
 
+// Public: the "wave 1" anchor candidates themselves -- every EXTREME WT2 fractal (top or bottom
+// pivot clearing the same OB/OS threshold `findDivergences` uses for 'regular' divergences), fired
+// the moment that fractal confirms, independent of whether a valid divergence (a favorable-vs-prior
+// comparison, i.e. "wave 2") ever follows. Added 2026-08-11 per iapaulo's own framing: the
+// divergence LINE only prints once wave 2 confirms, but the tradeable idea is anticipating wave 2
+// FROM wave 1 -- this project's existing divergence detector only ever reports the wave-2-confirmed
+// date (`confirmedTime`), which is structurally incapable of answering "did the anchor predict
+// this," since by definition it doesn't exist until after the fact. Reuses the exact fractal-
+// detection math already inside `findDivergences` (same OB/OS thresholds), not a new invented rule.
+export function computeWtExtremeFractals(candles) {
+  const { wt2 } = computeWaveTrend(candles);
+  const n = candles.length;
+  const events = [];
+  for (let i = 4; i < n; i++) {
+    const s0 = wt2[i], s1 = wt2[i - 1], s2 = wt2[i - 2], s3 = wt2[i - 3], s4 = wt2[i - 4];
+    if ([s0, s1, s2, s3, s4].some(Number.isNaN)) continue;
+    const isTop = s4 < s2 && s3 < s2 && s2 > s1 && s2 > s0;
+    const isBot = s4 > s2 && s3 > s2 && s2 < s1 && s2 < s0;
+    if (isTop && s2 >= WT_DIV_OB_LEVEL) {
+      events.push({ side: "bearish", barIdx: i - 2, time: candles[i - 2].t, price: candles[i - 2].h, wt2AtPivot: s2 });
+    }
+    if (isBot && s2 <= WT_DIV_OS_LEVEL) {
+      events.push({ side: "bullish", barIdx: i - 2, time: candles[i - 2].t, price: candles[i - 2].l, wt2AtPivot: s2 });
+    }
+  }
+  return { events };
+}
+
 // Public: compute WT regular + "2nd" regular + hidden divergence zones over a full candle series.
 // candles: [{t,o,h,l,c,v}, ...] chronological. Returns { zones } -- shaped for touches.js/
 // confluence.js reuse. Each zone's `kind` ('regular'|'regular_add'|'hidden') and `price` (the

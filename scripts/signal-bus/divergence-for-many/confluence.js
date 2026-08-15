@@ -26,9 +26,14 @@
 // hold rate," not for "what was the confluence reading at the exact moment of touch N."
 
 const PRICE_TOLERANCE_PCT = 0.002; // 0.2% of price -- a starting assumption, see header note.
-
-function tolerance(zone) {
-  return zone.price * PRICE_TOLERANCE_PCT;
+// Confirmed too tight 2026-08-11: iapaulo flagged a live example (5m/15m/1h D4M lines currently
+// spanning $63,222-$63,956, ~1.16% of price, at BTC~$63,657) that the original 0.2% band (~$127)
+// would mostly NOT count as confluent. tolerance() now accepts an override so callers can test a
+// more realistic band without changing the default (#4/#4a's original hold-rate finding used 0.2%
+// and stays valid at that setting -- this doesn't retroactively change it, just makes it testable
+// at other settings).
+function tolerance(zone, pctOverride) {
+  return zone.price * (pctOverride ?? PRICE_TOLERANCE_PCT);
 }
 
 function timeOverlaps(a, b) {
@@ -45,11 +50,11 @@ function timeOverlaps(a, b) {
 //     the cross-timeframe hierarchy metric (1 = isolated, no other timeframe agrees).
 //   sameTimeframeClusterSize: how many of the confluent zones share THIS zone's own timeframe --
 //     the "2-3 lines bunched on one timeframe" metric.
-export function computeConfluence(allZones) {
+export function computeConfluence(allZones, pctOverride) {
   for (const z of allZones) z.confluentZoneIds = [];
 
   const sorted = [...allZones].sort((a, b) => a.price - b.price);
-  const maxTolBound = Math.max(...allZones.map(tolerance), 0);
+  const maxTolBound = Math.max(...allZones.map((z) => tolerance(z, pctOverride)), 0);
   const n = sorted.length;
 
   for (let i = 0; i < n; i++) {
@@ -58,7 +63,7 @@ export function computeConfluence(allZones) {
       const b = sorted[j];
       if (b.price - a.price > maxTolBound) break; // sorted by price -- no further candidates possible
       if (a.side !== b.side) continue;
-      const tol = Math.max(tolerance(a), tolerance(b));
+      const tol = Math.max(tolerance(a, pctOverride), tolerance(b, pctOverride));
       if (b.price - a.price > tol) continue;
       if (!timeOverlaps(a, b)) continue;
       a.confluentZoneIds.push(b.id);
