@@ -12,6 +12,12 @@ import { computeAllTouches } from "./touches.js";
 import { computeConfluence } from "./confluence.js";
 import { openStore, clearAll, insertRun, insertZonesAndTouches, updateConfluence } from "./store.js";
 
+// Instrument this build writes (2026-08-15 multi-instrument scope change). Defaults to BTC so
+// existing invocations keep their exact prior behaviour; pass --instrument=ETH to build ETH.
+// The store layer refuses to write an unlabelled row, so this value is load-bearing.
+const INSTRUMENT = (process.argv.find((a) => a.startsWith("--instrument=")) || "--instrument=BTC").split("=")[1];
+
+
 const LADDER = [
   { label: "W", key: "1w" },
   { label: "D", key: "1d" },
@@ -34,7 +40,7 @@ function gitCommit() {
 async function main() {
   const commit = gitCommit();
   const db = openStore();
-  clearAll(db);
+  clearAll(db, INSTRUMENT);
 
   const allZones = [];
   const summary = [];
@@ -42,7 +48,7 @@ async function main() {
   for (const { label, key } of LADDER) {
     process.stdout.write(`${label.padEnd(4)} (${key}) ... `);
     const t0 = Date.now();
-    const candles = await loadCandles(key);
+    const candles = await loadCandles(key, INSTRUMENT);
     if (candles.length === 0) {
       console.log("SKIPPED (no candle data found)");
       continue;
@@ -51,8 +57,8 @@ async function main() {
     computeAllTouches(candles, zones);
     for (const z of zones) z.timeframe = key; // confluence.js needs this on the zone object itself
 
-    const runId = insertRun(db, { timeframe: key, candles, gitCommit: commit });
-    insertZonesAndTouches(db, { runId, timeframe: key, zones }); // sets z.id on each zone
+    const runId = insertRun(db, { instrument: INSTRUMENT, timeframe: key, candles, gitCommit: commit });
+    insertZonesAndTouches(db, { instrument: INSTRUMENT, runId, timeframe: key, zones }); // sets z.id on each zone
 
     allZones.push(...zones);
     const touches = zones.reduce((s, z) => s + z.touches.length, 0);
@@ -65,7 +71,7 @@ async function main() {
   process.stdout.write(`\nComputing confluence across ${allZones.length} zones (all timeframes combined) ... `);
   const t0 = Date.now();
   computeConfluence(allZones);
-  updateConfluence(db, allZones);
+  updateConfluence(db, allZones, INSTRUMENT);
   console.log(`done -- ${((Date.now() - t0) / 1000).toFixed(1)}s`);
 
   db.close();

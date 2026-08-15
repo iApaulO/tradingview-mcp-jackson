@@ -3,13 +3,21 @@
 
 import { DatabaseSync } from "node:sqlite";
 import { mkdirSync } from "fs";
+import { migrateInstrument, requireInstrument } from "../lib/instrument.js";
 
 const DB_DIR = new URL("../../../data/signal-bus/", import.meta.url);
 const DB_PATH = new URL("boom-hunter.db", DB_DIR);
 
+const INSTRUMENT_TABLES = [
+  { name: "runs", hasTimeframe: true },
+  { name: "events", hasTimeframe: true },
+  { name: "eot3_episodes", hasTimeframe: true },
+];
+
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS runs (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  instrument TEXT NOT NULL DEFAULT 'BTC',
   timeframe TEXT NOT NULL,
   candle_count INTEGER NOT NULL,
   range_start INTEGER NOT NULL,
@@ -20,6 +28,7 @@ CREATE TABLE IF NOT EXISTS runs (
 
 CREATE TABLE IF NOT EXISTS events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  instrument TEXT NOT NULL DEFAULT 'BTC',
   run_id INTEGER NOT NULL REFERENCES runs(id),
   timeframe TEXT NOT NULL,
   type TEXT NOT NULL CHECK(type IN ('continuation','long_lime','long_blue','long_gray','long_yellow','break_short','bearish_continuation','boom_dead','long_enter4','long_dead_enter')),
@@ -37,6 +46,7 @@ CREATE INDEX IF NOT EXISTS idx_events_tf_type ON events(timeframe, type);
 -- of available data are not stored, matching #66's own exclusion rule.
 CREATE TABLE IF NOT EXISTS eot3_episodes (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  instrument TEXT NOT NULL DEFAULT 'BTC',
   run_id INTEGER NOT NULL REFERENCES runs(id),
   timeframe TEXT NOT NULL,
   start_bar_idx INTEGER NOT NULL,
@@ -52,38 +62,18 @@ export function openStore() {
   mkdirSync(DB_DIR, { recursive: true });
   const db = new DatabaseSync(DB_PATH);
   db.exec(SCHEMA);
+  migrateInstrument(db, INSTRUMENT_TABLES);
   return db;
 }
 
-export function clearAll(db) {
+// Instrument-scoped by design (2026-08-15) -- an unscoped DELETE here would let an ETH rebuild
+// destroy the entire BTC corpus. Required argument, never defaulted.
+export function clearAll(db, instrument) {
+  requireInstrument(instrument);
   db.exec("BEGIN");
   try {
-    db.exec("DELETE FROM eot3_episodes");
-    db.exec("DELETE FROM events");
-    db.exec("DELETE FROM runs");
-    db.exec("COMMIT");
-  } catch (err) {
-    db.exec("ROLLBACK");
-    throw err;
-  }
-}
-
-export function insertRun(db, { timeframe, candles, gitCommit }) {
-  const stmt = db.prepare(
-    "INSERT INTO runs (timeframe, candle_count, range_start, range_end, git_commit, generated_at) VALUES (?, ?, ?, ?, ?, ?)",
-  );
-  const info = stmt.run(timeframe, candles.length, candles[0].t, candles[candles.length - 1].t, gitCommit, new Date().toISOString());
-  return Number(info.lastInsertRowid);
-}
-
-export function insertEvents(db, { runId, timeframe, events }) {
-  db.exec("BEGIN");
-  try {
-    const stmt = db.prepare(
-      "INSERT INTO events (run_id, timeframe, type, bar_idx, time, price, q1) VALUES (?, ?, ?, ?, ?, ?, ?)",
-    );
-    for (const e of events) {
-      stmt.run(runId, timeframe, e.type, e.barIdx, e.time, e.price, e.q1);
+    for (const t of ["eot3_episodes", "events", "runs"]) {
+      db.prepare(`DELETE FROM ${t} WHERE instrument = ?`).run(instrument);
     }
     db.exec("COMMIT");
   } catch (err) {
@@ -92,14 +82,41 @@ export function insertEvents(db, { runId, timeframe, events }) {
   }
 }
 
-export function insertEot3Episodes(db, { runId, timeframe, episodes }) {
+export function insertRun(db, { instrument, timeframe, candles, gitCommit }) {
+  requireInstrument(instrument);
+  const stmt = db.prepare(
+    "INSERT INTO runs (instrument, timeframe, candle_count, range_start, range_end, git_commit, generated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+  );
+  const info = stmt.run(instrument, timeframe, candles.length, candles[0].t, candles[candles.length - 1].t, gitCommit, new Date().toISOString());
+  return Number(info.lastInsertRowid);
+}
+
+export function insertEvents(db, { instrument, runId, timeframe, events }) {
+  requireInstrument(instrument);
   db.exec("BEGIN");
   try {
     const stmt = db.prepare(
-      "INSERT INTO eot3_episodes (run_id, timeframe, start_bar_idx, start_time, end_bar_idx, end_time, has_flag) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO events (run_id, instrument, timeframe, type, bar_idx, time, price, q1) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    );
+    for (const e of events) {
+      stmt.run(runId, instrument, timeframe, e.type, e.barIdx, e.time, e.price, e.q1);
+    }
+    db.exec("COMMIT");
+  } catch (err) {
+    db.exec("ROLLBACK");
+    throw err;
+  }
+}
+
+export function insertEot3Episodes(db, { instrument, runId, timeframe, episodes }) {
+  requireInstrument(instrument);
+  db.exec("BEGIN");
+  try {
+    const stmt = db.prepare(
+      "INSERT INTO eot3_episodes (run_id, instrument, timeframe, start_bar_idx, start_time, end_bar_idx, end_time, has_flag) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
     );
     for (const e of episodes) {
-      stmt.run(runId, timeframe, e.startBarIdx, e.startTime, e.endBarIdx, e.endTime, e.hasFlag ? 1 : 0);
+      stmt.run(runId, instrument, timeframe, e.startBarIdx, e.startTime, e.endBarIdx, e.endTime, e.hasFlag ? 1 : 0);
     }
     db.exec("COMMIT");
   } catch (err) {

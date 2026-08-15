@@ -16,13 +16,22 @@
 
 import { DatabaseSync } from "node:sqlite";
 import { mkdirSync } from "fs";
+import { migrateInstrument, requireInstrument } from "../lib/instrument.js";
 
 const DB_DIR = new URL("../../../data/signal-bus/", import.meta.url);
 const DB_PATH = new URL("vmc-cipher-b.db", DB_DIR);
 
+const INSTRUMENT_TABLES = [
+  { name: "runs", hasTimeframe: true },
+  { name: "zones", hasTimeframe: true },
+  { name: "touches", hasTimeframe: false },
+  { name: "zone_confluences", hasTimeframe: false },
+];
+
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS runs (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  instrument TEXT NOT NULL DEFAULT 'BTC',
   timeframe TEXT NOT NULL,
   candle_count INTEGER NOT NULL,
   range_start INTEGER NOT NULL,
@@ -33,6 +42,7 @@ CREATE TABLE IF NOT EXISTS runs (
 
 CREATE TABLE IF NOT EXISTS zones (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  instrument TEXT NOT NULL DEFAULT 'BTC',
   run_id INTEGER NOT NULL REFERENCES runs(id),
   timeframe TEXT NOT NULL,
   side TEXT NOT NULL CHECK(side IN ('bullish','bearish')),
@@ -55,6 +65,7 @@ CREATE INDEX IF NOT EXISTS idx_zones_kind ON zones(kind);
 
 CREATE TABLE IF NOT EXISTS touches (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  instrument TEXT NOT NULL DEFAULT 'BTC',
   zone_id INTEGER NOT NULL REFERENCES zones(id),
   start_bar_idx INTEGER NOT NULL,
   start_time INTEGER NOT NULL,
@@ -81,16 +92,20 @@ export function openStore() {
   mkdirSync(DB_DIR, { recursive: true });
   const db = new DatabaseSync(DB_PATH);
   db.exec(SCHEMA);
+  migrateInstrument(db, INSTRUMENT_TABLES);
   return db;
 }
 
-export function clearAll(db) {
+// Instrument-scoped by design (2026-08-15) -- an unscoped DELETE here would let an ETH rebuild
+// destroy the entire BTC corpus. Required argument, never defaulted. This DB is the largest in
+// the project (7.9M touches rows), so an accidental wipe is also the most expensive to rebuild.
+export function clearAll(db, instrument) {
+  requireInstrument(instrument);
   db.exec("BEGIN");
   try {
-    db.exec("DELETE FROM zone_confluences");
-    db.exec("DELETE FROM touches");
-    db.exec("DELETE FROM zones");
-    db.exec("DELETE FROM runs");
+    for (const t of ["zone_confluences", "touches", "zones", "runs"]) {
+      db.prepare(`DELETE FROM ${t} WHERE instrument = ?`).run(instrument);
+    }
     db.exec("COMMIT");
   } catch (err) {
     db.exec("ROLLBACK");
@@ -98,30 +113,33 @@ export function clearAll(db) {
   }
 }
 
-export function insertRun(db, { timeframe, candles, gitCommit }) {
+export function insertRun(db, { instrument, timeframe, candles, gitCommit }) {
+  requireInstrument(instrument);
   const runStmt = db.prepare(
-    "INSERT INTO runs (timeframe, candle_count, range_start, range_end, git_commit, generated_at) VALUES (?, ?, ?, ?, ?, ?)",
+    "INSERT INTO runs (instrument, timeframe, candle_count, range_start, range_end, git_commit, generated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
   );
-  const runInfo = runStmt.run(timeframe, candles.length, candles[0].t, candles[candles.length - 1].t, gitCommit, new Date().toISOString());
+  const runInfo = runStmt.run(instrument, timeframe, candles.length, candles[0].t, candles[candles.length - 1].t, gitCommit, new Date().toISOString());
   return Number(runInfo.lastInsertRowid);
 }
 
 // Inserts zones + their touches for one timeframe, and sets `.id` on each in-memory zone object
 // to the real SQLite-assigned id -- required before computeConfluence() can run across timeframes.
-export function insertZonesAndTouches(db, { runId, timeframe, zones }) {
+export function insertZonesAndTouches(db, { instrument, runId, timeframe, zones }) {
+  requireInstrument(instrument);
   db.exec("BEGIN");
   try {
     const zoneStmt = db.prepare(
-      `INSERT INTO zones (run_id, timeframe, side, kind, price, created_bar_idx, created_time, confirmed_bar_idx, confirmed_time, expires_bar_idx, expires_time, status, atr_at_creation)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO zones (run_id, instrument, timeframe, side, kind, price, created_bar_idx, created_time, confirmed_bar_idx, confirmed_time, expires_bar_idx, expires_time, status, atr_at_creation)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     );
     const touchStmt = db.prepare(
-      `INSERT INTO touches (zone_id, start_bar_idx, start_time, end_bar_idx, end_time, bars_count, max_penetration, outcome, ongoing, approach_direction, polarity_flip_retest)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO touches (zone_id, instrument, start_bar_idx, start_time, end_bar_idx, end_time, bars_count, max_penetration, outcome, ongoing, approach_direction, polarity_flip_retest)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     );
     for (const z of zones) {
       const zoneInfo = zoneStmt.run(
         runId,
+        instrument,
         timeframe,
         z.side,
         z.kind,
@@ -139,6 +157,7 @@ export function insertZonesAndTouches(db, { runId, timeframe, zones }) {
       for (const t of z.touches || []) {
         touchStmt.run(
           z.id,
+          instrument,
           t.startBarIdx,
           t.startTime,
           t.endBarIdx,
@@ -161,14 +180,15 @@ export function insertZonesAndTouches(db, { runId, timeframe, zones }) {
 
 // Writes confluence.js's output (allZones already annotated with real .id, confluenceCount,
 // sameTimeframeClusterSize, confluentZoneIds) back to the zones table + zone_confluences junction.
-export function updateConfluence(db, allZones) {
+export function updateConfluence(db, allZones, instrument) {
+  requireInstrument(instrument);
   db.exec("BEGIN");
   try {
     const updateStmt = db.prepare("UPDATE zones SET confluence_count = ?, same_timeframe_cluster_size = ? WHERE id = ?");
-    const linkStmt = db.prepare("INSERT OR IGNORE INTO zone_confluences (zone_id, confluent_zone_id) VALUES (?, ?)");
+    const linkStmt = db.prepare("INSERT OR IGNORE INTO zone_confluences (zone_id, instrument, confluent_zone_id) VALUES (?, ?, ?)");
     for (const z of allZones) {
       updateStmt.run(z.confluenceCount, z.sameTimeframeClusterSize, z.id);
-      for (const otherId of z.confluentZoneIds) linkStmt.run(z.id, otherId);
+      for (const otherId of z.confluentZoneIds) linkStmt.run(z.id, instrument, otherId);
     }
     db.exec("COMMIT");
   } catch (err) {

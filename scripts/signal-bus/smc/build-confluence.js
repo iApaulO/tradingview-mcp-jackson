@@ -8,9 +8,15 @@
 import { openStore, loadConfluencePool, updateConfluence } from "./store.js";
 import { computeSMCConfluence } from "./confluence.js";
 
+// Instrument this build writes (2026-08-15 multi-instrument scope change). Defaults to BTC so
+// existing invocations keep their exact prior behaviour; pass --instrument=ETH to build ETH.
+// The store layer refuses to write an unlabelled row, so this value is load-bearing.
+const INSTRUMENT = (process.argv.find((a) => a.startsWith("--instrument=")) || "--instrument=BTC").split("=")[1];
+
+
 function main() {
   const db = openStore();
-  const { pool, targets } = loadConfluencePool(db);
+  const { pool, targets } = loadConfluencePool(db, INSTRUMENT);
   console.log(`Loaded pool: ${pool.length} elements (${pool.filter((p) => p.type === "orderblock").length} order blocks, ${pool.filter((p) => p.type === "eqhl").length} EQH/EQL, ${pool.filter((p) => p.type === "structure").length} structure events)`);
 
   const t0 = Date.now();

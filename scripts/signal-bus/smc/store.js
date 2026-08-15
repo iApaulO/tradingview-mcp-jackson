@@ -3,13 +3,24 @@
 
 import { DatabaseSync } from "node:sqlite";
 import { mkdirSync } from "fs";
+import { migrateInstrument, requireInstrument } from "../lib/instrument.js";
 
 const DB_DIR = new URL("../../../data/signal-bus/", import.meta.url);
 const DB_PATH = new URL("smc.db", DB_DIR);
 
+const INSTRUMENT_TABLES = [
+  { name: "runs", hasTimeframe: true },
+  { name: "structure_events", hasTimeframe: true },
+  { name: "eqh_eql_events", hasTimeframe: true },
+  { name: "order_blocks", hasTimeframe: true },
+  { name: "order_block_touches", hasTimeframe: false },
+  { name: "order_block_proximity_events", hasTimeframe: false },
+];
+
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS runs (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  instrument TEXT NOT NULL DEFAULT 'BTC',
   timeframe TEXT NOT NULL,
   candle_count INTEGER NOT NULL,
   range_start INTEGER NOT NULL,
@@ -20,6 +31,7 @@ CREATE TABLE IF NOT EXISTS runs (
 
 CREATE TABLE IF NOT EXISTS structure_events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  instrument TEXT NOT NULL DEFAULT 'BTC',
   run_id INTEGER NOT NULL REFERENCES runs(id),
   timeframe TEXT NOT NULL,
   scope TEXT NOT NULL CHECK(scope IN ('internal','swing')),
@@ -34,6 +46,7 @@ CREATE INDEX IF NOT EXISTS idx_structure_tf_time ON structure_events(timeframe, 
 
 CREATE TABLE IF NOT EXISTS eqh_eql_events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  instrument TEXT NOT NULL DEFAULT 'BTC',
   run_id INTEGER NOT NULL REFERENCES runs(id),
   timeframe TEXT NOT NULL,
   side TEXT NOT NULL CHECK(side IN ('EQH','EQL')),
@@ -53,6 +66,7 @@ CREATE INDEX IF NOT EXISTS idx_eqhl_tf_time ON eqh_eql_events(timeframe, confirm
 
 CREATE TABLE IF NOT EXISTS order_blocks (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  instrument TEXT NOT NULL DEFAULT 'BTC',
   run_id INTEGER NOT NULL REFERENCES runs(id),
   timeframe TEXT NOT NULL,
   scope TEXT NOT NULL CHECK(scope IN ('internal','swing')),
@@ -79,6 +93,7 @@ CREATE INDEX IF NOT EXISTS idx_ob_price ON order_blocks(bar_low, bar_high);
 
 CREATE TABLE IF NOT EXISTS order_block_touches (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  instrument TEXT NOT NULL DEFAULT 'BTC',
   order_block_id INTEGER NOT NULL REFERENCES order_blocks(id),
   start_bar_idx INTEGER NOT NULL,
   start_time INTEGER NOT NULL,
@@ -94,6 +109,7 @@ CREATE INDEX IF NOT EXISTS idx_obt_ob ON order_block_touches(order_block_id);
 
 CREATE TABLE IF NOT EXISTS order_block_proximity_events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  instrument TEXT NOT NULL DEFAULT 'BTC',
   order_block_id INTEGER NOT NULL REFERENCES order_blocks(id),
   start_bar_idx INTEGER NOT NULL,
   start_time INTEGER NOT NULL,
@@ -128,18 +144,27 @@ export function openStore() {
   const db = new DatabaseSync(DB_PATH);
   db.exec(SCHEMA);
   migrate(db);
+  migrateInstrument(db, INSTRUMENT_TABLES);
   return db;
 }
 
-export function clearAll(db) {
+// Instrument-scoped by design (2026-08-15) -- an unscoped DELETE here would let an ETH rebuild
+// destroy the entire BTC corpus, including the 83,584 order blocks behind Strategy A2 and every
+// order-block finding in the register. Required argument, never defaulted.
+export function clearAll(db, instrument) {
+  requireInstrument(instrument);
   db.exec("BEGIN");
   try {
-    db.exec("DELETE FROM order_block_proximity_events");
-    db.exec("DELETE FROM order_block_touches");
-    db.exec("DELETE FROM order_blocks");
-    db.exec("DELETE FROM eqh_eql_events");
-    db.exec("DELETE FROM structure_events");
-    db.exec("DELETE FROM runs");
+    for (const t of [
+      "order_block_proximity_events",
+      "order_block_touches",
+      "order_blocks",
+      "eqh_eql_events",
+      "structure_events",
+      "runs",
+    ]) {
+      db.prepare(`DELETE FROM ${t} WHERE instrument = ?`).run(instrument);
+    }
     db.exec("COMMIT");
   } catch (err) {
     db.exec("ROLLBACK");
@@ -147,19 +172,23 @@ export function clearAll(db) {
   }
 }
 
-export function insertRun(db, { timeframe, candles, gitCommit }) {
+export function insertRun(db, { instrument, timeframe, candles, gitCommit }) {
+  requireInstrument(instrument);
   const stmt = db.prepare(
-    "INSERT INTO runs (timeframe, candle_count, range_start, range_end, git_commit, generated_at) VALUES (?, ?, ?, ?, ?, ?)",
+    "INSERT INTO runs (instrument, timeframe, candle_count, range_start, range_end, git_commit, generated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
   );
-  const info = stmt.run(timeframe, candles.length, candles[0].t, candles[candles.length - 1].t, gitCommit, new Date().toISOString());
+  const info = stmt.run(instrument, timeframe, candles.length, candles[0].t, candles[candles.length - 1].t, gitCommit, new Date().toISOString());
   return Number(info.lastInsertRowid);
 }
 
-// Loads every element across all timeframes, shaped for confluence.js's generic pool format.
-export function loadConfluencePool(db) {
-  const obs = db.prepare("SELECT id, timeframe, side, bar_low, bar_high, created_time, mitigated_time FROM order_blocks").all();
-  const eqhl = db.prepare("SELECT id, timeframe, side, level, confirm_time FROM eqh_eql_events").all();
-  const structure = db.prepare("SELECT id, timeframe, side, price, time FROM structure_events").all();
+// Loads every element across all timeframes for ONE instrument, shaped for confluence.js's generic
+// pool format. Instrument-scoped 2026-08-15: without the filter this would pool BTC and ETH
+// elements into a single cross-instrument confluence calculation, which is meaningless.
+export function loadConfluencePool(db, instrument) {
+  requireInstrument(instrument);
+  const obs = db.prepare("SELECT id, timeframe, side, bar_low, bar_high, created_time, mitigated_time FROM order_blocks WHERE instrument = ?").all(instrument);
+  const eqhl = db.prepare("SELECT id, timeframe, side, level, confirm_time FROM eqh_eql_events WHERE instrument = ?").all(instrument);
+  const structure = db.prepare("SELECT id, timeframe, side, price, time FROM structure_events WHERE instrument = ?").all(instrument);
 
   const pool = [
     ...obs.map((o) => ({
@@ -241,48 +270,49 @@ export function updateBoomConfluence(db, orderBlocks) {
   }
 }
 
-export function insertAll(db, { runId, timeframe, structureEvents, eqhEqlEvents, orderBlocks }) {
+export function insertAll(db, { instrument, runId, timeframe, structureEvents, eqhEqlEvents, orderBlocks }) {
+  requireInstrument(instrument);
   db.exec("BEGIN");
   try {
     const structStmt = db.prepare(
-      "INSERT INTO structure_events (run_id, timeframe, scope, type, side, bar_idx, time, price, color) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO structure_events (run_id, instrument, timeframe, scope, type, side, bar_idx, time, price, color) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
     );
-    for (const e of structureEvents) structStmt.run(runId, timeframe, e.scope, e.type, e.side, e.barIdx, e.time, e.price, e.color);
+    for (const e of structureEvents) structStmt.run(runId, instrument, timeframe, e.scope, e.type, e.side, e.barIdx, e.time, e.price, e.color);
 
     const eqStmt = db.prepare(
-      `INSERT INTO eqh_eql_events (run_id, timeframe, side, level, pivot_bar_idx, pivot_time, confirm_bar_idx, confirm_time, color, sweep_status, sweep_time, bars_to_sweep, reversal_time, bars_to_reversal)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO eqh_eql_events (run_id, instrument, timeframe, side, level, pivot_bar_idx, pivot_time, confirm_bar_idx, confirm_time, color, sweep_status, sweep_time, bars_to_sweep, reversal_time, bars_to_reversal)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     );
     for (const e of eqhEqlEvents) {
       eqStmt.run(
-        runId, timeframe, e.side, e.level, e.pivotBarIdx, e.pivotTime, e.confirmBarIdx, e.confirmTime, e.color,
+        runId, instrument, timeframe, e.side, e.level, e.pivotBarIdx, e.pivotTime, e.confirmBarIdx, e.confirmTime, e.color,
         e.sweepStatus ?? null, e.sweepTime ?? null, e.barsToSweep ?? null, e.reversalTime ?? null, e.barsToReversal ?? null,
       );
     }
 
     const obStmt = db.prepare(
-      `INSERT INTO order_blocks (run_id, timeframe, scope, side, bar_high, bar_low, origin_bar_idx, origin_time, created_bar_idx, created_time, mitigated_bar_idx, mitigated_time, status, color)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO order_blocks (run_id, instrument, timeframe, scope, side, bar_high, bar_low, origin_bar_idx, origin_time, created_bar_idx, created_time, mitigated_bar_idx, mitigated_time, status, color)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     );
     const touchStmt = db.prepare(
-      `INSERT INTO order_block_touches (order_block_id, start_bar_idx, start_time, end_bar_idx, end_time, bars_count, max_penetration_pct, approach_direction, outcome, ongoing)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO order_block_touches (order_block_id, instrument, start_bar_idx, start_time, end_bar_idx, end_time, bars_count, max_penetration_pct, approach_direction, outcome, ongoing)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     );
     const proximityStmt = db.prepare(
-      `INSERT INTO order_block_proximity_events (order_block_id, start_bar_idx, start_time, end_bar_idx, end_time, bars_count, closest_approach_pct, approach_direction, ongoing)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO order_block_proximity_events (order_block_id, instrument, start_bar_idx, start_time, end_bar_idx, end_time, bars_count, closest_approach_pct, approach_direction, ongoing)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     );
     for (const ob of orderBlocks) {
       const info = obStmt.run(
-        runId, timeframe, ob.scope, ob.side, ob.barHigh, ob.barLow, ob.originBarIdx, ob.originTime,
+        runId, instrument, timeframe, ob.scope, ob.side, ob.barHigh, ob.barLow, ob.originBarIdx, ob.originTime,
         ob.createdBarIdx, ob.createdTime, ob.mitigatedBarIdx, ob.mitigatedTime, ob.status, ob.color,
       );
       const obId = Number(info.lastInsertRowid);
       for (const t of ob.touches || []) {
-        touchStmt.run(obId, t.startBarIdx, t.startTime, t.endBarIdx, t.endTime, t.barsCount, t.maxPenetrationPct, t.approachDirection, t.outcome, t.ongoing ? 1 : 0);
+        touchStmt.run(obId, instrument, t.startBarIdx, t.startTime, t.endBarIdx, t.endTime, t.barsCount, t.maxPenetrationPct, t.approachDirection, t.outcome, t.ongoing ? 1 : 0);
       }
       for (const p of ob.proximityEvents || []) {
-        proximityStmt.run(obId, p.startBarIdx, p.startTime, p.endBarIdx, p.endTime, p.barsCount, p.closestApproachPct, p.approachDirection, p.ongoing ? 1 : 0);
+        proximityStmt.run(obId, instrument, p.startBarIdx, p.startTime, p.endBarIdx, p.endTime, p.barsCount, p.closestApproachPct, p.approachDirection, p.ongoing ? 1 : 0);
       }
     }
     db.exec("COMMIT");

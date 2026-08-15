@@ -10,6 +10,33 @@ indicator, a new cost/capacity test, a corrected bug), add or update a row here 
 Labels: `descriptive-significant` · `trade-construction-blocked` · `falsified` ·
 `engineering-complete` · `stub/outdated` · `unknown/untested`
 
+## INSTRUMENT SCOPE — rows #1 through #126 are BTC, without exception
+
+Recorded 2026-08-15, when ETH was added as a second instrument. Until that date the entire
+pipeline was single-asset and nothing in the schema or in these rows said so — `timeframe` was the
+only key, and the instrument was implicit. Every numeric result in rows **#1-#126 was computed on
+BTC alone** (Binance spot 2017-2024, Coinbase-gapfilled from the 2025-01-01 seam). None of them is
+evidence about ETH or about any cross-asset relationship, and none should be cited as such.
+
+This is deliberately recorded once, here, rather than appended to all 126 rows: a per-row edit
+would churn every line of the file for a fact that is uniformly true of all of them, and it would
+not survive as well as a single authoritative statement. The machine-readable equivalent now lives
+in the databases themselves — every signal-bus table carries an `instrument` column as of
+2026-08-15, and all 12,426,037 pre-existing rows are labelled `BTC`.
+
+**Convention from #127 onward: every new row MUST name its instrument explicitly** (e.g. "tested
+2026-08-xx on BTC 15m" / "BTC-ETH cross-market"). A row that does not name one is ambiguous and
+should be treated as untrusted until corrected, not silently assumed to be BTC.
+
+Related engineering constraints, both enforced in code rather than by convention:
+- `scripts/signal-bus/lib/instrument.js` — write paths refuse an unlabelled or unknown instrument
+  (`requireInstrument`), and `clearAll` is instrument-scoped, so an ETH rebuild cannot delete the
+  BTC corpus behind these rows.
+- `scripts/backtest/lib/load-candles.js` — instrument maps to a source-bearing filename prefix
+  (`binance-btc` / `coinbase-eth`) because the two series have different provenance. BTC and ETH
+  come from different venues; see #126's C-5 note and `fetch-eth-history.js`'s header for why
+  sub-hourly BTC/ETH timing claims are not supported by this data.
+
 | # | Finding | Label | Scoring rule |
 |---|---|---|---|
 | 1 | SMC order-block confluence degree ↔ hold rate (34.7%→68.0%, p<0.00001) | **descriptive-significant** | Use confluence degree to weight structure-layer order block score up/down (decision-policy.md). Do not present as a standalone edge. **Scope correction (2026-07-28): `confluenceCount` = distinct TIMEFRAMES agreeing (`confluence.js` line 92) — it is structurally blind to same-timeframe recurrence**, described that way specifically from now on. (An earlier version of this correction cited six same-timeframe 4H order blocks all showing `confluenceCount=1` as a live example — that was a pipeline-staleness artifact, `build-confluence.js` hadn't been re-run after a data refresh; recomputed, those six correctly show `confluenceCount=6`. The definitional fact stands, that specific example didn't demonstrate it.) See #27 for same-timeframe recurrence, now built and tested separately. |

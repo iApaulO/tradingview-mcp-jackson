@@ -13,6 +13,12 @@ import { computeAllProximityEvents } from "./proximity.js";
 import { detectLiquiditySweeps } from "./liquidity.js";
 import { openStore, clearAll, insertRun, insertAll } from "./store.js";
 
+// Instrument this build writes (2026-08-15 multi-instrument scope change). Defaults to BTC so
+// existing invocations keep their exact prior behaviour; pass --instrument=ETH to build ETH.
+// The store layer refuses to write an unlabelled row, so this value is load-bearing.
+const INSTRUMENT = (process.argv.find((a) => a.startsWith("--instrument=")) || "--instrument=BTC").split("=")[1];
+
+
 const LADDER = [
   { label: "W", key: "1w" },
   { label: "D", key: "1d" },
@@ -35,13 +41,13 @@ function gitCommit() {
 async function main() {
   const commit = gitCommit();
   const db = openStore();
-  clearAll(db);
+  clearAll(db, INSTRUMENT);
 
   const summary = [];
   for (const { label, key } of LADDER) {
     process.stdout.write(`${label.padEnd(4)} (${key}) ... `);
     const t0 = Date.now();
-    const candles = await loadCandles(key);
+    const candles = await loadCandles(key, INSTRUMENT);
     if (candles.length === 0) {
       console.log("SKIPPED (no candle data found)");
       continue;
@@ -51,8 +57,8 @@ async function main() {
     computeAllProximityEvents(candles, orderBlocks);
     detectLiquiditySweeps(candles, eqhEqlEvents);
 
-    const runId = insertRun(db, { timeframe: key, candles, gitCommit: commit });
-    insertAll(db, { runId, timeframe: key, structureEvents, eqhEqlEvents, orderBlocks });
+    const runId = insertRun(db, { instrument: INSTRUMENT, timeframe: key, candles, gitCommit: commit });
+    insertAll(db, { instrument: INSTRUMENT, runId, timeframe: key, structureEvents, eqhEqlEvents, orderBlocks });
 
     const touches = orderBlocks.reduce((s, o) => s + o.touches.length, 0);
     const proximityEvents = orderBlocks.reduce((s, o) => s + o.proximityEvents.length, 0);

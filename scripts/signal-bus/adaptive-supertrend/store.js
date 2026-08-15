@@ -7,13 +7,20 @@
 
 import { DatabaseSync } from "node:sqlite";
 import { mkdirSync } from "fs";
+import { migrateInstrument, requireInstrument } from "../lib/instrument.js";
 
 const DB_DIR = new URL("../../../data/signal-bus/", import.meta.url);
 const DB_PATH = new URL("adaptive-supertrend.db", DB_DIR);
 
+const INSTRUMENT_TABLES = [
+  { name: "runs", hasTimeframe: true },
+  { name: "events", hasTimeframe: true },
+];
+
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS runs (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  instrument TEXT NOT NULL DEFAULT 'BTC',
   timeframe TEXT NOT NULL,
   candle_count INTEGER NOT NULL,
   range_start INTEGER NOT NULL,
@@ -25,6 +32,7 @@ CREATE TABLE IF NOT EXISTS runs (
 CREATE TABLE IF NOT EXISTS events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   run_id INTEGER NOT NULL REFERENCES runs(id),
+  instrument TEXT NOT NULL DEFAULT 'BTC',
   timeframe TEXT NOT NULL,
   direction TEXT NOT NULL CHECK(direction IN ('bullish','bearish')),
   bar_idx INTEGER NOT NULL,
@@ -39,14 +47,19 @@ export function openStore() {
   mkdirSync(DB_DIR, { recursive: true });
   const db = new DatabaseSync(DB_PATH);
   db.exec(SCHEMA);
+  migrateInstrument(db, INSTRUMENT_TABLES);
   return db;
 }
 
-export function clearAll(db) {
+// Instrument-scoped by design (2026-08-15). This used to be an unscoped `DELETE FROM` -- which,
+// once a second instrument exists, means an ETH rebuild silently destroys the entire BTC corpus.
+// The instrument argument is required, never defaulted, for exactly that reason.
+export function clearAll(db, instrument) {
+  requireInstrument(instrument);
   db.exec("BEGIN");
   try {
-    db.exec("DELETE FROM events");
-    db.exec("DELETE FROM runs");
+    db.prepare("DELETE FROM events WHERE instrument = ?").run(instrument);
+    db.prepare("DELETE FROM runs WHERE instrument = ?").run(instrument);
     db.exec("COMMIT");
   } catch (err) {
     db.exec("ROLLBACK");
@@ -54,21 +67,23 @@ export function clearAll(db) {
   }
 }
 
-export function insertRun(db, { timeframe, candles, gitCommit }) {
+export function insertRun(db, { instrument, timeframe, candles, gitCommit }) {
+  requireInstrument(instrument);
   const stmt = db.prepare(
-    "INSERT INTO runs (timeframe, candle_count, range_start, range_end, git_commit, generated_at) VALUES (?, ?, ?, ?, ?, ?)",
+    "INSERT INTO runs (instrument, timeframe, candle_count, range_start, range_end, git_commit, generated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
   );
-  const info = stmt.run(timeframe, candles.length, candles[0].t, candles[candles.length - 1].t, gitCommit, new Date().toISOString());
+  const info = stmt.run(instrument, timeframe, candles.length, candles[0].t, candles[candles.length - 1].t, gitCommit, new Date().toISOString());
   return Number(info.lastInsertRowid);
 }
 
-export function insertEvents(db, { runId, timeframe, events }) {
+export function insertEvents(db, { instrument, runId, timeframe, events }) {
+  requireInstrument(instrument);
   db.exec("BEGIN");
   try {
     const stmt = db.prepare(
-      "INSERT INTO events (run_id, timeframe, direction, bar_idx, time, price, volatility_regime) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO events (run_id, instrument, timeframe, direction, bar_idx, time, price, volatility_regime) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
     );
-    for (const e of events) stmt.run(runId, timeframe, e.direction, e.barIdx, e.time, e.price, e.volatilityRegime ?? null);
+    for (const e of events) stmt.run(runId, instrument, timeframe, e.direction, e.barIdx, e.time, e.price, e.volatilityRegime ?? null);
     db.exec("COMMIT");
   } catch (err) {
     db.exec("ROLLBACK");

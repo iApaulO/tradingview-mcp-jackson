@@ -10,8 +10,33 @@ import { createInterface } from "readline";
 
 const DATA_DIR = new URL("../../../data/historical/", import.meta.url);
 
-export async function loadCandles(timeframeKey) {
-  const path = new URL(`binance-btc-${timeframeKey}.csv`, DATA_DIR);
+// Instrument -> raw-file prefix (2026-08-15, ETH scope change).
+//
+// The prefix encodes SOURCE, not just instrument, and the files are deliberately NOT renamed to a
+// clean `btc-15m.csv` scheme: the filename is the only place each series' provenance is recorded,
+// and EEH-CITI-1.0 §27 Priority 0 treats raw data as immutable. BTC's history is Binance spot
+// 2017-2024 gap-filled from Coinbase's public API at the 2025-01-01 seam (fetch-coinbase-gapfill.js);
+// ETH has no Binance leg at all, since Binance is geo-blocked from this environment, so it is
+// Coinbase-sourced end to end. Two different provenance stories that must stay distinguishable.
+const INSTRUMENT_FILE_PREFIX = {
+  BTC: "binance-btc",
+  ETH: "coinbase-eth",
+};
+
+// `instrument` defaults to BTC while the store layer's requireInstrument() refuses to default at
+// all. The asymmetry is deliberate: a wrong instrument on WRITE permanently mixes two populations
+// in a shared table and cannot be undone, whereas a wrong instrument on READ produces a wrong
+// answer in one run and is fully recoverable. Every analysis script predating 2026-08-15 is
+// BTC-only, so the default keeps them correct without a 40-file edit.
+export async function loadCandles(timeframeKey, instrument = "BTC") {
+  const prefix = INSTRUMENT_FILE_PREFIX[instrument];
+  if (!prefix) {
+    throw new Error(
+      `unknown instrument '${instrument}' -- known: ${Object.keys(INSTRUMENT_FILE_PREFIX).join(", ")}. ` +
+        "Add it to INSTRUMENT_FILE_PREFIX with its real source prefix rather than guessing a filename.",
+    );
+  }
+  const path = new URL(`${prefix}-${timeframeKey}.csv`, DATA_DIR);
   const rl = createInterface({ input: createReadStream(path), crlfDelay: Infinity });
 
   const candles = [];
