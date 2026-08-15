@@ -1,0 +1,9 @@
+{
+  "timeframe": "5m",
+  "htf": "1h",
+  "window": 160,
+  "nUpSetups": 20,
+  "nDownSetups": 0,
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-08T17:10:01.563Z"
+}

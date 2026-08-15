@@ -1,0 +1,28 @@
+{
+  "burnInYears": 2,
+  "refitIntervalDays": 180,
+  "epochCount": 16,
+  "evalTradeCount": 42695,
+  "flat": {
+    "finalBankUsd": 1245.1221759615312,
+    "returnPct": 149.02443519230624,
+    "maxDrawdownPct": 10.652230232498399,
+    "tradesTaken": 582
+  },
+  "walkForwardFloored": {
+    "finalBankUsd": 1105.1556612954223,
+    "returnPct": 121.03113225908446,
+    "maxDrawdownPct": 14.641185975311565,
+    "tradesTaken": 590,
+    "contribByStrategy": {
+      "A_recurrence": 0.8638115081479877,
+      "D_boom_nested_boost": -0.06201124343868416,
+      "E_swing_regime_2h": 0.028018133172768318,
+      "F_wt_anchor_1d": 0.0001461905349514922,
+      "C_nested_divergence": -0.01662198888306806,
+      "B_1d_divergence": -0.0027098894514388113
+    }
+  },
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-12T02:45:07.334Z"
+}

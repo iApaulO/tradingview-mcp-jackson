@@ -1,0 +1,165 @@
+{
+  "results": [
+    {
+      "timeframe": "1w",
+      "nBullishSwingBOS": 1,
+      "nFailedBOS": 1,
+      "nBearishOBsAttachedToFailure": 1,
+      "nWithD4M": 0,
+      "nWithoutD4M": 1,
+      "baselineMfeMean": 0.35576725321628905,
+      "withD4M": {
+        "n": 0
+      },
+      "withoutD4M": {
+        "n": 1,
+        "meanMfe": 0.1923390355588649
+      }
+    },
+    {
+      "timeframe": "1d",
+      "nBullishSwingBOS": 6,
+      "nFailedBOS": 4,
+      "nBearishOBsAttachedToFailure": 15,
+      "nWithD4M": 11,
+      "nWithoutD4M": 4,
+      "baselineMfeMean": 0.22324431623239335,
+      "withD4M": {
+        "n": 11,
+        "meanMfe": 0.22438015497394345,
+        "vsBaselineP": 0.9812545607508416
+      },
+      "withoutD4M": {
+        "n": 4,
+        "meanMfe": 0.3106545980566333,
+        "vsBaselineP": 0.21920058869072578
+      },
+      "withD4MvsWithoutP": 0.31241983477296453
+    },
+    {
+      "timeframe": "4h",
+      "nBullishSwingBOS": 34,
+      "nFailedBOS": 30,
+      "nBearishOBsAttachedToFailure": 18,
+      "nWithD4M": 7,
+      "nWithoutD4M": 11,
+      "baselineMfeMean": 0.10627516821813979,
+      "withD4M": {
+        "n": 7,
+        "meanMfe": 0.2013846008089826,
+        "vsBaselineP": 0.0022466881956220153
+      },
+      "withoutD4M": {
+        "n": 11,
+        "meanMfe": 0.1290601406856264,
+        "vsBaselineP": 0.3022736539438846
+      },
+      "withD4MvsWithoutP": 0.05758872567639561
+    },
+    {
+      "timeframe": "3h",
+      "nBullishSwingBOS": 41,
+      "nFailedBOS": 38,
+      "nBearishOBsAttachedToFailure": 17,
+      "nWithD4M": 4,
+      "nWithoutD4M": 13,
+      "baselineMfeMean": 0.09320379932290294,
+      "withD4M": {
+        "n": 4,
+        "meanMfe": 0.16192518125855002,
+        "vsBaselineP": 0.016315520146246376
+      },
+      "withoutD4M": {
+        "n": 13,
+        "meanMfe": 0.13949828779743362,
+        "vsBaselineP": 0.05761813078747924
+      },
+      "withD4MvsWithoutP": 0.5502859087810696
+    },
+    {
+      "timeframe": "2h",
+      "nBullishSwingBOS": 72,
+      "nFailedBOS": 59,
+      "nBearishOBsAttachedToFailure": 16,
+      "nWithD4M": 4,
+      "nWithoutD4M": 12,
+      "baselineMfeMean": 0.07730634072191611,
+      "withD4M": {
+        "n": 4,
+        "meanMfe": 0.05633630126178649,
+        "vsBaselineP": 0.2890992524250062
+      },
+      "withoutD4M": {
+        "n": 12,
+        "meanMfe": 0.08138102710316227,
+        "vsBaselineP": 0.8378868846109384
+      },
+      "withD4MvsWithoutP": 0.3717223258456661
+    },
+    {
+      "timeframe": "1h",
+      "nBullishSwingBOS": 147,
+      "nFailedBOS": 113,
+      "nBearishOBsAttachedToFailure": 16,
+      "nWithD4M": 3,
+      "nWithoutD4M": 13,
+      "baselineMfeMean": 0.05560153592786782,
+      "withD4M": {
+        "n": 3,
+        "meanMfe": 0.0635178699442515,
+        "vsBaselineP": 0.49957982153923775
+      },
+      "withoutD4M": {
+        "n": 13,
+        "meanMfe": 0.0516070217836697,
+        "vsBaselineP": 0.5798765813288145
+      },
+      "withD4MvsWithoutP": 0.386320051970203
+    },
+    {
+      "timeframe": "15m",
+      "nBullishSwingBOS": 532,
+      "nFailedBOS": 403,
+      "nBearishOBsAttachedToFailure": 16,
+      "nWithD4M": 9,
+      "nWithoutD4M": 7,
+      "baselineMfeMean": 0.028286971467490138,
+      "withD4M": {
+        "n": 9,
+        "meanMfe": 0.023458190903136684,
+        "vsBaselineP": 0.29626974481704327
+      },
+      "withoutD4M": {
+        "n": 7,
+        "meanMfe": 0.03773845213548045,
+        "vsBaselineP": 0.005795972307184094
+      },
+      "withD4MvsWithoutP": 0.013016582959196166
+    },
+    {
+      "timeframe": "5m",
+      "nBullishSwingBOS": 1473,
+      "nFailedBOS": 1174,
+      "nBearishOBsAttachedToFailure": 15,
+      "nWithD4M": 9,
+      "nWithoutD4M": 6,
+      "baselineMfeMean": 0.01635160020353198,
+      "withD4M": {
+        "n": 9,
+        "meanMfe": 0.010050914484662062,
+        "vsBaselineP": 0.006939611032074744
+      },
+      "withoutD4M": {
+        "n": 6,
+        "meanMfe": 0.012947829893296717,
+        "vsBaselineP": 0.43926556291494445
+      },
+      "withD4MvsWithoutP": 0.5608315828984574
+    }
+  ],
+  "scope": "swing",
+  "window": 160,
+  "timeWindowBars": 60,
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-08T16:40:19.236Z"
+}

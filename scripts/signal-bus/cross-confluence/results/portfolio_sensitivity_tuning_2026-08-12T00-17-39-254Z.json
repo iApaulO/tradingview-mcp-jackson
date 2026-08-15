@@ -1,0 +1,35 @@
+{
+  "splitFrac": 0.7,
+  "sensitivityGrid": [
+    0,
+    25,
+    50,
+    75,
+    100,
+    150,
+    200,
+    300,
+    500,
+    750,
+    1000
+  ],
+  "winnerSensitivity": 75,
+  "winnerTrainReturnPct": 250.78092716027314,
+  "flat": {
+    "finalBankUsd": 571.2189175039455,
+    "returnPct": 14.243783500789098,
+    "maxDrawdownPct": 26.993679987642693
+  },
+  "untuned150": {
+    "finalBankUsd": 535.531704271976,
+    "returnPct": 7.106340854395188,
+    "maxDrawdownPct": 34.73646251133739
+  },
+  "tuned": {
+    "finalBankUsd": 533.6186088012441,
+    "returnPct": 6.723721760248824,
+    "maxDrawdownPct": 31.230415036891344
+  },
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-12T00:17:39.254Z"
+}

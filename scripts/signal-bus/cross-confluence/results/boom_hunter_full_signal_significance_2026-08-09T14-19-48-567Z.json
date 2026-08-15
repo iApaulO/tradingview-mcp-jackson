@@ -1,0 +1,431 @@
+{
+  "results": [
+    {
+      "label": "short: Break -> bearish OB -> bearish_continuation",
+      "side": "bearish",
+      "rMultiple": 1,
+      "obCount": 36694,
+      "tradeCount": 82876,
+      "counts": {
+        "full": 2944,
+        "partial": 12824,
+        "neither": 20926
+      },
+      "fullStats": {
+        "n": 6955,
+        "winRate": 0.49000718907260965
+      },
+      "partialStats": {
+        "n": 29651,
+        "winRate": 0.4817712724697312
+      },
+      "neitherStats": {
+        "n": 46270,
+        "winRate": 0.4735897990058353
+      },
+      "vsNeither": {
+        "realA": 0.49000718907260965,
+        "realB": 0.4735897990058353,
+        "realGap": 0.01641739006677434,
+        "p": 0.0194
+      },
+      "vsPartial": {
+        "realA": 0.49000718907260965,
+        "realB": 0.4817712724697312,
+        "realGap": 0.008235916602878424,
+        "p": 0.1639
+      }
+    },
+    {
+      "label": "short: Break -> bearish OB (no confirm stage)",
+      "side": "bearish",
+      "rMultiple": 1,
+      "obCount": 36694,
+      "tradeCount": 82876,
+      "counts": {
+        "full": 5517,
+        "partial": 0,
+        "neither": 31177
+      },
+      "fullStats": {
+        "n": 12807,
+        "winRate": 0.48567189818068246
+      },
+      "partialStats": {
+        "n": 0,
+        "winRate": null
+      },
+      "neitherStats": {
+        "n": 70069,
+        "winRate": 0.47647319071201244
+      },
+      "vsNeither": {
+        "realA": 0.48567189818068246,
+        "realB": 0.47647319071201244,
+        "realGap": 0.00919870746867002,
+        "p": 0.06205
+      },
+      "vsPartial": null
+    },
+    {
+      "label": "dead: Boom! (enter2) -> bullish OB -> Continuation",
+      "side": "bullish",
+      "rMultiple": 1,
+      "obCount": 38838,
+      "tradeCount": 86948,
+      "counts": {
+        "full": 279,
+        "partial": 13123,
+        "neither": 25436
+      },
+      "fullStats": {
+        "n": 669,
+        "winRate": 0.5261584454409567
+      },
+      "partialStats": {
+        "n": 30155,
+        "winRate": 0.47756590946774996
+      },
+      "neitherStats": {
+        "n": 56124,
+        "winRate": 0.4718480507447794
+      },
+      "vsNeither": {
+        "realA": 0.5261584454409567,
+        "realB": 0.4718480507447794,
+        "realGap": 0.05431039469617727,
+        "p": 0.01525
+      },
+      "vsPartial": {
+        "realA": 0.5261584454409567,
+        "realB": 0.47756590946774996,
+        "realGap": 0.04859253597320673,
+        "p": 0.02595
+      }
+    },
+    {
+      "label": "dead: enter4 -> bullish OB -> Continuation",
+      "side": "bullish",
+      "rMultiple": 1,
+      "obCount": 38838,
+      "tradeCount": 86948,
+      "counts": {
+        "full": 9275,
+        "partial": 14499,
+        "neither": 15064
+      },
+      "fullStats": {
+        "n": 21670,
+        "winRate": 0.4859713890170743
+      },
+      "partialStats": {
+        "n": 31962,
+        "winRate": 0.46896314373318315
+      },
+      "neitherStats": {
+        "n": 33316,
+        "winRate": 0.4716952815464041
+      },
+      "vsNeither": {
+        "realA": 0.4859713890170743,
+        "realB": 0.4716952815464041,
+        "realGap": 0.014276107470670207,
+        "p": 0.00505
+      },
+      "vsPartial": {
+        "realA": 0.4859713890170743,
+        "realB": 0.46896314373318315,
+        "realGap": 0.017008245283891166,
+        "p": 0.00135
+      }
+    },
+    {
+      "label": "dead: enter (LSMA) -> bullish OB -> Continuation",
+      "side": "bullish",
+      "rMultiple": 1,
+      "obCount": 38838,
+      "tradeCount": 86948,
+      "counts": {
+        "full": 11688,
+        "partial": 23839,
+        "neither": 3311
+      },
+      "fullStats": {
+        "n": 26800,
+        "winRate": 0.4765671641791045
+      },
+      "partialStats": {
+        "n": 52693,
+        "winRate": 0.47326969426679066
+      },
+      "neitherStats": {
+        "n": 7455,
+        "winRate": 0.47283702213279677
+      },
+      "vsNeither": {
+        "realA": 0.4765671641791045,
+        "realB": 0.47283702213279677,
+        "realGap": 0.0037301420463077273,
+        "p": 0.32415
+      },
+      "vsPartial": {
+        "realA": 0.4765671641791045,
+        "realB": 0.47326969426679066,
+        "realGap": 0.003297469912313833,
+        "p": 0.2413
+      }
+    },
+    {
+      "label": "dead: ALL 3 dead signals combined -> bullish OB -> Continuation",
+      "side": "bullish",
+      "rMultiple": 1,
+      "obCount": 38838,
+      "tradeCount": 86948,
+      "counts": {
+        "full": 11758,
+        "partial": 23828,
+        "neither": 3252
+      },
+      "fullStats": {
+        "n": 26970,
+        "winRate": 0.4770856507230256
+      },
+      "partialStats": {
+        "n": 52647,
+        "winRate": 0.4731133777803104
+      },
+      "neitherStats": {
+        "n": 7331,
+        "winRate": 0.4719683535670441
+      },
+      "vsNeither": {
+        "realA": 0.4770856507230256,
+        "realB": 0.4719683535670441,
+        "realGap": 0.005117297155981526,
+        "p": 0.2694
+      },
+      "vsPartial": {
+        "realA": 0.4770856507230256,
+        "realB": 0.4731133777803104,
+        "realGap": 0.003972272942715238,
+        "p": 0.1972
+      }
+    },
+    {
+      "label": "short: Break -> bearish OB -> bearish_continuation",
+      "side": "bearish",
+      "rMultiple": 1.5,
+      "obCount": 36672,
+      "tradeCount": 82730,
+      "counts": {
+        "full": 2938,
+        "partial": 12817,
+        "neither": 20917
+      },
+      "fullStats": {
+        "n": 6936,
+        "winRate": 0.39172433679354096
+      },
+      "partialStats": {
+        "n": 29593,
+        "winRate": 0.3896191666948265
+      },
+      "neitherStats": {
+        "n": 46201,
+        "winRate": 0.3822644531503647
+      },
+      "vsNeither": {
+        "realA": 0.39172433679354096,
+        "realB": 0.3822644531503647,
+        "realGap": 0.009459883643176237,
+        "p": 0.1312
+      },
+      "vsPartial": {
+        "realA": 0.39172433679354096,
+        "realB": 0.3896191666948265,
+        "realGap": 0.0021051700987144706,
+        "p": 0.40405
+      }
+    },
+    {
+      "label": "short: Break -> bearish OB (no confirm stage)",
+      "side": "bearish",
+      "rMultiple": 1.5,
+      "obCount": 36672,
+      "tradeCount": 82730,
+      "counts": {
+        "full": 5510,
+        "partial": 0,
+        "neither": 31162
+      },
+      "fullStats": {
+        "n": 12773,
+        "winRate": 0.38918030219995303
+      },
+      "partialStats": {
+        "n": 0,
+        "winRate": null
+      },
+      "neitherStats": {
+        "n": 69957,
+        "winRate": 0.3850508169304001
+      },
+      "vsNeither": {
+        "realA": 0.38918030219995303,
+        "realB": 0.3850508169304001,
+        "realGap": 0.004129485269552924,
+        "p": 0.2596
+      },
+      "vsPartial": null
+    },
+    {
+      "label": "dead: Boom! (enter2) -> bullish OB -> Continuation",
+      "side": "bullish",
+      "rMultiple": 1.5,
+      "obCount": 38799,
+      "tradeCount": 86752,
+      "counts": {
+        "full": 279,
+        "partial": 13110,
+        "neither": 25410
+      },
+      "fullStats": {
+        "n": 662,
+        "winRate": 0.43655589123867067
+      },
+      "partialStats": {
+        "n": 30081,
+        "winRate": 0.38522655496825237
+      },
+      "neitherStats": {
+        "n": 56009,
+        "winRate": 0.38027816957988897
+      },
+      "vsNeither": {
+        "realA": 0.43655589123867067,
+        "realB": 0.38027816957988897,
+        "realGap": 0.0562777216587817,
+        "p": 0.0155
+      },
+      "vsPartial": {
+        "realA": 0.43655589123867067,
+        "realB": 0.38522655496825237,
+        "realGap": 0.0513293362704183,
+        "p": 0.02415
+      }
+    },
+    {
+      "label": "dead: enter4 -> bullish OB -> Continuation",
+      "side": "bullish",
+      "rMultiple": 1.5,
+      "obCount": 38799,
+      "tradeCount": 86752,
+      "counts": {
+        "full": 9267,
+        "partial": 14477,
+        "neither": 15055
+      },
+      "fullStats": {
+        "n": 21617,
+        "winRate": 0.39279270944164313
+      },
+      "partialStats": {
+        "n": 31883,
+        "winRate": 0.3777561710002196
+      },
+      "neitherStats": {
+        "n": 33252,
+        "winRate": 0.38015758450619513
+      },
+      "vsNeither": {
+        "realA": 0.39279270944164313,
+        "realB": 0.38015758450619513,
+        "realGap": 0.012635124935447994,
+        "p": 0.01425
+      },
+      "vsPartial": {
+        "realA": 0.39279270944164313,
+        "realB": 0.3777561710002196,
+        "realGap": 0.015036538441423553,
+        "p": 0.0054
+      }
+    },
+    {
+      "label": "dead: enter (LSMA) -> bullish OB -> Continuation",
+      "side": "bullish",
+      "rMultiple": 1.5,
+      "obCount": 38799,
+      "tradeCount": 86752,
+      "counts": {
+        "full": 11679,
+        "partial": 23811,
+        "neither": 3309
+      },
+      "fullStats": {
+        "n": 26735,
+        "winRate": 0.38410323545913594
+      },
+      "partialStats": {
+        "n": 52577,
+        "winRate": 0.38113623827909543
+      },
+      "neitherStats": {
+        "n": 7440,
+        "winRate": 0.38548387096774195
+      },
+      "vsNeither": {
+        "realA": 0.38410323545913594,
+        "realB": 0.38548387096774195,
+        "realGap": -0.0013806355086060096,
+        "p": 0.5717
+      },
+      "vsPartial": {
+        "realA": 0.38410323545913594,
+        "realB": 0.38113623827909543,
+        "realGap": 0.0029669971800405093,
+        "p": 0.27135
+      }
+    },
+    {
+      "label": "dead: ALL 3 dead signals combined -> bullish OB -> Continuation",
+      "side": "bullish",
+      "rMultiple": 1.5,
+      "obCount": 38799,
+      "tradeCount": 86752,
+      "counts": {
+        "full": 11747,
+        "partial": 23802,
+        "neither": 3250
+      },
+      "fullStats": {
+        "n": 26901,
+        "winRate": 0.38466971488048773
+      },
+      "partialStats": {
+        "n": 52535,
+        "winRate": 0.38102217569239555
+      },
+      "neitherStats": {
+        "n": 7316,
+        "winRate": 0.3842263531984691
+      },
+      "vsNeither": {
+        "realA": 0.38466971488048773,
+        "realB": 0.3842263531984691,
+        "realGap": 0.00044336168201863924,
+        "p": 0.48305
+      },
+      "vsPartial": {
+        "realA": 0.38466971488048773,
+        "realB": 0.38102217569239555,
+        "realGap": 0.003647539188092186,
+        "p": 0.22345
+      }
+    }
+  ],
+  "preWindow": 50,
+  "postWindow": 50,
+  "priceTolerance": 0.01,
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-09T14:19:48.567Z"
+}

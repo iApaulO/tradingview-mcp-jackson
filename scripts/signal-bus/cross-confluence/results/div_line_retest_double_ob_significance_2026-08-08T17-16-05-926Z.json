@@ -1,0 +1,124 @@
+{
+  "results": [
+    {
+      "timeframe": "1w",
+      "nWithRetest": 0,
+      "nWithoutRetest": 0,
+      "baselineMfeMean": 5.080848253692719,
+      "withRetest": {
+        "n": 0
+      },
+      "withoutRetest": {
+        "n": 0
+      }
+    },
+    {
+      "timeframe": "1d",
+      "nWithRetest": 0,
+      "nWithoutRetest": 0,
+      "baselineMfeMean": 0.6534326803287028,
+      "withRetest": {
+        "n": 0
+      },
+      "withoutRetest": {
+        "n": 0
+      }
+    },
+    {
+      "timeframe": "4h",
+      "nWithRetest": 2,
+      "nWithoutRetest": 7,
+      "baselineMfeMean": 0.153977222264255,
+      "withRetest": {
+        "n": 2,
+        "meanMfe": 0.11299578671828436,
+        "vsBaselineP": 0.5308150601085808
+      },
+      "withoutRetest": {
+        "n": 7,
+        "meanMfe": 0.26382201909139763,
+        "vsBaselineP": 0.007816611867420775
+      },
+      "withVsWithoutP": 0.05080334187775004
+    },
+    {
+      "timeframe": "3h",
+      "nWithRetest": 2,
+      "nWithoutRetest": 4,
+      "baselineMfeMean": 0.12639531834427867,
+      "withRetest": {
+        "n": 2,
+        "meanMfe": 0.1180829287111671,
+        "vsBaselineP": 0.8078109898923405
+      },
+      "withoutRetest": {
+        "n": 4,
+        "meanMfe": 0.18141787804520798,
+        "vsBaselineP": 0.5850393734226471
+      },
+      "withVsWithoutP": 0.5515439607323858
+    },
+    {
+      "timeframe": "2h",
+      "nWithRetest": 1,
+      "nWithoutRetest": 9,
+      "baselineMfeMean": 0.0972546180604871,
+      "withRetest": {
+        "n": 1,
+        "meanMfe": 0.09888536601344611
+      },
+      "withoutRetest": {
+        "n": 9,
+        "meanMfe": 0.13998441709064266,
+        "vsBaselineP": 0.0546519176028768
+      }
+    },
+    {
+      "timeframe": "1h",
+      "nWithRetest": 0,
+      "nWithoutRetest": 7,
+      "baselineMfeMean": 0.06372471515342028,
+      "withRetest": {
+        "n": 0
+      },
+      "withoutRetest": {
+        "n": 7,
+        "meanMfe": 0.07580443023682222,
+        "vsBaselineP": 0.08703572480436317
+      }
+    },
+    {
+      "timeframe": "15m",
+      "nWithRetest": 1,
+      "nWithoutRetest": 7,
+      "baselineMfeMean": 0.029150448181532795,
+      "withRetest": {
+        "n": 1,
+        "meanMfe": 0.014171317214452195
+      },
+      "withoutRetest": {
+        "n": 7,
+        "meanMfe": 0.03801045226280223,
+        "vsBaselineP": 0.1246560555020102
+      }
+    },
+    {
+      "timeframe": "5m",
+      "nWithRetest": 0,
+      "nWithoutRetest": 6,
+      "baselineMfeMean": 0.016151076403301868,
+      "withRetest": {
+        "n": 0
+      },
+      "withoutRetest": {
+        "n": 6,
+        "meanMfe": 0.026758087771885042,
+        "vsBaselineP": 0.17419761923050636
+      }
+    }
+  ],
+  "window": 160,
+  "retestTolerance": 0.01,
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-08T17:16:05.926Z"
+}

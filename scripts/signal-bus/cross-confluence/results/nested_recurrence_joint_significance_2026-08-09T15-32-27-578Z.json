@@ -1,0 +1,239 @@
+{
+  "results": {
+    "1R": {
+      "rMultiple": 1,
+      "nestedAvgRecurrence": 1.7374376039933443,
+      "soloAvgRecurrence": 1.7485585359739284,
+      "nestedInHighRec": {
+        "realA": 0.6107812871052006,
+        "realB": 0.5856669123065585,
+        "realGap": 0.025114374798642092,
+        "p": 0.02095
+      },
+      "nestedInLowRec": {
+        "realA": 0.3312862504264756,
+        "realB": 0.33482495393524614,
+        "realGap": -0.0035387035087705576,
+        "p": 0.6047
+      },
+      "recInNested": {
+        "realA": 0.6107812871052006,
+        "realB": 0.3312862504264756,
+        "realGap": 0.27949503667872505,
+        "p": 0
+      },
+      "recInSolo": {
+        "realA": 0.5856669123065585,
+        "realB": 0.33482495393524614,
+        "realGap": 0.2508419583713124,
+        "p": 0
+      },
+      "cellStats": {
+        "nested + high-rec (best case)": {
+          "n": 4211,
+          "winRate": 0.6107812871052006
+        },
+        "nested + low-rec": {
+          "n": 2931,
+          "winRate": 0.3312862504264756
+        },
+        "solo + high-rec": {
+          "n": 5428,
+          "winRate": 0.5856669123065585
+        },
+        "solo + low-rec (worst case)": {
+          "n": 3799,
+          "winRate": 0.33482495393524614
+        }
+      },
+      "bestVsWorst": {
+        "realA": 0.6107812871052006,
+        "realB": 0.33482495393524614,
+        "realGap": 0.2759563331699545,
+        "p": 0
+      },
+      "byDepthInStratum": {
+        "high-rec": [
+          {
+            "depth": 0,
+            "n": 5428,
+            "winRate": 0.5856669123065585
+          },
+          {
+            "depth": 1,
+            "n": 2929,
+            "winRate": 0.6090815978149539
+          },
+          {
+            "depth": 2,
+            "n": 978,
+            "winRate": 0.6104294478527608
+          },
+          {
+            "depth": 3,
+            "n": 267,
+            "winRate": 0.599250936329588
+          },
+          {
+            "depth": 4,
+            "n": 35,
+            "winRate": 0.8571428571428571
+          },
+          {
+            "depth": 5,
+            "n": 2,
+            "winRate": 0.5
+          }
+        ],
+        "low-rec": [
+          {
+            "depth": 0,
+            "n": 3799,
+            "winRate": 0.33482495393524614
+          },
+          {
+            "depth": 1,
+            "n": 2183,
+            "winRate": 0.3412734768666972
+          },
+          {
+            "depth": 2,
+            "n": 557,
+            "winRate": 0.28186714542190305
+          },
+          {
+            "depth": 3,
+            "n": 146,
+            "winRate": 0.3698630136986301
+          },
+          {
+            "depth": 4,
+            "n": 45,
+            "winRate": 0.3333333333333333
+          }
+        ]
+      }
+    },
+    "1.5R": {
+      "rMultiple": 1.5,
+      "nestedAvgRecurrence": 1.7374376039933443,
+      "soloAvgRecurrence": 1.7485585359739284,
+      "nestedInHighRec": {
+        "realA": 0.5232641374373658,
+        "realB": 0.49501292944218694,
+        "realGap": 0.02825120799517883,
+        "p": 0.01825
+      },
+      "nestedInLowRec": {
+        "realA": 0.2346311475409836,
+        "realB": 0.23813291139240506,
+        "realGap": -0.003501763851421452,
+        "p": 0.6147
+      },
+      "recInNested": {
+        "realA": 0.5232641374373658,
+        "realB": 0.2346311475409836,
+        "realGap": 0.2886329898963822,
+        "p": 0
+      },
+      "recInSolo": {
+        "realA": 0.49501292944218694,
+        "realB": 0.23813291139240506,
+        "realGap": 0.2568800180497819,
+        "p": 0
+      },
+      "cellStats": {
+        "nested + high-rec (best case)": {
+          "n": 4191,
+          "winRate": 0.5232641374373658
+        },
+        "nested + low-rec": {
+          "n": 2928,
+          "winRate": 0.2346311475409836
+        },
+        "solo + high-rec": {
+          "n": 5414,
+          "winRate": 0.49501292944218694
+        },
+        "solo + low-rec (worst case)": {
+          "n": 3792,
+          "winRate": 0.23813291139240506
+        }
+      },
+      "bestVsWorst": {
+        "realA": 0.5232641374373658,
+        "realB": 0.23813291139240506,
+        "realGap": 0.2851312260449607,
+        "p": 0
+      },
+      "byDepthInStratum": {
+        "high-rec": [
+          {
+            "depth": 0,
+            "n": 5414,
+            "winRate": 0.49501292944218694
+          },
+          {
+            "depth": 1,
+            "n": 2918,
+            "winRate": 0.5246744345442084
+          },
+          {
+            "depth": 2,
+            "n": 969,
+            "winRate": 0.5180598555211559
+          },
+          {
+            "depth": 3,
+            "n": 267,
+            "winRate": 0.5056179775280899
+          },
+          {
+            "depth": 4,
+            "n": 35,
+            "winRate": 0.6857142857142857
+          },
+          {
+            "depth": 5,
+            "n": 2,
+            "winRate": 0.5
+          }
+        ],
+        "low-rec": [
+          {
+            "depth": 0,
+            "n": 3792,
+            "winRate": 0.23813291139240506
+          },
+          {
+            "depth": 1,
+            "n": 2182,
+            "winRate": 0.2392300641613199
+          },
+          {
+            "depth": 2,
+            "n": 555,
+            "winRate": 0.21621621621621623
+          },
+          {
+            "depth": 3,
+            "n": 146,
+            "winRate": 0.2328767123287671
+          },
+          {
+            "depth": 4,
+            "n": 45,
+            "winRate": 0.24444444444444444
+          }
+        ]
+      }
+    }
+  },
+  "obCount": 6994,
+  "preWindow": 50,
+  "postWindow": 50,
+  "priceTolerance": 0.01,
+  "nestedWindowBars": 10,
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-09T15:32:27.578Z"
+}

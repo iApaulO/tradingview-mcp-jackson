@@ -1,0 +1,142 @@
+{
+  "splitFrac": 0.7,
+  "splitTime": 1701316350,
+  "trainCount": 40783,
+  "testCount": 15776,
+  "flat": {
+    "finalBankUsd": 441.367882827807,
+    "returnPct": -11.726423434438594,
+    "maxDrawdownPct": 12.52010984971882,
+    "tradesTaken": 37
+  },
+  "oosFloored": {
+    "finalBankUsd": 538.6277136617126,
+    "returnPct": 7.725542732342516,
+    "maxDrawdownPct": 7.834777209841781,
+    "tradesTaken": 373,
+    "contribByStrategy": {
+      "A_recurrence": -0.056369534913721424,
+      "G_wt_anchor_ct_15m": 0.14143161763232773,
+      "F_wt_anchor_1d": 0.011892691756229189,
+      "D_boom_nested_boost": 0.0011929364199811045,
+      "C_nested_divergence": -0.018803281941152508,
+      "E_swing_regime_2h": -0.003165570460995145,
+      "B_1d_divergence": 0.004950611967277922
+    }
+  },
+  "inSampleFloored": {
+    "finalBankUsd": 551.0287353801284,
+    "returnPct": 10.205747076025684,
+    "maxDrawdownPct": 7.769773980158967,
+    "tradesTaken": 287
+  },
+  "trainEdgeByBucket": {
+    "A_recurrence:3": {
+      "edge": 0.0015581274296457561,
+      "n": 19950,
+      "trusted": true
+    },
+    "A_recurrence:4": {
+      "edge": 0.0038665093985239844,
+      "n": 8786,
+      "trusted": true
+    },
+    "A_recurrence:5": {
+      "edge": 0.005430839846560083,
+      "n": 3418,
+      "trusted": true
+    },
+    "A_recurrence:6": {
+      "edge": 0.007492567484772675,
+      "n": 1451,
+      "trusted": true
+    },
+    "D_boom_nested_boost:2": {
+      "edge": 0.0005360464641196693,
+      "n": 1331,
+      "trusted": true
+    },
+    "D_boom_nested_boost:1": {
+      "edge": 0.0011327722127020745,
+      "n": 3540,
+      "trusted": true
+    },
+    "A_recurrence:8": {
+      "edge": 0.008719939102622044,
+      "n": 214,
+      "trusted": true
+    },
+    "A_recurrence:7": {
+      "edge": 0.009276099315526379,
+      "n": 536,
+      "trusted": true
+    },
+    "C_nested_divergence:2": {
+      "edge": 0.0029046093788997695,
+      "n": 90,
+      "trusted": true
+    },
+    "D_boom_nested_boost:4": {
+      "edge": -0.00024131010324614813,
+      "n": 175,
+      "trusted": true
+    },
+    "D_boom_nested_boost:3": {
+      "edge": 0.0011997124845030858,
+      "n": 526,
+      "trusted": true
+    },
+    "E_swing_regime_2h:flat": {
+      "edge": 0.05473953776547107,
+      "n": 91,
+      "trusted": true
+    },
+    "F_wt_anchor_1d:flat": {
+      "edge": 0.013867068083927656,
+      "n": 85,
+      "trusted": true
+    },
+    "B_1d_divergence:flat": {
+      "edge": 0.00004539345318548405,
+      "n": 27,
+      "trusted": false
+    },
+    "G_wt_anchor_ct_15m:flat": {
+      "edge": 0.006135185854473106,
+      "n": 341,
+      "trusted": true
+    },
+    "C_nested_divergence:3": {
+      "edge": 0.002249285871748243,
+      "n": 10,
+      "trusted": false
+    },
+    "A_recurrence:9": {
+      "edge": 0.004682897840358185,
+      "n": 166,
+      "trusted": true
+    },
+    "D_boom_nested_boost:5": {
+      "edge": 0.0009497480661435174,
+      "n": 9,
+      "trusted": false
+    },
+    "A_recurrence:10": {
+      "edge": 0.0029632200111242932,
+      "n": 17,
+      "trusted": false
+    },
+    "A_recurrence:14": {
+      "edge": 0.0029632200111242932,
+      "n": 13,
+      "trusted": false
+    },
+    "D_boom_nested_boost:6": {
+      "edge": 0.0009497480661435174,
+      "n": 7,
+      "trusted": false
+    }
+  },
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-12T11:51:22.985Z"
+}

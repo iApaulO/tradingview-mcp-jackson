@@ -1,0 +1,98 @@
+{
+  "results": {
+    "4R": {
+      "no_flag": {
+        "trade_count": 719,
+        "win_rate": 0.2614742698191933,
+        "profit_factor": 1.1369120626323903,
+        "gross_expectancy_pct_per_trade": 0.0003434649228739615,
+        "costed_expectancy_pct_per_trade": -0.0006817350075850095
+      },
+      "with_flag": {
+        "trade_count": 13927,
+        "win_rate": 0.18302577726717886,
+        "profit_factor": 0.8436474886042794,
+        "gross_expectancy_pct_per_trade": -0.0003985901227008696,
+        "costed_expectancy_pct_per_trade": -0.0014216623624749391
+      },
+      "all": {
+        "trade_count": 14646,
+        "win_rate": 0.18687696299330875,
+        "profit_factor": 0.8578259326715609,
+        "gross_expectancy_pct_per_trade": -0.00036216122895730104,
+        "costed_expectancy_pct_per_trade": -0.001385337921114437
+      }
+    },
+    "5R": {
+      "no_flag": {
+        "trade_count": 719,
+        "win_rate": 0.22253129346314326,
+        "profit_factor": 1.2355256493503797,
+        "gross_expectancy_pct_per_trade": 0.0006084402850108062,
+        "costed_expectancy_pct_per_trade": -0.0004215912982066256
+      },
+      "with_flag": {
+        "trade_count": 13924,
+        "win_rate": 0.15484056305659294,
+        "profit_factor": 0.8603369727590355,
+        "gross_expectancy_pct_per_trade": -0.0003677943209706107,
+        "costed_expectancy_pct_per_trade": -0.001396589177573125
+      },
+      "all": {
+        "trade_count": 14643,
+        "win_rate": 0.1581643105920918,
+        "profit_factor": 0.8784258124944498,
+        "gross_expectancy_pct_per_trade": -0.00031985928841576303,
+        "costed_expectancy_pct_per_trade": -0.0013487148707190283
+      }
+    },
+    "6R": {
+      "no_flag": {
+        "trade_count": 717,
+        "win_rate": 0.19386331938633194,
+        "profit_factor": 1.2237243747826663,
+        "gross_expectancy_pct_per_trade": 0.000599404056766106,
+        "costed_expectancy_pct_per_trade": -0.0004376702691288277
+      },
+      "with_flag": {
+        "trade_count": 13918,
+        "win_rate": 0.13126886046845812,
+        "profit_factor": 0.8404635342894744,
+        "gross_expectancy_pct_per_trade": -0.0004317927505532125,
+        "costed_expectancy_pct_per_trade": -0.0014666239942663982
+      },
+      "all": {
+        "trade_count": 14635,
+        "win_rate": 0.13433549709600273,
+        "profit_factor": 0.8590598469132836,
+        "gross_expectancy_pct_per_trade": -0.00038127221001013514,
+        "costed_expectancy_pct_per_trade": -0.0014162133471243663
+      }
+    },
+    "8R": {
+      "no_flag": {
+        "trade_count": 714,
+        "win_rate": 0.15966386554621848,
+        "profit_factor": 1.2343256207673083,
+        "gross_expectancy_pct_per_trade": 0.0006519713074155525,
+        "costed_expectancy_pct_per_trade": -0.0003912826608384164
+      },
+      "with_flag": {
+        "trade_count": 13897,
+        "win_rate": 0.1030438224077139,
+        "profit_factor": 0.836127030368824,
+        "gross_expectancy_pct_per_trade": -0.00045748630841746773,
+        "costed_expectancy_pct_per_trade": -0.0014999652757005872
+      },
+      "all": {
+        "trade_count": 14611,
+        "win_rate": 0.10581069057559372,
+        "profit_factor": 0.8555237037283621,
+        "gross_expectancy_pct_per_trade": -0.00040327011940201573,
+        "costed_expectancy_pct_per_trade": -0.001445786958883699
+      }
+    }
+  },
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-10T00:34:42.646Z"
+}

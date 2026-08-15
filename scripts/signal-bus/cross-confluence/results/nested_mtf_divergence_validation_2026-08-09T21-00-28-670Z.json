@@ -1,0 +1,129 @@
+{
+  "scope": "Cipher B regular WT divergence, 1h, nested confirmation {15m,4h,1d} (4h substituted for the Python original's 6h)",
+  "results": {
+    "1R": {
+      "tradeCount": 871,
+      "correlation": {
+        "r": 0.056698568413029934,
+        "p": 0.05018
+      },
+      "topVsBottomGap": {
+        "gap": 0.13220551378446121,
+        "nTop": 12,
+        "nBottom": 399,
+        "maxX": 3,
+        "p": 0.16902
+      },
+      "cost": {
+        "low_confirm": {
+          "trade_count": 734,
+          "win_rate": 0.45776566757493187,
+          "profit_factor": 0.8153996894285499,
+          "gross_expectancy_pct_per_trade": -0.0006338356608009338,
+          "costed_expectancy_pct_per_trade": -0.002046250510937175
+        },
+        "high_confirm": {
+          "trade_count": 137,
+          "win_rate": 0.5401459854014599,
+          "profit_factor": 1.3395719866882345,
+          "gross_expectancy_pct_per_trade": 0.001182749897366723,
+          "costed_expectancy_pct_per_trade": -0.00022746908073546703
+        }
+      }
+    },
+    "1.5R": {
+      "tradeCount": 871,
+      "correlation": {
+        "r": 0.05548476203291203,
+        "p": 0.05564
+      },
+      "topVsBottomGap": {
+        "gap": 0.05075187969924816,
+        "nTop": 12,
+        "nBottom": 399,
+        "maxX": 3,
+        "p": 0.33164
+      },
+      "cost": {
+        "low_confirm": {
+          "trade_count": 734,
+          "win_rate": 0.3814713896457766,
+          "profit_factor": 0.9175372908280708,
+          "gross_expectancy_pct_per_trade": -0.00031892765171716856,
+          "costed_expectancy_pct_per_trade": -0.0017380863710632214
+        },
+        "high_confirm": {
+          "trade_count": 137,
+          "win_rate": 0.44525547445255476,
+          "profit_factor": 1.5094116655751326,
+          "gross_expectancy_pct_per_trade": 0.002069073989504831,
+          "costed_expectancy_pct_per_trade": 0.0006513732595778242
+        }
+      }
+    },
+    "2R": {
+      "tradeCount": 871,
+      "correlation": {
+        "r": 0.053374262235454904,
+        "p": 0.06222
+      },
+      "topVsBottomGap": {
+        "gap": 0.12092731829573938,
+        "nTop": 12,
+        "nBottom": 399,
+        "maxX": 3,
+        "p": 0.16972
+      },
+      "cost": {
+        "low_confirm": {
+          "trade_count": 734,
+          "win_rate": 0.3215258855585831,
+          "profit_factor": 0.94644731519841,
+          "gross_expectancy_pct_per_trade": -0.000226583908254001,
+          "costed_expectancy_pct_per_trade": -0.0016533550254202135
+        },
+        "high_confirm": {
+          "trade_count": 137,
+          "win_rate": 0.35036496350364965,
+          "profit_factor": 1.4395581704287008,
+          "gross_expectancy_pct_per_trade": 0.002082769312382692,
+          "costed_expectancy_pct_per_trade": 0.0006570393853753937
+        }
+      }
+    },
+    "3R": {
+      "tradeCount": 871,
+      "correlation": {
+        "r": 0.06118427008029783,
+        "p": 0.03964
+      },
+      "topVsBottomGap": {
+        "gap": 0.2011278195488722,
+        "nTop": 12,
+        "nBottom": 399,
+        "maxX": 3,
+        "p": 0.0524
+      },
+      "cost": {
+        "low_confirm": {
+          "trade_count": 734,
+          "win_rate": 0.23433242506811988,
+          "profit_factor": 0.9116149929443479,
+          "gross_expectancy_pct_per_trade": -0.0004225326299220649,
+          "costed_expectancy_pct_per_trade": -0.0018666232293771063
+        },
+        "high_confirm": {
+          "trade_count": 137,
+          "win_rate": 0.2773722627737226,
+          "profit_factor": 1.6743466100873445,
+          "gross_expectancy_pct_per_trade": 0.0035268013361477034,
+          "costed_expectancy_pct_per_trade": 0.0020861991463666817
+        }
+      }
+    }
+  },
+  "dataSpanYears": 8.979237964864248,
+  "eventCount": 871,
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-09T21:00:28.670Z"
+}

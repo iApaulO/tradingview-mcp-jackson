@@ -1,0 +1,41 @@
+{
+  "signalType": "blood_diamond",
+  "results": {
+    "1R": {
+      "rMultiple": 1,
+      "obCount": 215,
+      "tradeCount": 215,
+      "nNested": 0,
+      "nSolo": 215,
+      "test": null,
+      "byTf": {
+        "4h": null,
+        "3h": null,
+        "2h": null,
+        "1h": null,
+        "15m": null,
+        "5m": null
+      }
+    },
+    "1.5R": {
+      "rMultiple": 1.5,
+      "obCount": 215,
+      "tradeCount": 215,
+      "nNested": 0,
+      "nSolo": 215,
+      "test": null,
+      "byTf": {
+        "4h": null,
+        "3h": null,
+        "2h": null,
+        "1h": null,
+        "15m": null,
+        "5m": null
+      }
+    }
+  },
+  "priceTolerance": 0.01,
+  "nestedWindowBars": 10,
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-10T01:10:50.393Z"
+}

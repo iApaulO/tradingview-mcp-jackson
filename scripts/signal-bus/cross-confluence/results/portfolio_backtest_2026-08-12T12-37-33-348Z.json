@@ -1,0 +1,376 @@
+{
+  "config": {
+    "rMultiple": 2,
+    "riskPctPerTrade": 0.005,
+    "maxPortfolioRiskPct": 0.02,
+    "feeTier": "bitunix_futures_vip1",
+    "startingBankUsd": 500,
+    "sensitivity": 150,
+    "minSizeMult": 0.5,
+    "maxSizeMult": 2.5,
+    "premiumPercentile": 0.8,
+    "premiumReservePct": 0.3,
+    "perStrategyFloorPct": 0.001
+  },
+  "perStrategy": {
+    "A_recurrence": {
+      "trade_count": 47377,
+      "trades_per_year": 5278.9040955432565,
+      "win_rate": 0.561981552229985,
+      "gross_expectancy_pct_per_trade": 0.0037752996604971906,
+      "costed_expectancy_pct_per_trade": 0.002684988147702671
+    },
+    "B_1d_divergence": {
+      "trade_count": 42,
+      "trades_per_year": 4.918403334402052,
+      "win_rate": 0.38095238095238093,
+      "gross_expectancy_pct_per_trade": 0.0027561475440937492,
+      "costed_expectancy_pct_per_trade": 0.001241861829808033
+    },
+    "C_nested_divergence": {
+      "trade_count": 137,
+      "trades_per_year": 15.418238307378259,
+      "win_rate": 0.35036496350364965,
+      "gross_expectancy_pct_per_trade": 0.002082769312382692,
+      "costed_expectancy_pct_per_trade": 0.0010570393853753931
+    },
+    "D_boom_nested_boost": {
+      "trade_count": 8194,
+      "trades_per_year": 915.8511633244399,
+      "win_rate": 0.4386136197217476,
+      "gross_expectancy_pct_per_trade": 0.0019605837514091234,
+      "costed_expectancy_pct_per_trade": 0.0008890805936107433
+    },
+    "E_swing_regime_2h": {
+      "trade_count": 140,
+      "trades_per_year": 16.02099161901778,
+      "win_rate": 0.34285714285714286,
+      "gross_expectancy_pct_per_trade": 0.03855624766719459,
+      "costed_expectancy_pct_per_trade": 0.030957497667194633
+    },
+    "F_wt_anchor_1d": {
+      "trade_count": 124,
+      "trades_per_year": 14.087402799377916,
+      "win_rate": 0.49193548387096775,
+      "gross_expectancy_pct_per_trade": 0.013040242464411503,
+      "costed_expectancy_pct_per_trade": 0.011449919883766346
+    },
+    "G_wt_anchor_ct_15m": {
+      "trade_count": 545,
+      "trades_per_year": 62.3590874827459,
+      "win_rate": 0.21467889908256882,
+      "gross_expectancy_pct_per_trade": 0.0056546698489908015,
+      "costed_expectancy_pct_per_trade": 0.004545432463669707
+    }
+  },
+  "flat": {
+    "tradeCount": 56559,
+    "tradesTaken": 75,
+    "skippedNoCapacity": 56484,
+    "spanYears": 8.974779450908814,
+    "totalReturnPct": 7.774385716572496,
+    "cagr": 0.8377141403384858,
+    "maxDrawdownPct": 5.143654017418112,
+    "finalEquityMultiple": 1.077743857165725,
+    "finalBankUsd": 538.8719285828624,
+    "contribByStrategy": {
+      "A_recurrence": 0.07311346425743297,
+      "D_boom_nested_boost": 0.0036039897237785563
+    }
+  },
+  "prioritized": {
+    "tradesTaken": 94,
+    "skippedNoEdge": 0,
+    "skippedNoCapacity": 56465,
+    "totalReturnPct": 12.718768124513069,
+    "cagr": 1.3429622640338312,
+    "maxDrawdownPct": 8.869672161525699,
+    "finalEquityMultiple": 1.1271876812451307,
+    "finalBankUsd": 563.5938406225654,
+    "premiumCutoff": 0.0039931347387121615,
+    "contribByStrategy": {
+      "A_recurrence": 0.12024211198832381,
+      "D_boom_nested_boost": 0.0034070525833555954
+    },
+    "edgeByBucket": {
+      "A_recurrence:3": {
+        "edge": 0.001745420850637781,
+        "n": 19378,
+        "trusted": true
+      },
+      "A_recurrence:3.5": {
+        "edge": 0.0005979354622132738,
+        "n": 7927,
+        "trusted": true
+      },
+      "A_recurrence:4": {
+        "edge": 0.0039931347387121615,
+        "n": 7125,
+        "trusted": true
+      },
+      "A_recurrence:4.5": {
+        "edge": 0.0027314318999985022,
+        "n": 4985,
+        "trusted": true
+      },
+      "A_recurrence:5": {
+        "edge": 0.005964730882839167,
+        "n": 2414,
+        "trusted": true
+      },
+      "A_recurrence:6": {
+        "edge": 0.00759496276911528,
+        "n": 740,
+        "trusted": true
+      },
+      "A_recurrence:5.5": {
+        "edge": 0.003988202587630184,
+        "n": 2422,
+        "trusted": true
+      },
+      "D_boom_nested_boost:2": {
+        "edge": 0.0005903196337947393,
+        "n": 2014,
+        "trusted": true
+      },
+      "D_boom_nested_boost:1": {
+        "edge": 0.001124804999458328,
+        "n": 4982,
+        "trusted": true
+      },
+      "A_recurrence:8.5": {
+        "edge": 0.008099491963925787,
+        "n": 249,
+        "trusted": true
+      },
+      "A_recurrence:7.5": {
+        "edge": 0.008503082935428384,
+        "n": 425,
+        "trusted": true
+      },
+      "C_nested_divergence:2": {
+        "edge": 0.001450024766148353,
+        "n": 125,
+        "trusted": true
+      },
+      "D_boom_nested_boost:4": {
+        "edge": 0.0001681197346417865,
+        "n": 293,
+        "trusted": true
+      },
+      "D_boom_nested_boost:3": {
+        "edge": 0.0004955303307662779,
+        "n": 886,
+        "trusted": true
+      },
+      "A_recurrence:6.5": {
+        "edge": 0.0066280005413939524,
+        "n": 1242,
+        "trusted": true
+      },
+      "E_swing_regime_2h:flat": {
+        "edge": 0.030957497667194633,
+        "n": 140,
+        "trusted": true
+      },
+      "F_wt_anchor_1d:flat": {
+        "edge": 0.011449919883766346,
+        "n": 124,
+        "trusted": true
+      },
+      "B_1d_divergence:flat": {
+        "edge": 0.001241861829808033,
+        "n": 42,
+        "trusted": true
+      },
+      "G_wt_anchor_ct_15m:flat": {
+        "edge": 0.004545432463669707,
+        "n": 545,
+        "trusted": true
+      },
+      "C_nested_divergence:3": {
+        "edge": 0.0010570393853753931,
+        "n": 12,
+        "trusted": false
+      },
+      "A_recurrence:7": {
+        "edge": 0.007854120119124468,
+        "n": 239,
+        "trusted": true
+      },
+      "A_recurrence:9": {
+        "edge": 0.002684988147702653,
+        "n": 23,
+        "trusted": false
+      },
+      "A_recurrence:8": {
+        "edge": 0.002684988147702653,
+        "n": 24,
+        "trusted": false
+      },
+      "A_recurrence:9.5": {
+        "edge": 0.0046624618165107936,
+        "n": 143,
+        "trusted": true
+      },
+      "D_boom_nested_boost:5": {
+        "edge": 0.0008890805936107429,
+        "n": 12,
+        "trusted": false
+      },
+      "A_recurrence:10.5": {
+        "edge": 0.002684988147702653,
+        "n": 17,
+        "trusted": false
+      },
+      "A_recurrence:14.5": {
+        "edge": 0.002684988147702653,
+        "n": 13,
+        "trusted": false
+      },
+      "D_boom_nested_boost:6": {
+        "edge": 0.0008890805936107429,
+        "n": 7,
+        "trusted": false
+      },
+      "A_recurrence:11.5": {
+        "edge": 0.002684988147702653,
+        "n": 11,
+        "trusted": false
+      }
+    }
+  },
+  "floored": {
+    "tradesTaken": 986,
+    "skippedNoEdge": 0,
+    "skippedNoCapacity": 55573,
+    "totalReturnPct": 179.29007026514054,
+    "cagr": 12.124623557504389,
+    "maxDrawdownPct": 6.18065482553426,
+    "finalEquityMultiple": 2.7929007026514054,
+    "finalBankUsd": 1396.4503513257027,
+    "contribByStrategy": {
+      "A_recurrence": 0.04870855775042152,
+      "D_boom_nested_boost": 0.00043682627078386947,
+      "C_nested_divergence": -0.017976215926906496,
+      "F_wt_anchor_1d": 0.016042092661171112,
+      "B_1d_divergence": 0.003400886928541979,
+      "G_wt_anchor_ct_15m": 0.911816696488927,
+      "E_swing_regime_2h": 0.09233542782594983
+    },
+    "floorContribByStrategy": {
+      "A_recurrence": 0.0017721306381326205,
+      "D_boom_nested_boost": -0.0019006341488425106,
+      "C_nested_divergence": -0.017976215926906496,
+      "F_wt_anchor_1d": 0.016042092661171112,
+      "B_1d_divergence": 0.003400886928541979,
+      "G_wt_anchor_ct_15m": 0.911816696488927,
+      "E_swing_regime_2h": 0.09233542782594983
+    },
+    "generalContribByStrategy": {
+      "A_recurrence": 0.04693642711228891,
+      "D_boom_nested_boost": 0.002337460419626381,
+      "C_nested_divergence": 0,
+      "F_wt_anchor_1d": 0,
+      "B_1d_divergence": 0,
+      "G_wt_anchor_ct_15m": 0,
+      "E_swing_regime_2h": 0
+    }
+  },
+  "overlapDist": {
+    "0": 397,
+    "1": 4710,
+    "2": 4637,
+    "3": 4745,
+    "4": 4634,
+    "5": 4344,
+    "6": 4044,
+    "7": 3634,
+    "8": 3301,
+    "9": 2720,
+    "10": 2410,
+    "11": 2096,
+    "12": 2041,
+    "13": 1704,
+    "14": 1462,
+    "15": 1235,
+    "16": 1102,
+    "17": 950,
+    "18": 923,
+    "19": 730,
+    "20": 657,
+    "21": 550,
+    "22": 442,
+    "23": 397,
+    "24": 336,
+    "25": 255,
+    "26": 256,
+    "27": 227,
+    "28": 178,
+    "29": 180,
+    "30": 184,
+    "31": 120,
+    "32": 109,
+    "33": 100,
+    "34": 88,
+    "35": 79,
+    "36": 68,
+    "37": 43,
+    "38": 45,
+    "39": 42,
+    "40": 44,
+    "41": 27,
+    "42": 25,
+    "43": 20,
+    "44": 21,
+    "45": 22,
+    "46": 9,
+    "47": 17,
+    "48": 15,
+    "49": 4,
+    "50": 4,
+    "51": 10,
+    "52": 7,
+    "53": 4,
+    "54": 2,
+    "55": 10,
+    "56": 1,
+    "57": 17,
+    "58": 1,
+    "59": 2,
+    "60": 1,
+    "61": 5,
+    "63": 6,
+    "64": 9,
+    "65": 8,
+    "66": 4,
+    "67": 3,
+    "69": 2,
+    "70": 6,
+    "71": 1,
+    "74": 5,
+    "75": 2,
+    "76": 1,
+    "77": 4,
+    "78": 3,
+    "81": 5,
+    "86": 5,
+    "88": 2,
+    "93": 5,
+    "98": 5,
+    "102": 4,
+    "103": 5,
+    "105": 2,
+    "107": 7,
+    "109": 1,
+    "110": 4,
+    "111": 4,
+    "112": 5,
+    "113": 2,
+    "114": 1,
+    "115": 5
+  },
+  "pctWithOverlap": 0.9929807811312081,
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-12T12:37:33.348Z"
+}

@@ -1,0 +1,146 @@
+{
+  "results": {
+    "1R": {
+      "tradeCount": 147169,
+      "nestedVsSolo": {
+        "nested": {
+          "trade_count": 119389,
+          "win_rate": 0.43271993232207323,
+          "profit_factor": 0.7727440542004262,
+          "gross_expectancy_pct_per_trade": -0.0002885084498576172,
+          "costed_expectancy_pct_per_trade": -0.0014913928236273855
+        },
+        "solo": {
+          "trade_count": 27780,
+          "win_rate": 0.4277897768178546,
+          "profit_factor": 0.79430290664791,
+          "gross_expectancy_pct_per_trade": -0.0004299777130303632,
+          "costed_expectancy_pct_per_trade": -0.0016382595629823812
+        }
+      },
+      "nestedByTf": {
+        "15m": {
+          "trade_count": 24114,
+          "win_rate": 0.4285062619225346,
+          "profit_factor": 0.7584358398689162,
+          "gross_expectancy_pct_per_trade": -0.0003498322869884191,
+          "costed_expectancy_pct_per_trade": -0.0015518090950667163
+        },
+        "5m": {
+          "trade_count": 82285,
+          "win_rate": 0.432885702132831,
+          "profit_factor": 0.7627503061289903,
+          "gross_expectancy_pct_per_trade": -0.00019276346346490324,
+          "costed_expectancy_pct_per_trade": -0.0013933663224306996
+        }
+      }
+    },
+    "1.5R": {
+      "tradeCount": 147169,
+      "nestedVsSolo": {
+        "nested": {
+          "trade_count": 119389,
+          "win_rate": 0.35611320975969313,
+          "profit_factor": 0.8330291618272889,
+          "gross_expectancy_pct_per_trade": -0.00024160228593950463,
+          "costed_expectancy_pct_per_trade": -0.001446142451560575
+        },
+        "solo": {
+          "trade_count": 27780,
+          "win_rate": 0.347264218862491,
+          "profit_factor": 0.8372689741551999,
+          "gross_expectancy_pct_per_trade": -0.0003917116411678768,
+          "costed_expectancy_pct_per_trade": -0.0016053799352043641
+        }
+      },
+      "nestedByTf": {
+        "15m": {
+          "trade_count": 24114,
+          "win_rate": 0.3477233142572779,
+          "profit_factor": 0.796897609446509,
+          "gross_expectancy_pct_per_trade": -0.0003377680559566658,
+          "costed_expectancy_pct_per_trade": -0.001541075911351872
+        },
+        "5m": {
+          "trade_count": 82285,
+          "win_rate": 0.35769581333171296,
+          "profit_factor": 0.8282327996129366,
+          "gross_expectancy_pct_per_trade": -0.00015849477584263478,
+          "costed_expectancy_pct_per_trade": -0.0013594887930794546
+        }
+      }
+    },
+    "2R": {
+      "tradeCount": 147169,
+      "nestedVsSolo": {
+        "nested": {
+          "trade_count": 119389,
+          "win_rate": 0.2995418338372882,
+          "profit_factor": 0.8481706405165214,
+          "gross_expectancy_pct_per_trade": -0.0002399435446241892,
+          "costed_expectancy_pct_per_trade": -0.0014460641880670597
+        },
+        "solo": {
+          "trade_count": 27780,
+          "win_rate": 0.2916846652267819,
+          "profit_factor": 0.8802757681821357,
+          "gross_expectancy_pct_per_trade": -0.00031181107418843393,
+          "costed_expectancy_pct_per_trade": -0.0015302287007783184
+        }
+      },
+      "nestedByTf": {
+        "15m": {
+          "trade_count": 24114,
+          "win_rate": 0.29107572364601475,
+          "profit_factor": 0.8109550413214149,
+          "gross_expectancy_pct_per_trade": -0.0003425272377810767,
+          "costed_expectancy_pct_per_trade": -0.0015471049727068592
+        },
+        "5m": {
+          "trade_count": 82285,
+          "win_rate": 0.3011484474691621,
+          "profit_factor": 0.846289116631941,
+          "gross_expectancy_pct_per_trade": -0.0001546911474135259,
+          "costed_expectancy_pct_per_trade": -0.0013560821968149803
+        }
+      }
+    },
+    "3R": {
+      "tradeCount": 147168,
+      "nestedVsSolo": {
+        "nested": {
+          "trade_count": 119388,
+          "win_rate": 0.22586859650886187,
+          "profit_factor": 0.8596291363044379,
+          "gross_expectancy_pct_per_trade": -0.00024554698922023515,
+          "costed_expectancy_pct_per_trade": -0.0014547388503508944
+        },
+        "solo": {
+          "trade_count": 27780,
+          "win_rate": 0.22073434125269978,
+          "profit_factor": 0.9228638414296804,
+          "gross_expectancy_pct_per_trade": -0.00022125320905971174,
+          "costed_expectancy_pct_per_trade": -0.0014496374633193746
+        }
+      },
+      "nestedByTf": {
+        "15m": {
+          "trade_count": 24114,
+          "win_rate": 0.21730115285726134,
+          "profit_factor": 0.813697349828743,
+          "gross_expectancy_pct_per_trade": -0.00037320545093188974,
+          "costed_expectancy_pct_per_trade": -0.0015801886868114631
+        },
+        "5m": {
+          "trade_count": 82284,
+          "win_rate": 0.22704292450537164,
+          "profit_factor": 0.855962295616463,
+          "gross_expectancy_pct_per_trade": -0.0001604924976995817,
+          "costed_expectancy_pct_per_trade": -0.0013626542687202674
+        }
+      }
+    }
+  },
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-10T00:10:21.729Z"
+}

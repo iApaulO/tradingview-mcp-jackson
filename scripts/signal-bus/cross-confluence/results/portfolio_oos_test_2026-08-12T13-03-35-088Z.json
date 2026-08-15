@@ -1,0 +1,142 @@
+{
+  "splitFrac": 0.7,
+  "splitTime": 1701386460,
+  "trainCount": 18726,
+  "testCount": 7890,
+  "flat": {
+    "finalBankUsd": 475.2873375801141,
+    "returnPct": -4.94253248397718,
+    "maxDrawdownPct": 9.0835417947942,
+    "tradesTaken": 89
+  },
+  "oosFloored": {
+    "finalBankUsd": 563.623507445121,
+    "returnPct": 12.724701489024204,
+    "maxDrawdownPct": 5.594603839820947,
+    "tradesTaken": 383,
+    "contribByStrategy": {
+      "A2_engulfment_only": -0.026503150938064157,
+      "F_wt_anchor_1d": 0.011892691756229189,
+      "D_boom_nested_boost": 0.006172730121597657,
+      "G_wt_anchor_ct_15m": 0.15193967832315752,
+      "C_nested_divergence": -0.018803281941152508,
+      "E_swing_regime_2h": -0.003165570460995145,
+      "B_1d_divergence": 0.004950611967277922
+    }
+  },
+  "inSampleFloored": {
+    "finalBankUsd": 575.1777466017302,
+    "returnPct": 15.035549320346032,
+    "maxDrawdownPct": 5.446152871756034,
+    "tradesTaken": 297
+  },
+  "trainEdgeByBucket": {
+    "A2_engulfment_only:3": {
+      "edge": 0.0006799400711131947,
+      "n": 5577,
+      "trusted": true
+    },
+    "A2_engulfment_only:4": {
+      "edge": 0.0031844174971126264,
+      "n": 3598,
+      "trusted": true
+    },
+    "A2_engulfment_only:5": {
+      "edge": 0.004719874629252812,
+      "n": 1720,
+      "trusted": true
+    },
+    "D_boom_nested_boost:2": {
+      "edge": 0.0005360464641196693,
+      "n": 1331,
+      "trusted": true
+    },
+    "D_boom_nested_boost:1": {
+      "edge": 0.0011327722127020745,
+      "n": 3540,
+      "trusted": true
+    },
+    "A2_engulfment_only:8": {
+      "edge": 0.00887499989978698,
+      "n": 206,
+      "trusted": true
+    },
+    "A2_engulfment_only:7": {
+      "edge": 0.010077071229729772,
+      "n": 329,
+      "trusted": true
+    },
+    "C_nested_divergence:2": {
+      "edge": 0.0029046093788997695,
+      "n": 90,
+      "trusted": true
+    },
+    "D_boom_nested_boost:4": {
+      "edge": -0.00024131010324614813,
+      "n": 175,
+      "trusted": true
+    },
+    "D_boom_nested_boost:3": {
+      "edge": 0.0011997124845030858,
+      "n": 526,
+      "trusted": true
+    },
+    "A2_engulfment_only:6": {
+      "edge": 0.007088524920092892,
+      "n": 890,
+      "trusted": true
+    },
+    "E_swing_regime_2h:flat": {
+      "edge": 0.05473953776547107,
+      "n": 91,
+      "trusted": true
+    },
+    "F_wt_anchor_1d:flat": {
+      "edge": 0.013867068083927656,
+      "n": 85,
+      "trusted": true
+    },
+    "B_1d_divergence:flat": {
+      "edge": 0.00004539345318548405,
+      "n": 27,
+      "trusted": false
+    },
+    "G_wt_anchor_ct_15m:flat": {
+      "edge": 0.006110189159185583,
+      "n": 342,
+      "trusted": true
+    },
+    "C_nested_divergence:3": {
+      "edge": 0.002249285871748243,
+      "n": 10,
+      "trusted": false
+    },
+    "A2_engulfment_only:9": {
+      "edge": 0.0046624618165107936,
+      "n": 143,
+      "trusted": true
+    },
+    "D_boom_nested_boost:5": {
+      "edge": 0.0009497480661435174,
+      "n": 9,
+      "trusted": false
+    },
+    "A2_engulfment_only:10": {
+      "edge": 0.0028626869026707777,
+      "n": 17,
+      "trusted": false
+    },
+    "A2_engulfment_only:14": {
+      "edge": 0.0028626869026707777,
+      "n": 13,
+      "trusted": false
+    },
+    "D_boom_nested_boost:6": {
+      "edge": 0.0009497480661435174,
+      "n": 7,
+      "trusted": false
+    }
+  },
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-12T13:03:35.088Z"
+}

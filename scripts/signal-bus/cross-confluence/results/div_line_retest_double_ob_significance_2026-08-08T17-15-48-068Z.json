@@ -1,0 +1,121 @@
+{
+  "results": [
+    {
+      "timeframe": "1w",
+      "nWithRetest": 0,
+      "nWithoutRetest": 0,
+      "baselineMfeMean": 5.080848253692719,
+      "withRetest": {
+        "n": 0
+      },
+      "withoutRetest": {
+        "n": 0
+      }
+    },
+    {
+      "timeframe": "1d",
+      "nWithRetest": 0,
+      "nWithoutRetest": 1,
+      "baselineMfeMean": 0.6534326803287028,
+      "withRetest": {
+        "n": 0
+      },
+      "withoutRetest": {
+        "n": 1,
+        "meanMfe": 1.2667014654074222
+      }
+    },
+    {
+      "timeframe": "4h",
+      "nWithRetest": 0,
+      "nWithoutRetest": 10,
+      "baselineMfeMean": 0.153977222264255,
+      "withRetest": {
+        "n": 0
+      },
+      "withoutRetest": {
+        "n": 10,
+        "meanMfe": 0.24068745910737369,
+        "vsBaselineP": 0.006886714364097601
+      }
+    },
+    {
+      "timeframe": "3h",
+      "nWithRetest": 0,
+      "nWithoutRetest": 6,
+      "baselineMfeMean": 0.12639531834427867,
+      "withRetest": {
+        "n": 0
+      },
+      "withoutRetest": {
+        "n": 6,
+        "meanMfe": 0.16733372565913185,
+        "vsBaselineP": 0.5308954961422847
+      }
+    },
+    {
+      "timeframe": "2h",
+      "nWithRetest": 0,
+      "nWithoutRetest": 11,
+      "baselineMfeMean": 0.0972546180604871,
+      "withRetest": {
+        "n": 0
+      },
+      "withoutRetest": {
+        "n": 11,
+        "meanMfe": 0.13388343693803323,
+        "vsBaselineP": 0.047279824489901756
+      }
+    },
+    {
+      "timeframe": "1h",
+      "nWithRetest": 0,
+      "nWithoutRetest": 10,
+      "baselineMfeMean": 0.06372471515342028,
+      "withRetest": {
+        "n": 0
+      },
+      "withoutRetest": {
+        "n": 10,
+        "meanMfe": 0.07132259338648242,
+        "vsBaselineP": 0.21436442040987713
+      }
+    },
+    {
+      "timeframe": "15m",
+      "nWithRetest": 3,
+      "nWithoutRetest": 13,
+      "baselineMfeMean": 0.029150448181532795,
+      "withRetest": {
+        "n": 3,
+        "meanMfe": 0.03646729374846713,
+        "vsBaselineP": 0.6288734230537123
+      },
+      "withoutRetest": {
+        "n": 13,
+        "meanMfe": 0.04621222202886034,
+        "vsBaselineP": 0.006499011415623368
+      },
+      "withVsWithoutP": 0.5520016951607323
+    },
+    {
+      "timeframe": "5m",
+      "nWithRetest": 1,
+      "nWithoutRetest": 6,
+      "baselineMfeMean": 0.016151076403301868,
+      "withRetest": {
+        "n": 1,
+        "meanMfe": 0.02482276548571849
+      },
+      "withoutRetest": {
+        "n": 6,
+        "meanMfe": 0.026758087771885042,
+        "vsBaselineP": 0.17419761923050636
+      }
+    }
+  ],
+  "window": 160,
+  "retestTolerance": 0.003,
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-08T17:15:48.068Z"
+}

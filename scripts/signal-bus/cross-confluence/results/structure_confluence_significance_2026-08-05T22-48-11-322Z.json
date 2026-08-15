@@ -1,0 +1,38 @@
+{
+  "zoneCount": 5189,
+  "touchCount": 34927,
+  "iterations": 20000,
+  "seed": 42,
+  "byCategory": {
+    "no-structure": {
+      "zoneCount": 4131,
+      "touchCount": 27353,
+      "holdRate": 0.5391364749753227
+    },
+    "structure": {
+      "zoneCount": 1058,
+      "touchCount": 7574,
+      "holdRate": 0.5389490361763929
+    }
+  },
+  "correlation": {
+    "real": -0.00015496193708961934,
+    "p": 0.51265,
+    "permutedMean": -0.000025538837758101228,
+    "permutedRange": [
+      -0.0201931034137447,
+      0.024336526279986833
+    ]
+  },
+  "gap": {
+    "real": -0.00018743879892979542,
+    "p": 0.51235,
+    "permutedMean": -0.00002331923992446836,
+    "permutedRange": [
+      -0.02497225957752125,
+      0.030364094431910793
+    ]
+  },
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-05T22:48:11.322Z"
+}

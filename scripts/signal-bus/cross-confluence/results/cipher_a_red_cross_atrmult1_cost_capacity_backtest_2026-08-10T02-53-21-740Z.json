@@ -1,0 +1,47 @@
+{
+  "signalType": "red_cross",
+  "atrMult": 1,
+  "feeTier": "bitunix_futures_vip1",
+  "results": {
+    "2R": {
+      "tradeCount": 63796,
+      "nestedVsSolo": {
+        "nested": {
+          "trade_count": 40031,
+          "win_rate": 0.3498788438959806,
+          "profit_factor": 1.0839636107780575,
+          "gross_expectancy_pct_per_trade": 0.00016579444308464382,
+          "costed_expectancy_pct_per_trade": -0.000850470503664954
+        },
+        "solo": {
+          "trade_count": 23765,
+          "win_rate": 0.32396381232905536,
+          "profit_factor": 0.9410483802138612,
+          "gross_expectancy_pct_per_trade": -0.0002333473777120928,
+          "costed_expectancy_pct_per_trade": -0.0012796962187949143
+        }
+      }
+    },
+    "3R": {
+      "tradeCount": 63777,
+      "nestedVsSolo": {
+        "nested": {
+          "trade_count": 40020,
+          "win_rate": 0.26424287856071965,
+          "profit_factor": 1.0847911619274058,
+          "gross_expectancy_pct_per_trade": 0.00018957206565450133,
+          "costed_expectancy_pct_per_trade": -0.0008336632177454688
+        },
+        "solo": {
+          "trade_count": 23757,
+          "win_rate": 0.2380771982994486,
+          "profit_factor": 0.9161707647720491,
+          "gross_expectancy_pct_per_trade": -0.000373641950862187,
+          "costed_expectancy_pct_per_trade": -0.0014421048425011405
+        }
+      }
+    }
+  },
+  "git_commit": "af83f3762b4c0100c5e6db6099a602de4f294c8e",
+  "generated_at": "2026-08-10T02:53:21.740Z"
+}
