@@ -26,7 +26,7 @@ const args = Object.fromEntries(
 const INSTRUMENT = args.instrument || "BTC";
 const SKIP = new Set((args.skip || "").split(",").filter(Boolean));
 
-const BUSES = ["smc", "divergence-for-many", "vmc-cipher-b", "vmc-cipher-a", "boom-hunter", "adaptive-supertrend"];
+const BUSES = ["smc", "divergence-for-many", "vmc-cipher-b", "vmc-cipher-a", "boom-hunter", "adaptive-supertrend", "ict"];
 
 const STEPS = [
   ...BUSES.map((bus) => ({ name: bus, script: `scripts/signal-bus/${bus}/build-historical.js`, instrumented: true })),
