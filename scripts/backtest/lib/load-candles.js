@@ -14,13 +14,22 @@ const DATA_DIR = new URL("../../../data/historical/", import.meta.url);
 //
 // The prefix encodes SOURCE, not just instrument, and the files are deliberately NOT renamed to a
 // clean `btc-15m.csv` scheme: the filename is the only place each series' provenance is recorded,
-// and EEH-CITI-1.0 §27 Priority 0 treats raw data as immutable. BTC's history is Binance spot
-// 2017-2024 gap-filled from Coinbase's public API at the 2025-01-01 seam (fetch-coinbase-gapfill.js);
-// ETH has no Binance leg at all, since Binance is geo-blocked from this environment, so it is
-// Coinbase-sourced end to end. Two different provenance stories that must stay distinguishable.
+// and EEH-CITI-1.0 §27 Priority 0 treats raw data as immutable.
+//
+// UPDATED later the same day: Binance became reachable (VPN), which removed the constraint that
+// had forced Coinbase sourcing. BOTH instruments are now Binance USDT-quoted spot, venue-matched
+// and quote-matched -- which is what makes cross-market BTC/ETH work sound rather than carrying a
+// venue mismatch into every comparison. BTC's Coinbase-spliced tail (2025-01-01 onward, which
+// diverged from Binance on 100% of bars with up to 4.90% divergence in the daily LOW) was repaired
+// in place by fetch-binance-history.js --mode=repair; its pre-seam bars were already Binance and
+// were left untouched.
+//
+// `coinbase-eth-*.csv` files may still exist on disk from the superseded Coinbase ETH pull. They
+// are intentionally NOT referenced here -- kept only as an independent cross-venue reference for
+// sanity-checking the Binance series, never as a pipeline input.
 const INSTRUMENT_FILE_PREFIX = {
   BTC: "binance-btc",
-  ETH: "coinbase-eth",
+  ETH: "binance-eth",
 };
 
 // `instrument` defaults to BTC while the store layer's requireInstrument() refuses to default at
