@@ -1,0 +1,1342 @@
+{
+  "generated_at": "2026-08-15T15:57:54.894Z",
+  "register_row": "#126 (formal significance + ladder check on #123)",
+  "iterations": 20000,
+  "seed": 42,
+  "fee_tier": "bitunix_futures_vip1",
+  "construction": {
+    "d4m_tol_pct": 0.012,
+    "atr_len": 14,
+    "atr_mult": 0.6,
+    "max_hold_bars": 200,
+    "min_n": 30
+  },
+  "timeframes": [
+    {
+      "tf": "1w",
+      "baseN": 0,
+      "tooThin": true
+    },
+    {
+      "tf": "1d",
+      "baseN": 2,
+      "base_costed_exp_pct": 5.761948589555814,
+      "scopes": {
+        "pooled": {
+          "independence": {
+            "n11_both": 0,
+            "n10_d4m_only": 2,
+            "n01_swing_only": 0,
+            "n00_neither": 0,
+            "phi": null
+          },
+          "descriptive": {
+            "BASE": {
+              "n": 2,
+              "win_rate": 0.5,
+              "profit_factor": 4.4416771004676106,
+              "gross_exp_pct": 6.911948589555815,
+              "costed_exp_pct": 5.761948589555814
+            },
+            "D4M_ONLY": {
+              "n": 2,
+              "win_rate": 0.5,
+              "profit_factor": 4.4416771004676106,
+              "gross_exp_pct": 6.911948589555815,
+              "costed_exp_pct": 5.761948589555814
+            },
+            "SWINGLINE_ONLY": {
+              "n": 0
+            },
+            "BOTH": {
+              "n": 0
+            }
+          },
+          "testA": {
+            "BASE": {
+              "n": 2,
+              "excluded_no_dual_branch": 0,
+              "tooThin": true
+            },
+            "D4M_ONLY": {
+              "n": 2,
+              "excluded_no_dual_branch": 0,
+              "tooThin": true
+            },
+            "SWINGLINE_ONLY": {
+              "n": 0,
+              "excluded_no_dual_branch": 0,
+              "tooThin": true
+            },
+            "BOTH": {
+              "n": 0,
+              "excluded_no_dual_branch": 0,
+              "tooThin": true
+            }
+          },
+          "testB": {
+            "D4M_ONLY": {
+              "n": 2,
+              "tooThin": true
+            },
+            "SWINGLINE_ONLY": {
+              "n": 0,
+              "tooThin": true
+            },
+            "BOTH": {
+              "n": 0,
+              "tooThin": true
+            }
+          },
+          "testC": {
+            "tooThin": true,
+            "both_n": 0
+          }
+        },
+        "own_tf": {
+          "independence": {
+            "n11_both": 0,
+            "n10_d4m_only": 1,
+            "n01_swing_only": 0,
+            "n00_neither": 1,
+            "phi": null
+          },
+          "descriptive": {
+            "BASE": {
+              "n": 2,
+              "win_rate": 0.5,
+              "profit_factor": 4.4416771004676106,
+              "gross_exp_pct": 6.911948589555815,
+              "costed_exp_pct": 5.761948589555814
+            },
+            "D4M_ONLY": {
+              "n": 1,
+              "win_rate": 0,
+              "profit_factor": 0,
+              "gross_exp_pct": -4.016616543496605,
+              "costed_exp_pct": -5.016616543496605
+            },
+            "SWINGLINE_ONLY": {
+              "n": 0
+            },
+            "BOTH": {
+              "n": 0
+            }
+          },
+          "testA": {
+            "BASE": {
+              "n": 2,
+              "excluded_no_dual_branch": 0,
+              "tooThin": true
+            },
+            "D4M_ONLY": {
+              "n": 1,
+              "excluded_no_dual_branch": 0,
+              "tooThin": true
+            },
+            "SWINGLINE_ONLY": {
+              "n": 0,
+              "excluded_no_dual_branch": 0,
+              "tooThin": true
+            },
+            "BOTH": {
+              "n": 0,
+              "excluded_no_dual_branch": 0,
+              "tooThin": true
+            }
+          },
+          "testB": {
+            "D4M_ONLY": {
+              "n": 1,
+              "tooThin": true
+            },
+            "SWINGLINE_ONLY": {
+              "n": 0,
+              "tooThin": true
+            },
+            "BOTH": {
+              "n": 0,
+              "tooThin": true
+            }
+          },
+          "testC": {
+            "tooThin": true,
+            "both_n": 0
+          }
+        }
+      }
+    },
+    {
+      "tf": "4h",
+      "baseN": 66,
+      "base_costed_exp_pct": 0.2682358587111997,
+      "scopes": {
+        "pooled": {
+          "independence": {
+            "n11_both": 14,
+            "n10_d4m_only": 29,
+            "n01_swing_only": 10,
+            "n00_neither": 13,
+            "phi": -0.10816713919414002
+          },
+          "descriptive": {
+            "BASE": {
+              "n": 66,
+              "win_rate": 0.15151515151515152,
+              "profit_factor": 1.57309519284821,
+              "gross_exp_pct": 0.46209949507483616,
+              "costed_exp_pct": 0.2682358587111997
+            },
+            "D4M_ONLY": {
+              "n": 43,
+              "win_rate": 0.16279069767441862,
+              "profit_factor": 1.7807491374399713,
+              "gross_exp_pct": 0.6140731936706358,
+              "costed_exp_pct": 0.42698017041482206
+            },
+            "SWINGLINE_ONLY": {
+              "n": 24,
+              "win_rate": 0.20833333333333334,
+              "profit_factor": 1.9823637183164042,
+              "gross_exp_pct": 0.8735137551976333,
+              "costed_exp_pct": 0.6697637551976333
+            },
+            "BOTH": {
+              "n": 14,
+              "win_rate": 0.21428571428571427,
+              "profit_factor": 2.496940338093682,
+              "gross_exp_pct": 1.343321019220266,
+              "costed_exp_pct": 1.1593924477916944
+            }
+          },
+          "testA": {
+            "BASE": {
+              "n": 66,
+              "excluded_no_dual_branch": 0,
+              "real_costed_mean_pct": 0.2682358587111997,
+              "p": 0.8232
+            },
+            "D4M_ONLY": {
+              "n": 43,
+              "excluded_no_dual_branch": 0,
+              "real_costed_mean_pct": 0.42698017041482206,
+              "p": 0.76185
+            },
+            "SWINGLINE_ONLY": {
+              "n": 24,
+              "excluded_no_dual_branch": 0,
+              "tooThin": true
+            },
+            "BOTH": {
+              "n": 14,
+              "excluded_no_dual_branch": 0,
+              "tooThin": true
+            }
+          },
+          "testB": {
+            "D4M_ONLY": {
+              "n": 43,
+              "real_costed_mean_pct": 0.42698017041482206,
+              "base_mean_pct": 0.2682358587111997,
+              "p": 0.3461
+            },
+            "SWINGLINE_ONLY": {
+              "n": 24,
+              "tooThin": true
+            },
+            "BOTH": {
+              "n": 14,
+              "tooThin": true
+            }
+          },
+          "testC": {
+            "tooThin": true,
+            "both_n": 14
+          }
+        },
+        "own_tf": {
+          "independence": {
+            "n11_both": 2,
+            "n10_d4m_only": 0,
+            "n01_swing_only": 22,
+            "n00_neither": 42,
+            "phi": 0.23385358667337133
+          },
+          "descriptive": {
+            "BASE": {
+              "n": 66,
+              "win_rate": 0.15151515151515152,
+              "profit_factor": 1.57309519284821,
+              "gross_exp_pct": 0.46209949507483616,
+              "costed_exp_pct": 0.2682358587111997
+            },
+            "D4M_ONLY": {
+              "n": 2,
+              "win_rate": 0,
+              "profit_factor": 0,
+              "gross_exp_pct": -0.7770703732183699,
+              "costed_exp_pct": -0.88707037321837
+            },
+            "SWINGLINE_ONLY": {
+              "n": 24,
+              "win_rate": 0.20833333333333334,
+              "profit_factor": 1.9823637183164042,
+              "gross_exp_pct": 0.8735137551976333,
+              "costed_exp_pct": 0.6697637551976333
+            },
+            "BOTH": {
+              "n": 2,
+              "win_rate": 0,
+              "profit_factor": 0,
+              "gross_exp_pct": -0.7770703732183699,
+              "costed_exp_pct": -0.88707037321837
+            }
+          },
+          "testA": {
+            "BASE": {
+              "n": 66,
+              "excluded_no_dual_branch": 0,
+              "real_costed_mean_pct": 0.2682358587111997,
+              "p": 0.8232
+            },
+            "D4M_ONLY": {
+              "n": 2,
+              "excluded_no_dual_branch": 0,
+              "tooThin": true
+            },
+            "SWINGLINE_ONLY": {
+              "n": 24,
+              "excluded_no_dual_branch": 0,
+              "tooThin": true
+            },
+            "BOTH": {
+              "n": 2,
+              "excluded_no_dual_branch": 0,
+              "tooThin": true
+            }
+          },
+          "testB": {
+            "D4M_ONLY": {
+              "n": 2,
+              "tooThin": true
+            },
+            "SWINGLINE_ONLY": {
+              "n": 24,
+              "tooThin": true
+            },
+            "BOTH": {
+              "n": 2,
+              "tooThin": true
+            }
+          },
+          "testC": {
+            "tooThin": true,
+            "both_n": 2
+          }
+        }
+      }
+    },
+    {
+      "tf": "3h",
+      "baseN": 86,
+      "base_costed_exp_pct": 1.6623523985334263,
+      "scopes": {
+        "pooled": {
+          "independence": {
+            "n11_both": 21,
+            "n10_d4m_only": 50,
+            "n01_swing_only": 5,
+            "n00_neither": 10,
+            "phi": -0.03103293760771518
+          },
+          "descriptive": {
+            "BASE": {
+              "n": 86,
+              "win_rate": 0.1511627906976744,
+              "profit_factor": 3.645162764669473,
+              "gross_exp_pct": 1.851567514812496,
+              "costed_exp_pct": 1.6623523985334263
+            },
+            "D4M_ONLY": {
+              "n": 71,
+              "win_rate": 0.14084507042253522,
+              "profit_factor": 3.0456527457112923,
+              "gross_exp_pct": 1.3614811288324626,
+              "costed_exp_pct": 1.180671269677533
+            },
+            "SWINGLINE_ONLY": {
+              "n": 26,
+              "win_rate": 0.11538461538461539,
+              "profit_factor": 1.7517832822420911,
+              "gross_exp_pct": 0.6567224103197224,
+              "costed_exp_pct": 0.49066471801203027
+            },
+            "BOTH": {
+              "n": 21,
+              "win_rate": 0.09523809523809523,
+              "profit_factor": 0.9852709464217747,
+              "gross_exp_pct": -0.01240836195109994,
+              "costed_exp_pct": -0.15597979052252858
+            }
+          },
+          "testA": {
+            "BASE": {
+              "n": 86,
+              "excluded_no_dual_branch": 0,
+              "real_costed_mean_pct": 1.6623523985334263,
+              "p": 0.10465
+            },
+            "D4M_ONLY": {
+              "n": 71,
+              "excluded_no_dual_branch": 0,
+              "real_costed_mean_pct": 1.180671269677533,
+              "p": 0.16855
+            },
+            "SWINGLINE_ONLY": {
+              "n": 26,
+              "excluded_no_dual_branch": 0,
+              "tooThin": true
+            },
+            "BOTH": {
+              "n": 21,
+              "excluded_no_dual_branch": 0,
+              "tooThin": true
+            }
+          },
+          "testB": {
+            "D4M_ONLY": {
+              "n": 71,
+              "real_costed_mean_pct": 1.180671269677533,
+              "base_mean_pct": 1.6623523985334263,
+              "p": 0.8801
+            },
+            "SWINGLINE_ONLY": {
+              "n": 26,
+              "tooThin": true
+            },
+            "BOTH": {
+              "n": 21,
+              "tooThin": true
+            }
+          },
+          "testC": {
+            "tooThin": true,
+            "both_n": 21
+          }
+        },
+        "own_tf": {
+          "independence": {
+            "n11_both": 0,
+            "n10_d4m_only": 4,
+            "n01_swing_only": 26,
+            "n00_neither": 56,
+            "phi": -0.14538985997006057
+          },
+          "descriptive": {
+            "BASE": {
+              "n": 86,
+              "win_rate": 0.1511627906976744,
+              "profit_factor": 3.645162764669473,
+              "gross_exp_pct": 1.851567514812496,
+              "costed_exp_pct": 1.6623523985334263
+            },
+            "D4M_ONLY": {
+              "n": 4,
+              "win_rate": 0,
+              "profit_factor": 0,
+              "gross_exp_pct": -0.6239316132345638,
+              "costed_exp_pct": -0.7342441132345637
+            },
+            "SWINGLINE_ONLY": {
+              "n": 26,
+              "win_rate": 0.11538461538461539,
+              "profit_factor": 1.7517832822420911,
+              "gross_exp_pct": 0.6567224103197224,
+              "costed_exp_pct": 0.49066471801203027
+            },
+            "BOTH": {
+              "n": 0
+            }
+          },
+          "testA": {
+            "BASE": {
+              "n": 86,
+              "excluded_no_dual_branch": 0,
+              "real_costed_mean_pct": 1.6623523985334263,
+              "p": 0.10465
+            },
+            "D4M_ONLY": {
+              "n": 4,
+              "excluded_no_dual_branch": 0,
+              "tooThin": true
+            },
+            "SWINGLINE_ONLY": {
+              "n": 26,
+              "excluded_no_dual_branch": 0,
+              "tooThin": true
+            },
+            "BOTH": {
+              "n": 0,
+              "excluded_no_dual_branch": 0,
+              "tooThin": true
+            }
+          },
+          "testB": {
+            "D4M_ONLY": {
+              "n": 4,
+              "tooThin": true
+            },
+            "SWINGLINE_ONLY": {
+              "n": 26,
+              "tooThin": true
+            },
+            "BOTH": {
+              "n": 0,
+              "tooThin": true
+            }
+          },
+          "testC": {
+            "tooThin": true,
+            "both_n": 0
+          }
+        }
+      }
+    },
+    {
+      "tf": "2h",
+      "baseN": 145,
+      "base_costed_exp_pct": 1.6057376139469404,
+      "scopes": {
+        "pooled": {
+          "independence": {
+            "n11_both": 32,
+            "n10_d4m_only": 84,
+            "n01_swing_only": 13,
+            "n00_neither": 16,
+            "phi": -0.14907119849998599
+          },
+          "descriptive": {
+            "BASE": {
+              "n": 145,
+              "win_rate": 0.1724137931034483,
+              "profit_factor": 4.339140768086673,
+              "gross_exp_pct": 1.768565200153837,
+              "costed_exp_pct": 1.6057376139469404
+            },
+            "D4M_ONLY": {
+              "n": 116,
+              "win_rate": 0.1724137931034483,
+              "profit_factor": 3.585245443282585,
+              "gross_exp_pct": 1.2463080663192097,
+              "costed_exp_pct": 1.0899503076985195
+            },
+            "SWINGLINE_ONLY": {
+              "n": 45,
+              "win_rate": 0.13333333333333333,
+              "profit_factor": 1.6109025701660376,
+              "gross_exp_pct": 0.3838935940850615,
+              "costed_exp_pct": 0.2432269274183948
+            },
+            "BOTH": {
+              "n": 32,
+              "win_rate": 0.125,
+              "profit_factor": 1.6604139419823885,
+              "gross_exp_pct": 0.35635388289159153,
+              "costed_exp_pct": 0.22385388289159178
+            }
+          },
+          "testA": {
+            "BASE": {
+              "n": 145,
+              "excluded_no_dual_branch": 0,
+              "real_costed_mean_pct": 1.6057376139469404,
+              "p": 0.0129
+            },
+            "D4M_ONLY": {
+              "n": 116,
+              "excluded_no_dual_branch": 0,
+              "real_costed_mean_pct": 1.0899503076985195,
+              "p": 0.063
+            },
+            "SWINGLINE_ONLY": {
+              "n": 45,
+              "excluded_no_dual_branch": 0,
+              "real_costed_mean_pct": 0.2432269274183948,
+              "p": 0.43705
+            },
+            "BOTH": {
+              "n": 32,
+              "excluded_no_dual_branch": 0,
+              "real_costed_mean_pct": 0.22385388289159178,
+              "p": 0.61325
+            }
+          },
+          "testB": {
+            "D4M_ONLY": {
+              "n": 116,
+              "real_costed_mean_pct": 1.0899503076985195,
+              "base_mean_pct": 1.6057376139469404,
+              "p": 0.88485
+            },
+            "SWINGLINE_ONLY": {
+              "n": 45,
+              "real_costed_mean_pct": 0.2432269274183948,
+              "base_mean_pct": 1.6057376139469404,
+              "p": 0.9208
+            },
+            "BOTH": {
+              "n": 32,
+              "real_costed_mean_pct": 0.22385388289159178,
+              "base_mean_pct": 1.6057376139469404,
+              "p": 0.8637
+            }
+          },
+          "testC": {
+            "D4M_ONLY": {
+              "both_n": 32,
+              "parent_n": 116,
+              "both_costed_mean_pct": 0.22385388289159178,
+              "parent_costed_mean_pct": 1.0899503076985195,
+              "p": 0.848
+            },
+            "SWINGLINE_ONLY": {
+              "both_n": 32,
+              "parent_n": 45,
+              "both_costed_mean_pct": 0.22385388289159178,
+              "parent_costed_mean_pct": 0.2432269274183948,
+              "p": 0.55205
+            }
+          }
+        },
+        "own_tf": {
+          "independence": {
+            "n11_both": 5,
+            "n10_d4m_only": 26,
+            "n01_swing_only": 40,
+            "n00_neither": 74,
+            "phi": -0.16801005470520927
+          },
+          "descriptive": {
+            "BASE": {
+              "n": 145,
+              "win_rate": 0.1724137931034483,
+              "profit_factor": 4.339140768086673,
+              "gross_exp_pct": 1.768565200153837,
+              "costed_exp_pct": 1.6057376139469404
+            },
+            "D4M_ONLY": {
+              "n": 31,
+              "win_rate": 0.22580645161290322,
+              "profit_factor": 6.303771332011691,
+              "gross_exp_pct": 2.342129088694249,
+              "costed_exp_pct": 2.1598710241781203
+            },
+            "SWINGLINE_ONLY": {
+              "n": 45,
+              "win_rate": 0.13333333333333333,
+              "profit_factor": 1.6109025701660376,
+              "gross_exp_pct": 0.3838935940850615,
+              "costed_exp_pct": 0.2432269274183948
+            },
+            "BOTH": {
+              "n": 5,
+              "win_rate": 0,
+              "profit_factor": 0,
+              "gross_exp_pct": -0.7131804089305668,
+              "costed_exp_pct": -0.8211804089305669
+            }
+          },
+          "testA": {
+            "BASE": {
+              "n": 145,
+              "excluded_no_dual_branch": 0,
+              "real_costed_mean_pct": 1.6057376139469404,
+              "p": 0.0129
+            },
+            "D4M_ONLY": {
+              "n": 31,
+              "excluded_no_dual_branch": 0,
+              "real_costed_mean_pct": 2.1598710241781203,
+              "p": 0.01665
+            },
+            "SWINGLINE_ONLY": {
+              "n": 45,
+              "excluded_no_dual_branch": 0,
+              "real_costed_mean_pct": 0.2432269274183948,
+              "p": 0.4348
+            },
+            "BOTH": {
+              "n": 5,
+              "excluded_no_dual_branch": 0,
+              "tooThin": true
+            }
+          },
+          "testB": {
+            "D4M_ONLY": {
+              "n": 31,
+              "real_costed_mean_pct": 2.1598710241781203,
+              "base_mean_pct": 1.6057376139469404,
+              "p": 0.29825
+            },
+            "SWINGLINE_ONLY": {
+              "n": 45,
+              "real_costed_mean_pct": 0.2432269274183948,
+              "base_mean_pct": 1.6057376139469404,
+              "p": 0.92035
+            },
+            "BOTH": {
+              "n": 5,
+              "tooThin": true
+            }
+          },
+          "testC": {
+            "tooThin": true,
+            "both_n": 5
+          }
+        }
+      }
+    },
+    {
+      "tf": "1h",
+      "baseN": 340,
+      "base_costed_exp_pct": 0.29643157625227834,
+      "scopes": {
+        "pooled": {
+          "independence": {
+            "n11_both": 100,
+            "n10_d4m_only": 148,
+            "n01_swing_only": 36,
+            "n00_neither": 56,
+            "phi": 0.010810968751610264
+          },
+          "descriptive": {
+            "BASE": {
+              "n": 340,
+              "win_rate": 0.12941176470588237,
+              "profit_factor": 1.888096843845864,
+              "gross_exp_pct": 0.42289481154639647,
+              "costed_exp_pct": 0.29643157625227834
+            },
+            "D4M_ONLY": {
+              "n": 248,
+              "win_rate": 0.125,
+              "profit_factor": 1.7968282536827784,
+              "gross_exp_pct": 0.34128451489476175,
+              "costed_exp_pct": 0.21664741812056815
+            },
+            "SWINGLINE_ONLY": {
+              "n": 136,
+              "win_rate": 0.15441176470588236,
+              "profit_factor": 1.9562350693395802,
+              "gross_exp_pct": 0.4790907603541629,
+              "costed_exp_pct": 0.3479602456482804
+            },
+            "BOTH": {
+              "n": 100,
+              "win_rate": 0.16,
+              "profit_factor": 1.9708468621479895,
+              "gross_exp_pct": 0.42642548740340835,
+              "costed_exp_pct": 0.29663798740340813
+            }
+          },
+          "testA": {
+            "BASE": {
+              "n": 339,
+              "excluded_no_dual_branch": 1,
+              "real_costed_mean_pct": 0.2992142209698181,
+              "p": 0.20525
+            },
+            "D4M_ONLY": {
+              "n": 247,
+              "excluded_no_dual_branch": 1,
+              "real_costed_mean_pct": 0.22014350071617228,
+              "p": 0.55525
+            },
+            "SWINGLINE_ONLY": {
+              "n": 135,
+              "excluded_no_dual_branch": 1,
+              "real_costed_mean_pct": 0.3553294695641467,
+              "p": 0.5115
+            },
+            "BOTH": {
+              "n": 99,
+              "excluded_no_dual_branch": 1,
+              "real_costed_mean_pct": 0.30616852245792403,
+              "p": 0.71165
+            }
+          },
+          "testB": {
+            "D4M_ONLY": {
+              "n": 248,
+              "real_costed_mean_pct": 0.21664741812056815,
+              "base_mean_pct": 0.29643157625227834,
+              "p": 0.75965
+            },
+            "SWINGLINE_ONLY": {
+              "n": 136,
+              "real_costed_mean_pct": 0.3479602456482804,
+              "base_mean_pct": 0.29643157625227834,
+              "p": 0.41165
+            },
+            "BOTH": {
+              "n": 100,
+              "real_costed_mean_pct": 0.29663798740340813,
+              "base_mean_pct": 0.29643157625227834,
+              "p": 0.4828
+            }
+          },
+          "testC": {
+            "D4M_ONLY": {
+              "both_n": 100,
+              "parent_n": 248,
+              "both_costed_mean_pct": 0.29663798740340813,
+              "parent_costed_mean_pct": 0.21664741812056815,
+              "p": 0.37135
+            },
+            "SWINGLINE_ONLY": {
+              "both_n": 100,
+              "parent_n": 136,
+              "both_costed_mean_pct": 0.29663798740340813,
+              "parent_costed_mean_pct": 0.3479602456482804,
+              "p": 0.6325
+            }
+          }
+        },
+        "own_tf": {
+          "independence": {
+            "n11_both": 18,
+            "n10_d4m_only": 37,
+            "n01_swing_only": 118,
+            "n00_neither": 167,
+            "phi": -0.06521546507260247
+          },
+          "descriptive": {
+            "BASE": {
+              "n": 340,
+              "win_rate": 0.12941176470588237,
+              "profit_factor": 1.888096843845864,
+              "gross_exp_pct": 0.42289481154639647,
+              "costed_exp_pct": 0.29643157625227834
+            },
+            "D4M_ONLY": {
+              "n": 55,
+              "win_rate": 0.10909090909090909,
+              "profit_factor": 1.4668056179633473,
+              "gross_exp_pct": 0.16548957736377012,
+              "costed_exp_pct": 0.04714866827286107
+            },
+            "SWINGLINE_ONLY": {
+              "n": 136,
+              "win_rate": 0.15441176470588236,
+              "profit_factor": 1.9562350693395802,
+              "gross_exp_pct": 0.4790907603541629,
+              "costed_exp_pct": 0.3479602456482804
+            },
+            "BOTH": {
+              "n": 18,
+              "win_rate": 0.16666666666666666,
+              "profit_factor": 1.181503940396118,
+              "gross_exp_pct": 0.07634823274645557,
+              "costed_exp_pct": -0.048790656142433324
+            }
+          },
+          "testA": {
+            "BASE": {
+              "n": 339,
+              "excluded_no_dual_branch": 1,
+              "real_costed_mean_pct": 0.2992142209698181,
+              "p": 0.20525
+            },
+            "D4M_ONLY": {
+              "n": 55,
+              "excluded_no_dual_branch": 0,
+              "real_costed_mean_pct": 0.04714866827286107,
+              "p": 0.5791
+            },
+            "SWINGLINE_ONLY": {
+              "n": 135,
+              "excluded_no_dual_branch": 1,
+              "real_costed_mean_pct": 0.3553294695641467,
+              "p": 0.5103
+            },
+            "BOTH": {
+              "n": 18,
+              "excluded_no_dual_branch": 0,
+              "tooThin": true
+            }
+          },
+          "testB": {
+            "D4M_ONLY": {
+              "n": 55,
+              "real_costed_mean_pct": 0.04714866827286107,
+              "base_mean_pct": 0.29643157625227834,
+              "p": 0.69195
+            },
+            "SWINGLINE_ONLY": {
+              "n": 136,
+              "real_costed_mean_pct": 0.3479602456482804,
+              "base_mean_pct": 0.29643157625227834,
+              "p": 0.4071
+            },
+            "BOTH": {
+              "n": 18,
+              "tooThin": true
+            }
+          },
+          "testC": {
+            "tooThin": true,
+            "both_n": 18
+          }
+        }
+      }
+    },
+    {
+      "tf": "15m",
+      "baseN": 2173,
+      "base_costed_exp_pct": 0.25175711278815227,
+      "scopes": {
+        "pooled": {
+          "independence": {
+            "n11_both": 558,
+            "n10_d4m_only": 879,
+            "n01_swing_only": 284,
+            "n00_neither": 452,
+            "phi": 0.0023697762423400015
+          },
+          "descriptive": {
+            "BASE": {
+              "n": 2173,
+              "win_rate": 0.17119190059825126,
+              "profit_factor": 2.7181432162495125,
+              "gross_exp_pct": 0.36003268227733787,
+              "costed_exp_pct": 0.25175711278815227
+            },
+            "D4M_ONLY": {
+              "n": 1437,
+              "win_rate": 0.17954070981210857,
+              "profit_factor": 3.165894941798213,
+              "gross_exp_pct": 0.3923676144220207,
+              "costed_exp_pct": 0.2838128997386529
+            },
+            "SWINGLINE_ONLY": {
+              "n": 842,
+              "win_rate": 0.19833729216152018,
+              "profit_factor": 3.228168082288312,
+              "gross_exp_pct": 0.5284732002729986,
+              "costed_exp_pct": 0.4187831022920005
+            },
+            "BOTH": {
+              "n": 558,
+              "win_rate": 0.20967741935483872,
+              "profit_factor": 3.9888421835530603,
+              "gross_exp_pct": 0.5912680984915226,
+              "costed_exp_pct": 0.48109504741625325
+            }
+          },
+          "testA": {
+            "BASE": {
+              "n": 2165,
+              "excluded_no_dual_branch": 8,
+              "real_costed_mean_pct": 0.2370114968780311,
+              "p": 0
+            },
+            "D4M_ONLY": {
+              "n": 1430,
+              "excluded_no_dual_branch": 7,
+              "real_costed_mean_pct": 0.26461127653983435,
+              "p": 0
+            },
+            "SWINGLINE_ONLY": {
+              "n": 837,
+              "excluded_no_dual_branch": 5,
+              "real_costed_mean_pct": 0.3880554125298507,
+              "p": 0
+            },
+            "BOTH": {
+              "n": 553,
+              "excluded_no_dual_branch": 5,
+              "real_costed_mean_pct": 0.4351501710956423,
+              "p": 0
+            }
+          },
+          "testB": {
+            "D4M_ONLY": {
+              "n": 1437,
+              "real_costed_mean_pct": 0.2838128997386529,
+              "base_mean_pct": 0.25175711278815227,
+              "p": 0.15175
+            },
+            "SWINGLINE_ONLY": {
+              "n": 842,
+              "real_costed_mean_pct": 0.4187831022920005,
+              "base_mean_pct": 0.25175711278815227,
+              "p": 0.0013
+            },
+            "BOTH": {
+              "n": 558,
+              "real_costed_mean_pct": 0.48109504741625325,
+              "base_mean_pct": 0.25175711278815227,
+              "p": 0.00115
+            }
+          },
+          "testC": {
+            "D4M_ONLY": {
+              "both_n": 558,
+              "parent_n": 1437,
+              "both_costed_mean_pct": 0.48109504741625325,
+              "parent_costed_mean_pct": 0.2838128997386529,
+              "p": 0.0008
+            },
+            "SWINGLINE_ONLY": {
+              "both_n": 558,
+              "parent_n": 842,
+              "both_costed_mean_pct": 0.48109504741625325,
+              "parent_costed_mean_pct": 0.4187831022920005,
+              "p": 0.15365
+            }
+          }
+        },
+        "own_tf": {
+          "independence": {
+            "n11_both": 221,
+            "n10_d4m_only": 374,
+            "n01_swing_only": 621,
+            "n00_neither": 957,
+            "phi": -0.02023520131955846
+          },
+          "descriptive": {
+            "BASE": {
+              "n": 2173,
+              "win_rate": 0.17119190059825126,
+              "profit_factor": 2.7181432162495125,
+              "gross_exp_pct": 0.36003268227733787,
+              "costed_exp_pct": 0.25175711278815227
+            },
+            "D4M_ONLY": {
+              "n": 595,
+              "win_rate": 0.1781512605042017,
+              "profit_factor": 3.617573801764261,
+              "gross_exp_pct": 0.43844900584791474,
+              "costed_exp_pct": 0.3301569890411917
+            },
+            "SWINGLINE_ONLY": {
+              "n": 842,
+              "win_rate": 0.19833729216152018,
+              "profit_factor": 3.228168082288312,
+              "gross_exp_pct": 0.5284732002729986,
+              "costed_exp_pct": 0.4187831022920005
+            },
+            "BOTH": {
+              "n": 221,
+              "win_rate": 0.2398190045248869,
+              "profit_factor": 5.88825168072253,
+              "gross_exp_pct": 0.8602863584642472,
+              "costed_exp_pct": 0.7488695032606266
+            }
+          },
+          "testA": {
+            "BASE": {
+              "n": 2165,
+              "excluded_no_dual_branch": 8,
+              "real_costed_mean_pct": 0.2370114968780311,
+              "p": 0
+            },
+            "D4M_ONLY": {
+              "n": 593,
+              "excluded_no_dual_branch": 2,
+              "real_costed_mean_pct": 0.28882709352145636,
+              "p": 0
+            },
+            "SWINGLINE_ONLY": {
+              "n": 837,
+              "excluded_no_dual_branch": 5,
+              "real_costed_mean_pct": 0.3880554125298507,
+              "p": 0
+            },
+            "BOTH": {
+              "n": 220,
+              "excluded_no_dual_branch": 1,
+              "real_costed_mean_pct": 0.6366041647456647,
+              "p": 0.00005
+            }
+          },
+          "testB": {
+            "D4M_ONLY": {
+              "n": 595,
+              "real_costed_mean_pct": 0.3301569890411917,
+              "base_mean_pct": 0.25175711278815227,
+              "p": 0.13125
+            },
+            "SWINGLINE_ONLY": {
+              "n": 842,
+              "real_costed_mean_pct": 0.4187831022920005,
+              "base_mean_pct": 0.25175711278815227,
+              "p": 0.0014
+            },
+            "BOTH": {
+              "n": 221,
+              "real_costed_mean_pct": 0.7488695032606266,
+              "base_mean_pct": 0.25175711278815227,
+              "p": 0.0004
+            }
+          },
+          "testC": {
+            "D4M_ONLY": {
+              "both_n": 221,
+              "parent_n": 595,
+              "both_costed_mean_pct": 0.7488695032606266,
+              "parent_costed_mean_pct": 0.3301569890411917,
+              "p": 0.0002
+            },
+            "SWINGLINE_ONLY": {
+              "both_n": 221,
+              "parent_n": 842,
+              "both_costed_mean_pct": 0.7488695032606266,
+              "parent_costed_mean_pct": 0.4187831022920005,
+              "p": 0.01545
+            }
+          }
+        }
+      }
+    },
+    {
+      "tf": "5m",
+      "baseN": 8195,
+      "base_costed_exp_pct": 0.14482606870482342,
+      "scopes": {
+        "pooled": {
+          "independence": {
+            "n11_both": 1864,
+            "n10_d4m_only": 3108,
+            "n01_swing_only": 1125,
+            "n00_neither": 2098,
+            "phi": 0.02622829036927747
+          },
+          "descriptive": {
+            "BASE": {
+              "n": 8195,
+              "win_rate": 0.1776693105552166,
+              "profit_factor": 3.1248144985801964,
+              "gross_exp_pct": 0.24761333736457533,
+              "costed_exp_pct": 0.14482606870482342
+            },
+            "D4M_ONLY": {
+              "n": 4972,
+              "win_rate": 0.17719227674979887,
+              "profit_factor": 3.249252603105989,
+              "gross_exp_pct": 0.2251318201324255,
+              "costed_exp_pct": 0.12240597204983025
+            },
+            "SWINGLINE_ONLY": {
+              "n": 2989,
+              "win_rate": 0.20475075276012045,
+              "profit_factor": 3.228165441285191,
+              "gross_exp_pct": 0.2998590457592003,
+              "costed_exp_pct": 0.19664082199428498
+            },
+            "BOTH": {
+              "n": 1864,
+              "win_rate": 0.21244635193133046,
+              "profit_factor": 3.617508592187301,
+              "gross_exp_pct": 0.28981503251772045,
+              "costed_exp_pct": 0.18658854825448612
+            }
+          },
+          "testA": {
+            "BASE": {
+              "n": 8169,
+              "excluded_no_dual_branch": 26,
+              "real_costed_mean_pct": 0.14095199156598479,
+              "p": 0
+            },
+            "D4M_ONLY": {
+              "n": 4951,
+              "excluded_no_dual_branch": 21,
+              "real_costed_mean_pct": 0.11795259821800086,
+              "p": 0
+            },
+            "SWINGLINE_ONLY": {
+              "n": 2981,
+              "excluded_no_dual_branch": 8,
+              "real_costed_mean_pct": 0.19163437724102614,
+              "p": 0
+            },
+            "BOTH": {
+              "n": 1858,
+              "excluded_no_dual_branch": 6,
+              "real_costed_mean_pct": 0.18042374087970675,
+              "p": 0
+            }
+          },
+          "testB": {
+            "D4M_ONLY": {
+              "n": 4972,
+              "real_costed_mean_pct": 0.12240597204983025,
+              "base_mean_pct": 0.14482606870482342,
+              "p": 0.9801
+            },
+            "SWINGLINE_ONLY": {
+              "n": 2989,
+              "real_costed_mean_pct": 0.19664082199428498,
+              "base_mean_pct": 0.14482606870482342,
+              "p": 0.0023
+            },
+            "BOTH": {
+              "n": 1864,
+              "real_costed_mean_pct": 0.18658854825448612,
+              "base_mean_pct": 0.14482606870482342,
+              "p": 0.0496
+            }
+          },
+          "testC": {
+            "D4M_ONLY": {
+              "both_n": 1864,
+              "parent_n": 4972,
+              "both_costed_mean_pct": 0.18658854825448612,
+              "parent_costed_mean_pct": 0.12240597204983025,
+              "p": 0.00065
+            },
+            "SWINGLINE_ONLY": {
+              "both_n": 1864,
+              "parent_n": 2989,
+              "both_costed_mean_pct": 0.18658854825448612,
+              "parent_costed_mean_pct": 0.19664082199428498,
+              "p": 0.7038
+            }
+          }
+        },
+        "own_tf": {
+          "independence": {
+            "n11_both": 1117,
+            "n10_d4m_only": 1830,
+            "n01_swing_only": 1872,
+            "n00_neither": 3376,
+            "phi": 0.022254048167183002
+          },
+          "descriptive": {
+            "BASE": {
+              "n": 8195,
+              "win_rate": 0.1776693105552166,
+              "profit_factor": 3.1248144985801964,
+              "gross_exp_pct": 0.24761333736457533,
+              "costed_exp_pct": 0.14482606870482342
+            },
+            "D4M_ONLY": {
+              "n": 2947,
+              "win_rate": 0.17882592466915506,
+              "profit_factor": 3.3104919293560084,
+              "gross_exp_pct": 0.2227528973699714,
+              "costed_exp_pct": 0.12008298587805866
+            },
+            "SWINGLINE_ONLY": {
+              "n": 2989,
+              "win_rate": 0.20475075276012045,
+              "profit_factor": 3.228165441285191,
+              "gross_exp_pct": 0.2998590457592003,
+              "costed_exp_pct": 0.19664082199428498
+            },
+            "BOTH": {
+              "n": 1117,
+              "win_rate": 0.21217547000895254,
+              "profit_factor": 3.8982934292019564,
+              "gross_exp_pct": 0.30339624792306313,
+              "costed_exp_pct": 0.20026546606690057
+            }
+          },
+          "testA": {
+            "BASE": {
+              "n": 8169,
+              "excluded_no_dual_branch": 26,
+              "real_costed_mean_pct": 0.14095199156598479,
+              "p": 0
+            },
+            "D4M_ONLY": {
+              "n": 2934,
+              "excluded_no_dual_branch": 13,
+              "real_costed_mean_pct": 0.11584837029218839,
+              "p": 0
+            },
+            "SWINGLINE_ONLY": {
+              "n": 2981,
+              "excluded_no_dual_branch": 8,
+              "real_costed_mean_pct": 0.19163437724102614,
+              "p": 0
+            },
+            "BOTH": {
+              "n": 1113,
+              "excluded_no_dual_branch": 4,
+              "real_costed_mean_pct": 0.19423601697139278,
+              "p": 0
+            }
+          },
+          "testB": {
+            "D4M_ONLY": {
+              "n": 2947,
+              "real_costed_mean_pct": 0.12008298587805866,
+              "base_mean_pct": 0.14482606870482342,
+              "p": 0.9165
+            },
+            "SWINGLINE_ONLY": {
+              "n": 2989,
+              "real_costed_mean_pct": 0.19664082199428498,
+              "base_mean_pct": 0.14482606870482342,
+              "p": 0.0022
+            },
+            "BOTH": {
+              "n": 1117,
+              "real_costed_mean_pct": 0.20026546606690057,
+              "base_mean_pct": 0.14482606870482342,
+              "p": 0.05745
+            }
+          },
+          "testC": {
+            "D4M_ONLY": {
+              "both_n": 1117,
+              "parent_n": 2947,
+              "both_costed_mean_pct": 0.20026546606690057,
+              "parent_costed_mean_pct": 0.12008298587805866,
+              "p": 0.0008
+            },
+            "SWINGLINE_ONLY": {
+              "both_n": 1117,
+              "parent_n": 2989,
+              "both_costed_mean_pct": 0.20026546606690057,
+              "parent_costed_mean_pct": 0.19664082199428498,
+              "p": 0.4477
+            }
+          }
+        }
+      }
+    }
+  ],
+  "multiple_testing_family_testC_vs_d4m_only": [
+    {
+      "tf": "2h",
+      "p": 0.848,
+      "bonferroni": false,
+      "holm": false,
+      "benjamini_hochberg": false
+    },
+    {
+      "tf": "1h",
+      "p": 0.37135,
+      "bonferroni": false,
+      "holm": false,
+      "benjamini_hochberg": false
+    },
+    {
+      "tf": "15m",
+      "p": 0.0008,
+      "bonferroni": true,
+      "holm": true,
+      "benjamini_hochberg": true
+    },
+    {
+      "tf": "5m",
+      "p": 0.00065,
+      "bonferroni": true,
+      "holm": true,
+      "benjamini_hochberg": true
+    }
+  ]
+}
