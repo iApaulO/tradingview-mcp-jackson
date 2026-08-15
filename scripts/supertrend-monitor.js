@@ -34,7 +34,8 @@ async function runOnce() {
   const results = [];
   for (const symbol of watchlist) {
     // Bitstamp (our candle source here) doesn't list every TradingView-facing instrument --
-    // e.g. Coinbase Derivatives futures -- so watchlist entries can map to a spot proxy pair.
+    // e.g. Bitunix perps (the traded venue as of 2026-08-15), or Coinbase Derivatives futures
+    // before that -- so watchlist entries can map to a spot proxy pair.
     const proxySymbol = proxyMap[symbol] || symbol;
     try {
       const result = await scanAdaptiveSuperTrend(proxySymbol, timeframe);

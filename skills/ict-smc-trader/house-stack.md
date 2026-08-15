@@ -18,17 +18,29 @@ Two live/offline gaps to know about, not to silently paper over:
 
 ## Instrument & proxy
 
-- Traded instrument: `COINBASE:BIPZ2030` (nano BTC Perp Style Futures).
-- Independent SuperTrend calc pulls from Bitstamp (no Coinbase Derivatives listing there) →
-  proxies through `BTCUSD` spot (`rules.json`'s `supertrend_proxy` map). **Always label
-  `[via BTCUSD proxy]`** when reporting a SuperTrend reading for BIPZ.
-- Backtest lab's historical data is Binance BTC spot, 2017–2024 — a second proxy layer, used only
-  for offline signal-bus/backtest work, not live reads.
-- Confirmed real trading costs (from iapaulo's own Coinbase Advanced dashboard): Advanced 1 tier,
-  **0.070% taker / 0.065% maker** on derivatives volume. Funding settles **hourly** (confirmed
+- **Traded instrument: `BITUNIX:BTCUSDT.P`.** Changed 2026-08-15 — Coinbase is no longer used.
+  The previous instrument was `COINBASE:BIPZ2030` (nano BTC Perp Style Futures); anything in this
+  repo still naming it is either stale or a deliberate historical record (see the cost note below).
+- Independent SuperTrend calc pulls from Bitstamp (which lists neither Coinbase Derivatives nor
+  Bitunix perps) → proxies through `BTCUSD` spot (`rules.json`'s `supertrend_proxy` map). **Always
+  label `[via BTCUSD proxy]`** when reporting a SuperTrend reading. The proxy layer is unchanged by
+  the venue switch — it was always a spot stand-in for a perp/futures contract, and still is.
+- Backtest lab's historical data is Binance BTC spot, 2017–2024, gap-filled from Coinbase's public
+  Exchange API — a second proxy layer, used only for offline signal-bus/backtest work, not live
+  reads. Coinbase's role here is a free public price feed with no account attached, unaffected by
+  no longer trading there.
+- **Confirmed real trading costs: Bitunix VIP1, 0.050% taker / 0.020% maker** (`costs.js`'s
+  `bitunix_futures_vip1`, pulled from Bitunix's own official fee page rather than a third-party
+  aggregator). This is the current default for cost tests. Funding settles **hourly** (confirmed
   mechanism: basis-driven peer-to-peer transfer, contract-above-spot → longs pay shorts). Funding
   *magnitude* is still an unconfirmed cross-exchange placeholder — don't quote a precise funding
   number as confirmed.
+- **Reading older findings against the old fee basis:** register rows up to roughly #74 costed
+  trades on Coinbase's Advanced 1 tier (0.070% taker / 0.065% maker) — the real basis at the time.
+  Those rows are historical record and are deliberately NOT rewritten. Bitunix VIP1 is cheaper on
+  both sides, so any finding that cleared costs under Coinbase clears them by a wider margin now;
+  a finding that was cost-*blocked* under Coinbase is not automatically rescued and needs an actual
+  re-run before being called tradeable. `#75` onward already use the Bitunix basis.
 
 ## Validated cross-indicator strategies (2026-08-11/13 session)
 

@@ -4,7 +4,7 @@ description: >-
   House ICT/SMC trading desk grammar for the tradingview-mcp-jackson board: LuxAlgo Smart Money
   Concepts, VuManChu Cipher A/B, Boom Hunter Pro, K-Means Adaptive SuperTrend, Divergence for Many
   — read as THIS project's own reimplementations and tested findings, not generic ICT/SMC blog
-  lore. Use for grading a BIPZ (COINBASE:BIPZ2030) or similar setup across the W/D/4H/3H/2H/1H/
+  lore. Use for grading a BTC perp (BITUNIX:BTCUSDT.P) or similar setup across the W/D/4H/3H/2H/1H/
   15m/5m ladder with weighted multi-timeframe confluence, for order block / EQH-EQL / structure
   reads, for morning briefs against rules.json, or whenever the user says ICT, SMC, order block,
   liquidity sweep, BOS, CHoCH, Cipher, Boom Hunter, SuperTrend confluence, or multi-timeframe bias.
@@ -84,7 +84,7 @@ Desk checklist:
 | Liquidity sweep as edge | EQH/EQL sweep-then-reversal presented as a bullish/bearish signal | **Hard refuse** — falsified on our own data (significance-register.md), do not weight it, do not teach it as ICT lore here |
 | Confluence-as-tradeable | SMC order-block confluence grade presented as itself a profitable entry/exit rule | Correct: the classification is descriptive-significant, the naive trade construction is trade-construction-blocked — say both, not one |
 | BOS/CHoCH direction from tag text alone | Reading a live SMC label's text as sufficient for direction | Refuse — direction comes from which pivot (high/low) was crossed, confirmed from source; tag text alone is insufficient live |
-| SuperTrend without proxy disclosure | Presenting a SuperTrend reading on BIPZ without noting the BTCUSD proxy | Refuse — always label `[via BTCUSD proxy]` |
+| SuperTrend without proxy disclosure | Presenting a SuperTrend reading on the traded perp without noting the BTCUSD proxy | Refuse — always label `[via BTCUSD proxy]` |
 | rules.json treated as current policy | Quoting `rules.json`'s bias_criteria as if it already encodes the house stack | Correct — it's a stub, say so, use `decision-policy.md`'s target policy instead |
 | Auto-execution | User wants trades placed automatically | Refuse — advisory only, human decides, always |
 
@@ -110,7 +110,7 @@ Desk checklist:
 
 ## Quick invoke examples
 
-- "Grade today's BIPZ setup across the full board."
+- "Grade today's BTCUSDT.P setup across the full board."
 - "What does this order block's confluence actually mean for my sizing?"
 - "Is this EQH sweep a reason to go short?" (answer: no — see significance-register.md)
 - "What should rules.json actually encode once it catches up to this stack?"

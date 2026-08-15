@@ -1,11 +1,12 @@
 {
-  "watchlist": ["COINBASE:BIPZ2030"],
+  "watchlist": ["BITUNIX:BTCUSDT.P"],
   "default_timeframe": "240",
 
   "supertrend_proxy": {
-    "COINBASE:BIPZ2030": "BTCUSD"
+    "BITUNIX:BTCUSDT.P": "BTCUSD"
   },
-  "_supertrend_proxy_note": "The background SuperTrend calc (scripts/supertrend-monitor.js, scripts/signal-grid.js) pulls candles from Bitstamp's public API, which doesn't list Coinbase Derivatives futures. Each watchlist symbol maps to its nearest liquid Bitstamp spot pair as a close-tracking proxy -- not the exact instrument.",
+  "_supertrend_proxy_note": "The background SuperTrend calc (scripts/supertrend-monitor.js, scripts/signal-grid.js) pulls candles from Bitstamp's public API, which lists neither Bitunix perps nor (previously) Coinbase Derivatives futures. Each watchlist symbol maps to its nearest liquid Bitstamp spot pair as a close-tracking proxy -- not the exact instrument.",
+  "_venue_note": "Venue changed 2026-08-15: BITUNIX:BTCUSDT.P replaces COINBASE:BIPZ2030, Coinbase is no longer used for trading. Fee basis is now bitunix_futures_vip1 (0.050% taker / 0.020% maker) -- see scripts/backtest/lib/costs.js and skills/ict-smc-trader/house-stack.md. NOTE: this whole file is flagged stub/outdated by significance-register.md #21 and is NOT the live decision policy -- skills/ict-smc-trader/decision-policy.md is. The watchlist and supertrend_proxy keys above ARE read by supertrend-monitor.js/signal-grid.js and are live; bias_criteria and risk_rules below are not wired to the house stack.",
 
   "bias_criteria": {
     "bullish": [

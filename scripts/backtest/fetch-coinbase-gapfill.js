@@ -3,12 +3,19 @@
 // Binance BTC spot) stops dead at 2024-12-31 -- confirmed the SOURCE db itself has nothing newer
 // (checked directly, not just the derived CSVs), and Binance's live API is geo-blocked from this
 // environment (api.binance.com returns "restricted location"). Coinbase's public Exchange API
-// (api.exchange.coinbase.com, no auth needed) works and is arguably the BETTER venue going
-// forward anyway -- it's the actual instrument family this whole project's cost model is built
-// around (confirmed Coinbase Advanced derivatives fee tier), not a proxy the way Binance always
-// was. This is a deliberate venue switch at 2025-01-01T00:00:00Z, documented here and in
-// ARCHITECTURE.md, not a silent splice -- prints the seam (last Binance close vs first Coinbase
-// value) so any discontinuity is visible, not hidden.
+// (api.exchange.coinbase.com, no auth needed) works and is used as this project's historical
+// price feed. This is a deliberate data-source switch at 2025-01-01T00:00:00Z, documented here
+// and in ARCHITECTURE.md, not a silent splice -- prints the seam (last Binance close vs first
+// Coinbase value) so any discontinuity is visible, not hidden.
+//
+// RATIONALE CORRECTED 2026-08-15: this header used to argue Coinbase was the better source
+// BECAUSE it matched the traded instrument family (then COINBASE:BIPZ2030, Coinbase Advanced
+// derivatives fee tier). That justification no longer holds -- the traded venue is now
+// BITUNIX:BTCUSDT.P and Coinbase is not used for trading at all. Kept regardless, on the honest
+// narrower grounds: it's a free, no-auth, reliable BTC spot feed that covers every native
+// granularity this project needs, and Binance remains geo-blocked here. Treat it as a price
+// proxy in exactly the way Binance always was -- NOT as venue-matched data. If venue-matched
+// history ever matters for a finding, that needs a real Bitunix feed, not this script.
 //
 // Coinbase's public candle granularities: 60/300/900/3600/21600/86400 (1m/5m/15m/1h/6h/1d) --
 // covers every NATIVE timeframe this project needs directly (5m/15m/1h/1d). 2H/3H/4H/1W have no

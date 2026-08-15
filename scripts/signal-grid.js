@@ -320,8 +320,9 @@ async function buildGrid() {
 
     // SuperTrend doesn't touch the chart at all (independent Bitstamp fetch) — kick off all
     // timeframes for this symbol concurrently instead of serializing them with the chart sweep.
-    // Bitstamp doesn't list every TradingView-facing instrument (e.g. Coinbase Derivatives
-    // futures), so this may resolve through rules.json's supertrend_proxy mapping instead.
+    // Bitstamp doesn't list every TradingView-facing instrument (e.g. Bitunix perps, the traded
+    // venue as of 2026-08-15, or Coinbase Derivatives futures before that), so this may resolve
+    // through rules.json's supertrend_proxy mapping instead.
     const proxySymbol = proxyMap[symbol] || symbol;
     const supertrendPromises = Object.fromEntries(
       TIMEFRAMES.map((tf) => [tf.label, scanAdaptiveSuperTrend(proxySymbol, tf.stKey).catch((err) => ({ error: err.message }))]),

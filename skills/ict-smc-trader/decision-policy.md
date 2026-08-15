@@ -193,9 +193,11 @@ carve out an exception.
    explicitly a **manual-review watchlist flag, not a live trigger**. Say this plainly rather
    than imply live automation or verified accuracy exists.
 2. **Instrument proxy, same as everywhere else in this house.** Backtested on Coinbase Exchange
-   spot BTC-USD, not the actual traded contract (`COINBASE:BIPZ2030`, Coinbase Advanced
-   derivatives) — the same style of mismatch as the Bitstamp SuperTrend proxy, disclose it the
-   same way.
+   spot BTC-USD, not the actual traded contract (`BITUNIX:BTCUSDT.P` as of 2026-08-15;
+   `COINBASE:BIPZ2030` when this backtest was originally run) — the same style of mismatch as the
+   Bitstamp SuperTrend proxy, disclose it the same way. Note the venue change *widened* this gap:
+   the spot data source and the traded venue are now different exchanges entirely, where before
+   they at least shared one.
 3. **Backtest-only — going live starts a forward test, it doesn't end one.** This clears every
    bar the backtest lab has set, on historical data, for one asset. It has not traded forward.
    Treat the first live/paper instances as the beginning of real evidence, not confirmation.

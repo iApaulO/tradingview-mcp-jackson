@@ -26,8 +26,12 @@
 
 export const FEE_TIERS = {
   // CONFIRMED 2026-07-25 from iapaulo's own Coinbase Advanced dashboard, Advanced 1 tier,
-  // derivatives volume $73,923.25/30d. This is the real number -- use this as the default going
-  // forward, not a sensitivity extreme.
+  // derivatives volume $73,923.25/30d. This was the real number AT THE TIME and is the basis every
+  // register row up to roughly #74 was costed on.
+  // SUPERSEDED 2026-08-15: Coinbase is no longer used for trading -- the venue is now
+  // BITUNIX:BTCUSDT.P and `bitunix_futures_vip1` below is the default for new cost tests. This
+  // tier is KEPT, not deleted: it's what the historical findings were computed against, and
+  // re-running an old row on its original basis has to stay possible. Do not use it for new work.
   confirmed_derivatives: { takerFeePct: 0.0007, makerFeePct: 0.00065 },
   // Same tier, IF enrolled in Coinbase One (25% fee rebate per the dashboard) -- unconfirmed
   // whether iapaulo is actually enrolled, kept separate rather than assumed.
@@ -46,8 +50,8 @@ export const FEE_TIERS = {
   // own official fee page (bitunix.com/service/handling-fee), not a third-party aggregator (two
   // different search-result snippets disagreed slightly on other tiers' numbers, so the primary
   // source was pulled directly rather than trusted from a snippet) -- VIP1 requires >=1,000,000
-  // USDT/30d volume OR >=300 USDT balance. This is the real number -- use as the default for
-  // Bitunix scenarios going forward, same status confirmed_derivatives has for Coinbase.
+  // USDT/30d volume OR >=300 USDT balance. This is the real number and, as of 2026-08-15, THE
+  // project default for all new cost tests -- Bitunix is now the only venue actually traded.
   bitunix_futures_vip1: { takerFeePct: 0.0005, makerFeePct: 0.0002 },
   // Bitunix's own top VIP7 tier (>=$200M/30d futures volume OR >=$2.4M balance) -- NOT iapaulo's
   // actual tier, kept only as the cheap-end sensitivity bound, same role coinbase_spot_tier plays
