@@ -1,0 +1,109 @@
+{
+  "generated_at": "2026-08-16T12:19:37.466Z",
+  "family": "smc_structure",
+  "window_mult": 1,
+  "horizon_bars": 20,
+  "shifts": 2000,
+  "instruments": {
+    "BTC": [
+      {
+        "label": "TOP-DOWN (all depths)",
+        "n": 816,
+        "mean_pct": 0.13418353222435275,
+        "win_rate": 0.47549019607843135,
+        "p": 0.045
+      },
+      {
+        "label": "  top-down depth 2",
+        "n": 762,
+        "mean_pct": 0.11458276504165595,
+        "win_rate": 0.46981627296587924,
+        "p": 0.0685
+      },
+      {
+        "label": "  top-down depth >=3",
+        "n": 54,
+        "mean_pct": 0.41077213580240807,
+        "win_rate": 0.5555555555555556,
+        "p": 0.1325
+      },
+      {
+        "label": "BOTTOM-UP (control)",
+        "n": 347,
+        "mean_pct": 0.04559267416218437,
+        "win_rate": 0.4812680115273775,
+        "p": 0.368
+      },
+      {
+        "label": "td_minus_bu",
+        "gap_pp": 0.08859085806216839,
+        "p": 0.2975
+      }
+    ],
+    "ETH": [
+      {
+        "label": "TOP-DOWN (all depths)",
+        "n": 832,
+        "mean_pct": 0.36101849548934556,
+        "win_rate": 0.5264423076923077,
+        "p": 0.0005
+      },
+      {
+        "label": "  top-down depth 2",
+        "n": 785,
+        "mean_pct": 0.3321796583020443,
+        "win_rate": 0.5146496815286624,
+        "p": 0.004
+      },
+      {
+        "label": "  top-down depth >=3",
+        "n": 47,
+        "mean_pct": 0.8426884357453347,
+        "win_rate": 0.723404255319149,
+        "p": 0.032
+      },
+      {
+        "label": "BOTTOM-UP (control)",
+        "n": 344,
+        "mean_pct": 0.3896069956833711,
+        "win_rate": 0.5145348837209303,
+        "p": 0.0415
+      },
+      {
+        "label": "td_minus_bu",
+        "gap_pp": -0.028588500194025528,
+        "p": 0.556
+      }
+    ]
+  },
+  "pooled": [
+    {
+      "label": "TOP-DOWN (all depths)",
+      "n": 1648,
+      "mean_pct": 0.2487021544552232,
+      "win_rate": 0.5012135922330098,
+      "p": 0.002
+    },
+    {
+      "label": "  top-down depth 2",
+      "n": 1547,
+      "mean_pct": 0.22499877099472987,
+      "win_rate": 0.49256625727213965,
+      "p": 0.0065
+    },
+    {
+      "label": "  top-down depth >=3",
+      "n": 101,
+      "mean_pct": 0.6117628892411957,
+      "win_rate": 0.6336633663366337,
+      "p": 0.023
+    },
+    {
+      "label": "BOTTOM-UP (control)",
+      "n": 691,
+      "mean_pct": 0.21685305998459867,
+      "win_rate": 0.49782923299565845,
+      "p": 0.1055
+    }
+  ]
+}
