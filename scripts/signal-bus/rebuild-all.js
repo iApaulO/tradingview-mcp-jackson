@@ -32,6 +32,11 @@ const STEPS = [
   ...BUSES.map((bus) => ({ name: bus, script: `scripts/signal-bus/${bus}/build-historical.js`, instrumented: true })),
   { name: "smc confluence", script: "scripts/signal-bus/smc/build-confluence.js", instrumented: true },
   { name: "smc boom-confluence", script: "scripts/signal-bus/smc/build-boom-confluence.js", instrumented: true },
+  // Cascade runs LAST and is the only bus that consumes other BUSES rather than candles: it reads
+  // adaptive-supertrend flips and smc structure events, so both must already be built. Running it
+  // earlier produces an empty or partial cascade population with no error -- the same silent-
+  // incompleteness failure mode this orchestrator exists to prevent.
+  { name: "cascade", script: "scripts/signal-bus/cascade/build-historical.js", instrumented: true },
 ];
 
 function run(step) {
