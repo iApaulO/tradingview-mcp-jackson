@@ -47,6 +47,14 @@ import { writeFileSync, mkdirSync } from "fs";
 import { loadCandles } from "../../backtest/lib/load-candles.js";
 import { calcATRSeries, computeAdaptiveSuperTrend } from "../../lib/adaptive-supertrend.js";
 
+// DIRECTION SIGN -- corrected 2026-08-16. The AlgoAlpha SuperTrend uses dir === -1 for BULLISH
+// (pine line 33: `superTrend := _direction == -1 ? lowerBand : upperBand`, i.e. dir=-1 puts the
+// line at the LOWER band, below price, which is an uptrend; line 96 confirms
+// `ta.crossunder(dir, 0)` is labelled "Bullish Trend"). The signal bus has always mapped this
+// correctly. Every ad-hoc analysis script in this directory originally wrote `dir > 0 ? bullish`,
+// which is INVERTED -- verified empirically against ST-vs-price geometry over 19,586 4h bars: the
+// bus mapping agrees 100.00% of the time, the `dir > 0` mapping 0.00%. See register #139.
+
 const args = Object.fromEntries(process.argv.slice(2).filter((a) => a.includes("=")).map((a) => a.replace(/^--/, "").split("=")));
 const INSTRUMENT = args.instrument || "BTC";
 const BASE = args.base || "15m";
@@ -92,7 +100,7 @@ async function buildInstrument(inst) {
     for (let i = 0; i < nB; i++) {
       const cutoff = baseCandles[i].t - stepSec;
       while (j + 1 < candles.length && candles[j + 1].t <= cutoff) j++;
-      if (candles[j].t <= cutoff && Number.isFinite(dir[j])) s[i] = dir[j] > 0 ? 1 : 0;
+      if (candles[j].t <= cutoff && Number.isFinite(dir[j])) s[i] = dir[j] === -1 ? 1 : 0;
     }
     dirs.push(s);
   }

@@ -34,7 +34,13 @@ const FOLDS = parseInt(args.folds || "6", 10);
 const OOS_FRAC = parseFloat(args["oos-frac"] || "0.3");
 const ITER = parseInt(args.iterations || "20000", 10);
 const SEED = parseInt(args.seed || "42", 10);
-const ATR_LEN = 14, ATR_MULT = 0.6, MAX_HOLD_BARS = 200;
+const ATR_LEN = 14, MAX_HOLD_BARS = 200;
+// Stop width sweep. #138's diagnosis: at 2R with a 62.6% win rate the R-space expectancy is ~+0.88R,
+// yet gross return is only +0.2645%/trade because 0.6x ATR(14) on the fast rungs where clusters
+// terminate is a tiny absolute risk -- so a 0.10% round trip eats 40-70% of the gross edge. Widening
+// the stop scales the risk unit WITHOUT touching the signal, cutting cost drag proportionally.
+// #79 is the direct precedent (wider-stop unblock on red_cross, same reasoning).
+const ATR_MULTS = (args["atr-mult"] || "0.6").split(",").map(Number);
 
 const costParams = { takerFeePct: FEE_TIERS.bitunix_futures_vip1.takerFeePct, fundingPctPerHour: REPRESENTATIVE_FUNDING_PCT_PER_HOUR };
 const mean = (xs) => (xs.length ? xs.reduce((s, x) => s + x, 0) / xs.length : null);
@@ -76,7 +82,7 @@ function simulateR(candles, entryIdx, side, stop, target) {
   return null; // unresolved inside the hold limit -- dropped, never counted as a win
 }
 
-async function buildTrades(instrument, rMultiple) {
+async function buildTrades(instrument, rMultiple, atrMult) {
   const events = loadStructureEvents(instrument);
   const clusters = buildCooccurrenceClusters(events, { mult: MULT });
 
@@ -100,7 +106,7 @@ async function buildTrades(instrument, rMultiple) {
       if (!Number.isFinite(a) || a <= 0) continue;
       const side = c.direction === "bullish" ? "long" : "short";
       const entry = candles[idx].o;
-      const risk = ATR_MULT * a;
+      const risk = atrMult * a;
       const stop = side === "long" ? entry - risk : entry + risk;
       const target = side === "long" ? entry + rMultiple * risk : entry - rMultiple * risk;
       const res = simulateR(candles, idx, side, stop, target);
@@ -122,14 +128,15 @@ async function main() {
   const rng = mulberry32(SEED);
   const out = { mult: MULT, r_multiples: R_MULTIPLES, folds: FOLDS, oos_frac: OOS_FRAC, results: {} };
 
-  console.log(`R-MULTIPLE CONSTRUCTION ON CO-OCCURRENCE CLUSTERS -- ${ATR_MULT}x ATR(${ATR_LEN}) stop, fixed R target`);
+  console.log(`R-MULTIPLE CONSTRUCTION ON CO-OCCURRENCE CLUSTERS -- ATR(${ATR_LEN}) stop swept over ${ATR_MULTS.join('/')}x, R targets ${R_MULTIPLES.join('/')}`);
   console.log(`Costed at bitunix_futures_vip1. Ambiguous bars resolve STOP-FIRST (pessimistic).`);
 
   for (const inst of ["BTC", "ETH"]) {
     out.results[inst] = {};
     console.log(`\n${"#".repeat(100)}\n## ${inst}\n${"#".repeat(100)}`);
     for (const R of R_MULTIPLES) {
-      const all = await buildTrades(inst, R);
+     for (const AM of ATR_MULTS) {
+      const all = await buildTrades(inst, R, AM);
       const k1 = all.filter((t) => t.K === 1), k2 = all.filter((t) => t.K === 2), k3 = all.filter((t) => t.K >= 3);
       console.log(`\n--- ${R}R (${all.length.toLocaleString()} resolved trades) ---`);
       console.log(`  group     n       win%    gross%/tr   costed%/tr`);
@@ -179,13 +186,14 @@ async function main() {
         const p = geq / ITER;
         console.log(`  K>=3 minus K=1: gap=${(realGap * 100).toFixed(4)}pp  p(circular)=${p.toFixed(4)}${p < 0.05 ? "*" : ""}`);
 
-        out.results[inst][`${R}R`] = {
+        out.results[inst][`${R}R_atr${AM}`] = {
           k1: costedStats(k1), k2: costedStats(k2), k3: costedStats(k3),
           oos: { in_sample_pct: tr.costed * 100, oos_pct: te.costed * 100, oos_n: te.n },
           folds_pct: gaps.map((g) => (g == null ? null : g * 100)), folds_positive: pos, folds_usable: usable.length, fold_binomial_p: pB,
           k3_vs_k1_gap_pp: realGap * 100, k3_vs_k1_p: p,
         };
       }
+     }
     }
   }
 

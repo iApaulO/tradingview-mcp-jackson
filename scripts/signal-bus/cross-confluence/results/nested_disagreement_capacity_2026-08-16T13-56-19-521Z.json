@@ -1,0 +1,225 @@
+{
+  "generated_at": "2026-08-16T13:56:19.522Z",
+  "base": "15m",
+  "horizon_bars": 20,
+  "shifts": 200,
+  "seed": 42,
+  "results": [
+    {
+      "name": "BTC",
+      "n": 240929,
+      "mi_bits": 0.0004340773943430124,
+      "p": 0.035,
+      "baseline_mean_pct": 0.005863428699237278,
+      "rows": [
+        {
+          "D": 1,
+          "meaning": "boundary at 1d",
+          "n": 102291,
+          "mean_ret_pct": 0.011051852316608619,
+          "win_rate": 0.5087642119052507
+        },
+        {
+          "D": 2,
+          "meaning": "boundary at 4h",
+          "n": 57521,
+          "mean_ret_pct": -0.006879133455692887,
+          "win_rate": 0.5147163644581979
+        },
+        {
+          "D": 3,
+          "meaning": "boundary at 3h",
+          "n": 12916,
+          "mean_ret_pct": 0.031015965126841707,
+          "win_rate": 0.5014710436667699
+        },
+        {
+          "D": 4,
+          "meaning": "boundary at 2h",
+          "n": 9313,
+          "mean_ret_pct": 0.003963441632884409,
+          "win_rate": 0.5060667883603565
+        },
+        {
+          "D": 5,
+          "meaning": "boundary at 1h",
+          "n": 15083,
+          "mean_ret_pct": -0.00426807286392834,
+          "win_rate": 0.5219783862626798
+        },
+        {
+          "D": 6,
+          "meaning": "boundary at 15m",
+          "n": 18077,
+          "mean_ret_pct": -0.03259068557324617,
+          "win_rate": 0.49930851358079326
+        },
+        {
+          "D": 7,
+          "meaning": "boundary at 5m",
+          "n": 9910,
+          "mean_ret_pct": 0.04363453583446218,
+          "win_rate": 0.5023208879919273
+        },
+        {
+          "D": 8,
+          "meaning": "whole ladder agrees",
+          "n": 15818,
+          "mean_ret_pct": 0.029172133123945666,
+          "win_rate": 0.4653559236313061
+        },
+        {
+          "initiation": true,
+          "n": 1374,
+          "mean_ret_pct": 0.004845714693778671,
+          "win_rate": 0.45778748180494905,
+          "baseline_pct": 0.005863428699237278
+        }
+      ]
+    },
+    {
+      "name": "ETH",
+      "n": 240928,
+      "mi_bits": 0.0005010132063796506,
+      "p": 0.085,
+      "baseline_mean_pct": -0.009130316440930701,
+      "rows": [
+        {
+          "D": 1,
+          "meaning": "boundary at 1d",
+          "n": 105871,
+          "mean_ret_pct": -0.04828053412516911,
+          "win_rate": 0.4947719394357284
+        },
+        {
+          "D": 2,
+          "meaning": "boundary at 4h",
+          "n": 57650,
+          "mean_ret_pct": -0.013336154842605094,
+          "win_rate": 0.5107892454466609
+        },
+        {
+          "D": 3,
+          "meaning": "boundary at 3h",
+          "n": 10344,
+          "mean_ret_pct": 0.002660991862333011,
+          "win_rate": 0.5101508120649652
+        },
+        {
+          "D": 4,
+          "meaning": "boundary at 2h",
+          "n": 11291,
+          "mean_ret_pct": -0.03688146339677554,
+          "win_rate": 0.5067753077672482
+        },
+        {
+          "D": 5,
+          "meaning": "boundary at 1h",
+          "n": 14895,
+          "mean_ret_pct": 0.10075259470571479,
+          "win_rate": 0.5338704263175562
+        },
+        {
+          "D": 6,
+          "meaning": "boundary at 15m",
+          "n": 16164,
+          "mean_ret_pct": 0.03011691200579026,
+          "win_rate": 0.5210343974263796
+        },
+        {
+          "D": 7,
+          "meaning": "boundary at 5m",
+          "n": 9282,
+          "mean_ret_pct": 0.08336027850322929,
+          "win_rate": 0.5015082956259427
+        },
+        {
+          "D": 8,
+          "meaning": "whole ladder agrees",
+          "n": 15431,
+          "mean_ret_pct": 0.08477884842720725,
+          "win_rate": 0.4763139135506448
+        },
+        {
+          "initiation": true,
+          "n": 1273,
+          "mean_ret_pct": 0.009204125811580002,
+          "win_rate": 0.4666142969363708,
+          "baseline_pct": -0.009130316440930701
+        }
+      ]
+    },
+    {
+      "name": "POOLED (BTC+ETH)",
+      "n": 481857,
+      "mi_bits": 0.0003745263370697476,
+      "p": 0.025,
+      "baseline_mean_pct": -0.001633428312553271,
+      "rows": [
+        {
+          "D": 1,
+          "meaning": "boundary at 1d",
+          "n": 208162,
+          "mean_ret_pct": -0.01912454435990952,
+          "win_rate": 0.5016477551138055
+        },
+        {
+          "D": 2,
+          "meaning": "boundary at 4h",
+          "n": 115171,
+          "mean_ret_pct": -0.01011126031883976,
+          "win_rate": 0.5127506056212068
+        },
+        {
+          "D": 3,
+          "meaning": "boundary at 3h",
+          "n": 23260,
+          "mean_ret_pct": 0.01840616962176515,
+          "win_rate": 0.5053310404127257
+        },
+        {
+          "D": 4,
+          "meaning": "boundary at 2h",
+          "n": 20604,
+          "mean_ret_pct": -0.018419582182388865,
+          "win_rate": 0.5064550572704329
+        },
+        {
+          "D": 5,
+          "meaning": "boundary at 1h",
+          "n": 29978,
+          "mean_ret_pct": 0.04791295467125868,
+          "win_rate": 0.5278871172192942
+        },
+        {
+          "D": 6,
+          "meaning": "boundary at 15m",
+          "n": 34241,
+          "mean_ret_pct": -0.0029885826186728994,
+          "win_rate": 0.5095645571098975
+        },
+        {
+          "D": 7,
+          "meaning": "boundary at 5m",
+          "n": 19192,
+          "mean_ret_pct": 0.06284745493885444,
+          "win_rate": 0.5019278866194248
+        },
+        {
+          "D": 8,
+          "meaning": "whole ladder agrees",
+          "n": 31249,
+          "mean_ret_pct": 0.056631162975929135,
+          "win_rate": 0.4707670645460655
+        },
+        {
+          "initiation": true,
+          "n": 2647,
+          "mean_ret_pct": 0.006941769606117567,
+          "win_rate": 0.4620324896108802,
+          "baseline_pct": -0.001633428312553271
+        }
+      ]
+    }
+  ]
+}

@@ -27,6 +27,14 @@ import { computeWtExtremeFractals } from "../../vmc-cipher-b/calc.js";
 import { computeBoomHunter } from "../../boom-hunter/calc.js";
 import { computeSwingPivotSeries } from "../../smc/calc.js";
 
+// DIRECTION SIGN -- corrected 2026-08-16. The AlgoAlpha SuperTrend uses dir === -1 for BULLISH
+// (pine line 33: `superTrend := _direction == -1 ? lowerBand : upperBand`, i.e. dir=-1 puts the
+// line at the LOWER band, below price, which is an uptrend; line 96 confirms
+// `ta.crossunder(dir, 0)` is labelled "Bullish Trend"). The signal bus has always mapped this
+// correctly. Every ad-hoc analysis script in this directory originally wrote `dir > 0 ? bullish`,
+// which is INVERTED -- verified empirically against ST-vs-price geometry over 19,586 4h bars: the
+// bus mapping agrees 100.00% of the time, the `dir > 0` mapping 0.00%. See register #139.
+
 const D4M_TOL_PCT = 0.012, ATR_LEN = 14, ATR_MULT = 0.6, MAX_HOLD_BARS = 200, ST_ATR_LEN = 10;
 const LADDER = [["1w", 604800], ["1d", 86400], ["4h", 14400], ["3h", 10800], ["2h", 7200], ["1h", 3600], ["15m", 900], ["5m", 300]];
 
@@ -67,7 +75,7 @@ export async function buildGPopulation(instrument = "BTC", tf = "15m") {
     for (let i = 0; i < nB; i++) {
       const cutoff = candles[i].t - stepSec;
       while (j + 1 < c.length && c[j + 1].t <= cutoff) j++;
-      if (c[j].t <= cutoff && Number.isFinite(dir[j])) s[i] = dir[j] > 0 ? 1 : 0;
+      if (c[j].t <= cutoff && Number.isFinite(dir[j])) s[i] = dir[j] === -1 ? 1 : 0;
     }
     dirs.push(s);
   }
