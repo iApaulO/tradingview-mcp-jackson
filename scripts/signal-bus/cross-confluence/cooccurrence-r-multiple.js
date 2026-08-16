@@ -34,7 +34,15 @@ const FOLDS = parseInt(args.folds || "6", 10);
 const OOS_FRAC = parseFloat(args["oos-frac"] || "0.3");
 const ITER = parseInt(args.iterations || "20000", 10);
 const SEED = parseInt(args.seed || "42", 10);
-const ATR_LEN = 14, MAX_HOLD_BARS = 200;
+const ATR_LEN = 14;
+// Hold-limit sweep and unresolved-trade handling. #140 flagged the MAX_HOLD_BARS=200 dropout as the
+// most plausible inflator of its 65-76% win rates: trades that hit neither stop nor target inside
+// the limit were DISCARDED (8,161 -> 7,586 at the widest stop). Discarding them is survivorship
+// bias -- an unresolved position is a real trade you would close at market, not one that never
+// happened. 'mtm' marks it to market at the limit bar's close, which is the honest treatment;
+// 'drop' reproduces #138/#140's behaviour so the two are directly comparable.
+const HOLD_LIMITS = (args["hold"] || "200").split(",").map(Number);
+const UNRESOLVED = args.unresolved || "mtm";
 // Stop width sweep. #138's diagnosis: at 2R with a 62.6% win rate the R-space expectancy is ~+0.88R,
 // yet gross return is only +0.2645%/trade because 0.6x ATR(14) on the fast rungs where clusters
 // terminate is a tiny absolute risk -- so a 0.10% round trip eats 40-70% of the gross edge. Widening
@@ -70,19 +78,23 @@ function atrSeries(candles, length) {
 }
 
 // Pessimistic: a bar containing both levels resolves as a stop.
-function simulateR(candles, entryIdx, side, stop, target) {
-  const end = Math.min(candles.length - 1, entryIdx + MAX_HOLD_BARS);
+function simulateR(candles, entryIdx, side, stop, target, holdBars) {
+  const end = Math.min(candles.length - 1, entryIdx + holdBars);
   for (let j = entryIdx; j <= end; j++) {
     const b = candles[j];
     const hitStop = side === "long" ? b.l <= stop : b.h >= stop;
     const hitTarget = side === "long" ? b.h >= target : b.l <= target;
-    if (hitStop) return { exitPrice: stop, exitTime: b.t, won: 0 };
-    if (hitTarget) return { exitPrice: target, exitTime: b.t, won: 1 };
+    if (hitStop) return { exitPrice: stop, exitTime: b.t, won: 0, resolved: true };
+    if (hitTarget) return { exitPrice: target, exitTime: b.t, won: 1, resolved: true };
   }
-  return null; // unresolved inside the hold limit -- dropped, never counted as a win
+  if (end <= entryIdx) return null;
+  // Unresolved. Mark to market at the limit bar's close -- a real exit, win/loss decided by sign.
+  const b = candles[end];
+  const won = side === "long" ? (b.c > candles[entryIdx].o ? 1 : 0) : (b.c < candles[entryIdx].o ? 1 : 0);
+  return { exitPrice: b.c, exitTime: b.t, won, resolved: false };
 }
 
-async function buildTrades(instrument, rMultiple, atrMult) {
+async function buildTrades(instrument, rMultiple, atrMult, holdBars) {
   const events = loadStructureEvents(instrument);
   const clusters = buildCooccurrenceClusters(events, { mult: MULT });
 
@@ -109,10 +121,11 @@ async function buildTrades(instrument, rMultiple, atrMult) {
       const risk = atrMult * a;
       const stop = side === "long" ? entry - risk : entry + risk;
       const target = side === "long" ? entry + rMultiple * risk : entry - rMultiple * risk;
-      const res = simulateR(candles, idx, side, stop, target);
+      const res = simulateR(candles, idx, side, stop, target, holdBars);
       if (!res) continue;
+      if (!res.resolved && UNRESOLVED === "drop") continue; // #138/#140 behaviour, kept for comparison
       const pnlPct = side === "long" ? (res.exitPrice - entry) / entry : (entry - res.exitPrice) / entry;
-      trades.push({ K: c.K, order: c.order, rung, side, entryTime: candles[idx].t, exitTime: res.exitTime, pnlPct, won: res.won });
+      trades.push({ K: c.K, order: c.order, rung, side, entryTime: candles[idx].t, exitTime: res.exitTime, pnlPct, won: res.won, resolved: res.resolved });
     }
   }
   return trades.sort((a, b) => a.entryTime - b.entryTime);
@@ -136,7 +149,8 @@ async function main() {
     console.log(`\n${"#".repeat(100)}\n## ${inst}\n${"#".repeat(100)}`);
     for (const R of R_MULTIPLES) {
      for (const AM of ATR_MULTS) {
-      const all = await buildTrades(inst, R, AM);
+      for (const HL of HOLD_LIMITS) {
+      const all = await buildTrades(inst, R, AM, HL);
       const k1 = all.filter((t) => t.K === 1), k2 = all.filter((t) => t.K === 2), k3 = all.filter((t) => t.K >= 3);
       console.log(`\n--- ${R}R (${all.length.toLocaleString()} resolved trades) ---`);
       console.log(`  group     n       win%    gross%/tr   costed%/tr`);
@@ -186,12 +200,13 @@ async function main() {
         const p = geq / ITER;
         console.log(`  K>=3 minus K=1: gap=${(realGap * 100).toFixed(4)}pp  p(circular)=${p.toFixed(4)}${p < 0.05 ? "*" : ""}`);
 
-        out.results[inst][`${R}R_atr${AM}`] = {
+        out.results[inst][`${R}R_atr${AM}_hold${HL}`] = {
           k1: costedStats(k1), k2: costedStats(k2), k3: costedStats(k3),
           oos: { in_sample_pct: tr.costed * 100, oos_pct: te.costed * 100, oos_n: te.n },
           folds_pct: gaps.map((g) => (g == null ? null : g * 100)), folds_positive: pos, folds_usable: usable.length, fold_binomial_p: pB,
           k3_vs_k1_gap_pp: realGap * 100, k3_vs_k1_p: p,
         };
+      }
       }
      }
     }
