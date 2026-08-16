@@ -235,6 +235,18 @@ export function computeBoomHunter(candles) {
   const HP2 = highpass(candles, ALPHA1); // same alpha formula, independent recursive state via its own HP array
   const X2 = superSmootherAndNormalize(HP2, 27);
   const Quotient3 = quotient(X2, 0.8);
+  // Quotient4 / q4 added 2026-08-16, closing the gap #146 identified and #153 re-confirmed. Every
+  // other EOT exposes BOTH halves of its pair (Quotient1/2, Quotient5/6) and EOT2 exposed only the
+  // first, so the red wave was half-implemented. Source: line 151 `Quotient4 := (X2 + K22) / (K22 *
+  // X2 + 1)` with K22 = 0.3 (line 33), and line 237 `q4 = Quotient4 * esize + ey` with esize = 60,
+  // ey = 50 -- the same scaling every other q line uses. Note K22 = 0.3 is identical to EOT1's
+  // K2 = 0.3, so Quotient4 is to Quotient3 exactly what Quotient2 is to Quotient1.
+  // q3 is exposed alongside it because the pair is drawn as a FILLED BAND in the source (lines
+  // 238-240, both red, fill between them) -- the band's WIDTH is q3-q4 and is only computable with
+  // both, which is the form iapaulo's "sharp tips versus flat" question is actually about.
+  const Quotient4 = quotient(X2, 0.3);
+  const q3 = Quotient3.map((v) => v * 60 + 50);
+  const q4 = Quotient4.map((v) => v * 60 + 50);
 
   // EOT3 ("Yellow Line" per its own input group name), ported 2026-08-09 -- iapaulo asked directly
   // about the yellow (Quotient5) / blue (Quotient6, "Downward Boom Line") pair after noticing a live
@@ -365,5 +377,5 @@ export function computeBoomHunter(candles) {
     eot3Episodes.push({ startBarIdx: i, startTime: candles[i].t, endBarIdx: endIdx, endTime: candles[endIdx].t, hasFlag });
   }
 
-  return { events, eot3Episodes, series: { q1, trigger, Quotient1, Quotient3, lsma, wt1, wt3, q5, q6 } };
+  return { events, eot3Episodes, series: { q1, trigger, Quotient1, Quotient3, Quotient4, q3, q4, lsma, wt1, wt3, q5, q6 } };
 }
