@@ -50,6 +50,8 @@ import { computeSwingPivotSeries } from "../smc/calc.js";
 import { computeBoomHunter } from "../boom-hunter/calc.js";
 import { classifyEngulfment } from "../smc/engulfment.js";
 
+import { loadStructureEvents, buildCooccurrenceClusters } from "./lib/cooccurrence.js";
+
 const SMC_DB_PATH = new URL("../../../data/signal-bus/smc.db", import.meta.url);
 const D4M_DB_PATH = new URL("../../../data/signal-bus/divergence-for-many.db", import.meta.url);
 const MAX_HOLD_BARS = 200;
@@ -160,6 +162,48 @@ function winRate(trades) { return trades.length ? trades.filter((t) => t.pnlPct 
 // all order blocks first, classifies, THEN filters to the trading population -- unlike the
 // original version, which queried already-filtered rows directly. Trade population/count is
 // otherwise unchanged from #27b (same recurrence_count>=3 threshold, same fixed-R construction). ---
+
+// Strategy H (#137-#144): multi-timeframe CO-OCCURRENCE breadth. A cluster is three or more rungs
+// breaking SMC structure the same way inside one window (order-blind -- #137 showed ORDER is null
+// once size is controlled, p=0.1226/0.4200, while SIZE is p=0.0000 on both instruments).
+//
+// This strategy deliberately uses its OWN stop width (2.0x ATR) rather than the file-global
+// ATR_MULT of 0.6x. That is not an inconsistency: #138 showed the construction FAILS out-of-sample
+// at 0.6x (BTC OOS -0.0055%) purely because the risk unit was too small relative to a 0.10% round
+// trip, and #140 showed monotone improvement with stop width. 2.0x is the value frozen in the
+// pre-registration (5d5220b) -- mid-range of the clearing region, deliberately not the best cell.
+// Changing it here to match the other strategies would test a construction that has never been
+// validated instead of the one that passed #143.
+//
+// Entry is the first bar STRICTLY AFTER the cluster's knownAtTime, on the cluster's FINEST rung,
+// since a cluster is not observable until its last member fires.
+const ATR_MULT_H = 2.0;
+async function buildStrategyH(candlesByTf) {
+  const clusters = buildCooccurrenceClusters(loadStructureEvents("BTC"), { mult: 1 }).filter((c) => c.K >= 3);
+  const trades = [];
+  for (const c of clusters) {
+    const candles = candlesByTf[c.outcomeRung];
+    if (!candles) continue;
+    const atr14 = atr(candles, ATR_LEN);
+    // first bar strictly after the cluster is observable
+    let lo = 0, hi = candles.length - 1, entryIdx = -1;
+    while (lo <= hi) { const m = (lo + hi) >> 1; if (candles[m].t > c.knownAtTime) { entryIdx = m; hi = m - 1; } else lo = m + 1; }
+    if (entryIdx < 0 || entryIdx >= candles.length) continue;
+    const a = atr14[entryIdx];
+    if (!Number.isFinite(a) || a <= 0) continue;
+    const side = c.direction === "bullish" ? "long" : "short";
+    const entryPrice = candles[entryIdx].o;
+    const risk = ATR_MULT_H * a;
+    const stopPrice = side === "long" ? entryPrice - risk : entryPrice + risk;
+    const targetPrice = side === "long" ? entryPrice + R_MULT * risk : entryPrice - R_MULT * risk;
+    const result = simulateFixedR(candles, entryIdx, side, stopPrice, targetPrice);
+    if (!result) continue;
+    const pnlPct = side === "long" ? (result.exitPrice - entryPrice) / entryPrice : (entryPrice - result.exitPrice) / entryPrice;
+    trades.push({ strategy: "H_cooccurrence_k3", side, entryTime: candles[entryIdx].t, entryPrice, exitTime: result.exitTime, exitPrice: result.exitPrice, pnlPct, riskPct: risk / entryPrice, timeframe: c.outcomeRung, confidence: c.K });
+  }
+  return trades;
+}
+
 async function buildStrategyA(candlesByTf) {
   const db = new DatabaseSync(SMC_DB_PATH, { readOnly: true });
   const allObRows = db.prepare("SELECT id, timeframe, side, bar_high, bar_low, created_time, mitigated_time, recurrence_count FROM order_blocks").all();
@@ -1030,11 +1074,11 @@ async function main() {
 
   console.log(`Portfolio backtest: R=${R_MULT}, risk/trade=${(RISK_PCT * 100).toFixed(2)}% of equity, fee tier=${FEE_TIER} (round-trip=${(FEE_TIERS[FEE_TIER].takerFeePct * 200).toFixed(3)}%)\n`);
 
-  const [rawA, rawA2, rawB, rawC, rawD, rawE, rawF, rawG] = await Promise.all([
-    buildStrategyA(candlesByTf), buildStrategyA2(candlesByTf), buildStrategyB(candlesByTf), buildStrategyC(candlesByTf), buildStrategyD(candlesByTf), buildStrategyE(candlesByTf), buildStrategyF(candlesByTf), buildStrategyG(candlesByTf),
+  const [rawA, rawA2, rawB, rawC, rawD, rawE, rawF, rawG, rawH] = await Promise.all([
+    buildStrategyA(candlesByTf), buildStrategyA2(candlesByTf), buildStrategyB(candlesByTf), buildStrategyC(candlesByTf), buildStrategyD(candlesByTf), buildStrategyE(candlesByTf), buildStrategyF(candlesByTf), buildStrategyG(candlesByTf), buildStrategyH(candlesByTf),
   ]);
   const costParams = { takerFeePct: FEE_TIERS[FEE_TIER].takerFeePct, fundingPctPerHour: REPRESENTATIVE_FUNDING_PCT_PER_HOUR };
-  const stratMap = { A_recurrence: rawA, A2_engulfment_only: rawA2, B_1d_divergence: rawB, C_nested_divergence: rawC, D_boom_nested_boost: rawD, E_swing_regime_2h: rawE, F_wt_anchor_1d: rawF, G_wt_anchor_ct_15m: rawG };
+  const stratMap = { A_recurrence: rawA, A2_engulfment_only: rawA2, B_1d_divergence: rawB, C_nested_divergence: rawC, D_boom_nested_boost: rawD, E_swing_regime_2h: rawE, F_wt_anchor_1d: rawF, G_wt_anchor_ct_15m: rawG, H_cooccurrence_k3: rawH };
 
   console.log("-- Per-strategy sanity check (should match register rows within noise) --");
   const perStrategySummary = {};
@@ -1058,7 +1102,7 @@ async function main() {
   // in-sample pooled average (#120) -- forward persistence is the metric that matters for a live
   // decision. --strategy-a-variant=a recovers the original A for comparison, not deleted.
   const useA2 = (args["strategy-a-variant"] || "a2") === "a2";
-  let allTrades = [...(useA2 ? rawA2 : rawA), ...rawB, ...rawC, ...rawD, ...rawE, ...rawF, ...rawG];
+  let allTrades = [...(useA2 ? rawA2 : rawA), ...rawB, ...rawC, ...rawD, ...rawE, ...rawF, ...rawG, ...rawH];
   allTrades = applyCosts(allTrades, costParams);
   allTrades = countOverlaps(allTrades);
   allTrades.sort((a, b) => a.entryTime - b.entryTime || a.exitTime - b.exitTime);
