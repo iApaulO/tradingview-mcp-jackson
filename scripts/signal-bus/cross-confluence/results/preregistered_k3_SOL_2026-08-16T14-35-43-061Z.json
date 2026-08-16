@@ -1,0 +1,38 @@
+{
+  "generated_at": "2026-08-16T14:35:43.062Z",
+  "instrument": "SOL",
+  "preregistration_commit": "5d5220b",
+  "config": {
+    "CLUSTER_MULT": 1,
+    "ATR_LEN": 14,
+    "ATR_MULT": 2,
+    "R_MULT": 2,
+    "HOLD_BARS": 200,
+    "SLIP_ENTRY_ATR": 0.05,
+    "SLIP_STOP_ATR": 0.15,
+    "SLIP_TARGET_ATR": 0,
+    "ITERATIONS": 20000,
+    "SEED": 42,
+    "TAKER": 0.0005
+  },
+  "k1": {
+    "n": 4403,
+    "win": 0.31251419486713605,
+    "net": -0.002977512643796087
+  },
+  "k2": {
+    "n": 659,
+    "win": 0.4142640364188164,
+    "net": 0.00007782856477989306
+  },
+  "k3": {
+    "n": 168,
+    "win": 0.6607142857142857,
+    "net": 0.011256258408446162
+  },
+  "gap_pp": 1.423377105224225,
+  "p": 0,
+  "criterion_1_met": true,
+  "criterion_2_met": true,
+  "verdict": "PASS"
+}
