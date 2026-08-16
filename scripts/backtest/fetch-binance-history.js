@@ -47,6 +47,7 @@ const INSTRUMENT = args.instrument || "BTC";
 const INSTRUMENTS = {
   BTC: { symbol: "BTCUSDT", prefix: "binance-btc" },
   ETH: { symbol: "ETHUSDT", prefix: "binance-eth" },
+  SOL: { symbol: "SOLUSDT", prefix: "binance-sol" },
 };
 
 // The seam introduced by #124's Coinbase gap-fill. Bars before this are kept verbatim in repair

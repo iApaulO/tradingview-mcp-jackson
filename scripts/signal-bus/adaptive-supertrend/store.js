@@ -22,6 +22,7 @@ const DB_DIR = new URL("../../../data/signal-bus/", import.meta.url);
 const DB_FILES = {
   BTC: "adaptive-supertrend.db",
   ETH: "adaptive-supertrend-eth.db",
+  SOL: "adaptive-supertrend-sol.db",
 };
 
 function dbPathFor(instrument) {

@@ -18,6 +18,7 @@ const DB_DIR = new URL("../../../data/signal-bus/", import.meta.url);
 const DB_FILES = {
   BTC: "smc.db",
   ETH: "smc-eth.db",
+  SOL: "smc-sol.db",
 };
 
 function dbPathFor(instrument) {

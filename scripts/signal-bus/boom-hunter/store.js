@@ -18,6 +18,7 @@ const DB_DIR = new URL("../../../data/signal-bus/", import.meta.url);
 const DB_FILES = {
   BTC: "boom-hunter.db",
   ETH: "boom-hunter-eth.db",
+  SOL: "boom-hunter-sol.db",
 };
 
 function dbPathFor(instrument) {

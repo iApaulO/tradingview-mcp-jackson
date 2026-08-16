@@ -28,6 +28,7 @@ const DB_DIR = new URL("../../../data/signal-bus/", import.meta.url);
 const DB_FILES = {
   BTC: "divergence-for-many.db",
   ETH: "divergence-for-many-eth.db",
+  SOL: "divergence-for-many-sol.db",
 };
 
 function dbPathFor(instrument) {

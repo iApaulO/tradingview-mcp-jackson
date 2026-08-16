@@ -21,6 +21,7 @@ const DB_DIR = new URL("../../../data/signal-bus/", import.meta.url);
 const DB_FILES = {
   BTC: "cipher-a.db",
   ETH: "cipher-a-eth.db",
+  SOL: "cipher-a-sol.db",
 };
 
 function dbPathFor(instrument) {

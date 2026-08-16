@@ -24,6 +24,7 @@
 // direction and would manufacture a directional result.
 
 import { DatabaseSync } from "node:sqlite";
+import { dbSuffix } from "../../lib/instrument.js";
 
 export const LADDER = [
   { tf: "1w", sec: 604800 }, { tf: "1d", sec: 86400 }, { tf: "4h", sec: 14400 }, { tf: "3h", sec: 10800 },
@@ -32,7 +33,7 @@ export const LADDER = [
 const IDX = new Map(LADDER.map((l, i) => [l.tf, i]));
 
 const smcDbFor = (instrument) =>
-  new URL(`../../../../data/signal-bus/${instrument === "BTC" ? "smc.db" : "smc-eth.db"}`, import.meta.url);
+  new URL(`../../../../data/signal-bus/smc${dbSuffix(instrument)}.db`, import.meta.url);
 
 // scope: 'swing' (default) matches every cascade/co-occurrence row logged so far.
 // chochOnly narrows to reversals; #135 built both families.

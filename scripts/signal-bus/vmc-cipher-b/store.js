@@ -31,6 +31,7 @@ const DB_DIR = new URL("../../../data/signal-bus/", import.meta.url);
 const DB_FILES = {
   BTC: "vmc-cipher-b.db",
   ETH: "vmc-cipher-b-eth.db",
+  SOL: "vmc-cipher-b-sol.db",
 };
 
 function dbPathFor(instrument) {
