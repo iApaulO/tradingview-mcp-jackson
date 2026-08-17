@@ -48,6 +48,7 @@ import { applyCosts, FEE_TIERS, REPRESENTATIVE_FUNDING_PCT_PER_HOUR } from "../.
 import { computeVmcCipherB, computeWtCrossSignals, computeRegularDivergenceUnion, computeWtExtremeFractals } from "../vmc-cipher-b/calc.js";
 import { computeSwingPivotSeries } from "../smc/calc.js";
 import { computeBoomHunter } from "../boom-hunter/calc.js";
+import { pathToFileURL } from "node:url";
 import { classifyEngulfment } from "../smc/engulfment.js";
 
 import { loadStructureEvents, buildCooccurrenceClusters } from "./lib/cooccurrence.js";
@@ -1239,4 +1240,17 @@ async function main() {
   console.log(`\nSaved: ${new URL(fname, RESULTS_DIR).pathname.replace(/^\/([A-Z]:)/, "$1")}`);
 }
 
-main().catch((err) => { console.error("Fatal:", err); process.exit(1); });
+// Run main() only when this file is EXECUTED, not when it is imported. Added 2026-08-16 so the
+// strategy builders can be reused by directional/diagnostic scripts without triggering a full
+// portfolio backtest as an import side effect. CLI behaviour is unchanged.
+// The builders are exported for the same reason lib/strategy-g-population.js exists: a second
+// hand-written copy of a population definition is how two copies silently diverge.
+export { buildStrategyA, buildStrategyA2, buildStrategyG, buildStrategyH };
+export const PORTFOLIO_COST_PARAMS = {
+  takerFeePct: FEE_TIERS[FEE_TIER].takerFeePct,
+  fundingPctPerHour: REPRESENTATIVE_FUNDING_PCT_PER_HOUR,
+};
+
+if (import.meta.url === pathToFileURL(process.argv[1] || "").href) {
+  main().catch((err) => { console.error("Fatal:", err); process.exit(1); });
+}
