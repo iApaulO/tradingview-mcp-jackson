@@ -54,7 +54,16 @@ CREATE TABLE IF NOT EXISTS events (
   bar_idx INTEGER NOT NULL,
   time INTEGER NOT NULL,
   price REAL NOT NULL,
-  q1 REAL NOT NULL
+  q1 REAL NOT NULL,
+  -- Full oscillator state at the event bar, added 2026-08-16 with the Quotient4 port. Deliberately
+  -- NULLABLE, not NOT NULL: rows written by any build predating this change legitimately have no
+  -- value here, and a NOT NULL column would force a fabricated default that a later reader could
+  -- not distinguish from a real reading. q3/q4 are the EOT2 red-wave pair (their DIFFERENCE is the
+  -- filled band width the chart actually shows); q5/q6 are the EOT3 yellow/blue pair.
+  q3 REAL,
+  q4 REAL,
+  q5 REAL,
+  q6 REAL
 );
 CREATE INDEX IF NOT EXISTS idx_events_tf_time ON events(timeframe, time);
 CREATE INDEX IF NOT EXISTS idx_events_tf_type ON events(timeframe, type);
@@ -77,11 +86,22 @@ CREATE TABLE IF NOT EXISTS eot3_episodes (
 CREATE INDEX IF NOT EXISTS idx_eot3_tf_time ON eot3_episodes(timeframe, start_time);
 `;
 
+// `CREATE TABLE IF NOT EXISTS` is a no-op on a table that already exists, so new columns added to
+// SCHEMA never reach a database built before they were declared. This performs the ALTER
+// explicitly, idempotently, on the same principle as migrateInstrument.
+function migrateEventQuotients(db) {
+  const existing = new Set(db.prepare("PRAGMA table_info(events)").all().map((r) => r.name));
+  for (const col of ["q3", "q4", "q5", "q6"]) {
+    if (!existing.has(col)) db.exec(`ALTER TABLE events ADD COLUMN ${col} REAL`);
+  }
+}
+
 export function openStore(instrument = "BTC") {
   mkdirSync(DB_DIR, { recursive: true });
   const db = new DatabaseSync(dbPathFor(instrument));
   db.exec(SCHEMA);
   migrateInstrument(db, INSTRUMENT_TABLES);
+  migrateEventQuotients(db);
   return db;
 }
 
@@ -115,10 +135,13 @@ export function insertEvents(db, { instrument, runId, timeframe, events }) {
   db.exec("BEGIN");
   try {
     const stmt = db.prepare(
-      "INSERT INTO events (run_id, instrument, timeframe, type, bar_idx, time, price, q1) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO events (run_id, instrument, timeframe, type, bar_idx, time, price, q1, q3, q4, q5, q6) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
     );
+    // A non-finite quotient is stored as NULL rather than NaN: SQLite has no NaN, and binding one
+    // would either throw or silently land as 0.0 -- a value indistinguishable from a real reading.
+    const num = (v) => (Number.isFinite(v) ? v : null);
     for (const e of events) {
-      stmt.run(runId, instrument, timeframe, e.type, e.barIdx, e.time, e.price, e.q1);
+      stmt.run(runId, instrument, timeframe, e.type, e.barIdx, e.time, e.price, e.q1, num(e.q3), num(e.q4), num(e.q5), num(e.q6));
     }
     db.exec("COMMIT");
   } catch (err) {

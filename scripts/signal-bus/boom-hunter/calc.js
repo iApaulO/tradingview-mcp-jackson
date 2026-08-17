@@ -377,5 +377,20 @@ export function computeBoomHunter(candles) {
     eot3Episodes.push({ startBarIdx: i, startTime: candles[i].t, endBarIdx: endIdx, endTime: candles[endIdx].t, hasFlag });
   }
 
+  // Attach the FULL oscillator state at each event bar. Added 2026-08-16 with the q4 port: events
+  // previously carried q1 alone, so no consumer could condition a signal on the red-wave or
+  // yellow-line state at signal time without recomputing the entire indicator -- which is exactly
+  // what the #157/#158 tests had to do. Done as ONE post-pass over the finished list rather than at
+  // each of the ten push sites, so a newly added event type cannot silently miss the fields.
+  // q4 feeds NO event condition anywhere in this file, so this is purely additive: event counts,
+  // types, bar indices and q1 values must be byte-identical to the pre-q4 build, and that is the
+  // invariant the rebuild is checked against.
+  for (const e of events) {
+    e.q3 = q3[e.barIdx];
+    e.q4 = q4[e.barIdx];
+    e.q5 = q5[e.barIdx];
+    e.q6 = q6[e.barIdx];
+  }
+
   return { events, eot3Episodes, series: { q1, trigger, Quotient1, Quotient3, Quotient4, q3, q4, lsma, wt1, wt3, q5, q6 } };
 }
