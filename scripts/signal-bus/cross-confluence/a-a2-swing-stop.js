@@ -36,7 +36,17 @@ const SLIP_ENTRY_ATR = 0.05, SLIP_STOP_ATR = 0.15, SLIP_TARGET_ATR = 0;
 const TAKER = FEE_TIERS.bitunix_futures_vip1.takerFeePct;
 const DEGENERATE_RISK_PCT = 0.0005;   // 0.05% of price: below this a fixed-risk size is unusable
 const TFS = ["5m", "15m", "1h", "4h"];
+const RULES = ["blind", "react_candle", "react_reclaim"];
 const FIRST_TOUCH_ONLY = !process.argv.includes("--all-touches");
+// iapaulo's entry rule: "touch, react, open on next candle after correct direction". Blind entry on
+// the touch bar enters a block price may be cutting straight through; requiring a reaction first
+// only takes setups the market has already acknowledged. The phrase admits two honest readings and
+// both are tested rather than one being chosen:
+//   react_candle : the first candle after the touch that CLOSES IN THE SETUP DIRECTION.
+//   react_reclaim: the first candle that CLOSES BACK OUTSIDE the block (above bar_high for a long).
+// available_at holds in both: the confirming candle must be CLOSED, so entry is the NEXT bar's open.
+// If no confirmation arrives inside CONFIRM_WINDOW the setup is SKIPPED, not entered late.
+const CONFIRM_WINDOW = 12;
 
 const mean = (xs) => (xs.length ? xs.reduce((s, x) => s + x, 0) / xs.length : NaN);
 const median = (xs) => { const s = [...xs].sort((a, b) => a - b); return s.length ? s[Math.floor(s.length / 2)] : NaN; };
@@ -110,7 +120,7 @@ async function main() {
     ["A  (recurrence>=3)", allOb.filter((o) => o.recurrence_count >= 3)],
     ["A2 (recurrence>=3 + engulfment)", allOb.filter((o) => o.recurrence_count >= 3 && o.engulfmentClass === "engulfment")],
   ]) {
-    const res = { ob: [], swing: [] };
+    const res = Object.fromEntries(RULES.map((r) => [r, { ob: [], swing: [] }]));
     let swingUnavailable = 0;
     for (const ob of pop) {
       const c = candlesByTf[ob.timeframe];
@@ -127,25 +137,40 @@ async function main() {
         const idx = startBar + 1;
         if (idx < 1 || idx >= c.length) continue;
         const side = ob.side === "bullish" ? "long" : "short";
-        const tOb = runTrade(c, atr, idx, side, side === "long" ? ob.bar_low : ob.bar_high);
-        if (tOb) res.ob.push(tOb);
-        const sw = side === "long" ? piv.swingLowLevel[idx - 1] : piv.swingHighLevel[idx - 1];
-        const tSw = runTrade(c, atr, idx, side, sw);
-        if (tSw) res.swing.push(tSw); else swingUnavailable++;
+
+        // resolve the entry bar under each rule
+        const entryIdx = { blind: idx, react_candle: -1, react_reclaim: -1 };
+        for (let j = idx; j < Math.min(c.length - 1, idx + CONFIRM_WINDOW); j++) {
+          const b = c[j];
+          const dirOk = side === "long" ? b.c > b.o : b.c < b.o;
+          if (entryIdx.react_candle < 0 && dirOk) entryIdx.react_candle = j + 1;
+          const reclaimOk = side === "long" ? b.c > ob.bar_high : b.c < ob.bar_low;
+          if (entryIdx.react_reclaim < 0 && reclaimOk) entryIdx.react_reclaim = j + 1;
+          if (entryIdx.react_candle >= 0 && entryIdx.react_reclaim >= 0) break;
+        }
+
+        for (const rule of RULES) {
+          const ei = entryIdx[rule];
+          if (ei < 1 || ei >= c.length) continue;
+          const tOb = runTrade(c, atr, ei, side, side === "long" ? ob.bar_low : ob.bar_high);
+          if (tOb) res[rule].ob.push(tOb);
+          const sw = side === "long" ? piv.swingLowLevel[ei - 1] : piv.swingHighLevel[ei - 1];
+          const tSw = runTrade(c, atr, ei, side, sw);
+          if (tSw) res[rule].swing.push(tSw); else swingUnavailable++;
+        }
       }
     }
     console.log(`  ${label}   blocks=${pop.length.toLocaleString()}`);
-    console.log("    stop mode        n      win%     net%/trade    mean risk%   median risk%      R/trade   DEGENERATE");
-    for (const mode of ["ob", "swing"]) {
-      const g = res[mode];
-      if (!g.length) { console.log(`    ${mode.padEnd(14)} none`); continue; }
+    console.log("    entry rule       stop        n      win%     net%/trade    mean risk%      R/trade   DEGENERATE");
+    for (const rule of RULES) for (const mode of ["ob", "swing"]) {
+      const g = res[rule][mode];
+      if (!g.length) { console.log(`    ${rule.padEnd(16)}${mode.padEnd(10)} none`); continue; }
       const deg = g.filter((t) => t.riskPct < DEGENERATE_RISK_PCT).length;
       console.log(
-        `    ${(mode === "ob" ? "OB height" : "swing").padEnd(14)}${String(g.length).padStart(6)}` +
+        `    ${rule.padEnd(16)}${(mode === "ob" ? "OB height" : "swing").padEnd(10)}${String(g.length).padStart(6)}` +
         `${(g.filter((t) => t.won).length / g.length * 100).toFixed(1).padStart(10)}%` +
         `${(mean(g.map((t) => t.net)) * 100).toFixed(4).padStart(14)}%` +
         `${(mean(g.map((t) => t.riskPct)) * 100).toFixed(3).padStart(13)}%` +
-        `${(median(g.map((t) => t.riskPct)) * 100).toFixed(3).padStart(14)}%` +
         `${mean(g.map((t) => t.R)).toFixed(3).padStart(13)}` +
         `${String(deg).padStart(13)} (${((deg / g.length) * 100).toFixed(1)}%)`,
       );
