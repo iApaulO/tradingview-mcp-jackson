@@ -97,61 +97,76 @@ function runTrade(c, atr, idx, side) {
   return { net: pnl - 2 * TAKER - REPRESENTATIVE_FUNDING_PCT_PER_HOUR * Math.max(0, hours), won };
 }
 
-// ---- the matcher ----
-function matchT1(ev, obs, base, cfg) {
+// ---- the matcher, generic over direction ----
+//
+// T1 (long)  : bullish swing BOS -> bearish swing OB ABOVE -> bearish swing BOS BELOW
+//              -> penetrate DOWN and close back ABOVE -> bullish OB AT OR UNDER the line.
+// T1M (short): the exact mirror, every relation inverted. Added 2026-08-17 and specified BEFORE
+//              being run, because #144's standard is that a one-sided template over a rising
+//              sample cannot be told from drift -- the failure that sank #162 and #165.
+//
+// `dir` = +1 for the long template, -1 for the short mirror. Nothing else differs: the same
+// windows, the same n>=60 floor, the same trade construction.
+function matchTemplate(ev, obs, base, cfg, dir) {
   const funnel = { A: 0, B: 0, C: 0, D: 0, E: 0 };
   const chains = [];
   const times = base.map((b) => b.t);
   const idxAtOrAfter = (t) => { let lo = 0, hi = times.length - 1, r = -1;
     while (lo <= hi) { const m = (lo + hi) >> 1; if (times[m] >= t) { r = m; hi = m - 1; } else lo = m + 1; } return r; };
 
-  const A_list = ev.filter((e) => e.type === "BOS" && e.side === "bullish" && e.scope === "swing" && cfg.A_tfs.includes(e.timeframe));
-  const B_list = obs.filter((o) => o.side === "bearish" && o.scope === "swing");
-  const C_list = ev.filter((e) => e.type === "BOS" && e.side === "bearish" && e.scope === "swing");
-  const E_list = obs.filter((o) => o.side === "bullish");
+  const A_side = dir > 0 ? "bullish" : "bearish";   // the break that gets trapped
+  const B_side = dir > 0 ? "bearish" : "bullish";   // the opposing block that appears beyond it
+  const C_side = B_side;                            // the break that resolves the other way
+  const E_side = A_side;                            // the block produced by the failed break
+
+  const A_list = ev.filter((e) => e.type === "BOS" && e.side === A_side && e.scope === "swing" && cfg.A_tfs.includes(e.timeframe));
+  const B_list = obs.filter((o) => o.side === B_side && o.scope === "swing");
+  const C_list = ev.filter((e) => e.type === "BOS" && e.side === C_side && e.scope === "swing");
+  const E_list = obs.filter((o) => o.side === E_side);
+
+  // "beyond A" = above A for the long template, below A for the mirror
+  const beyondA = (o, A) => (dir > 0 ? o.bar_low > A.price : o.bar_high < A.price);
+  const pastA = (e, A) => (dir > 0 ? e.price < A.price : e.price > A.price);
+  const pierces = (bar, lvl) => (dir > 0 ? bar.l < lvl : bar.h > lvl);
+  const recovers = (bar, lvl) => (dir > 0 ? bar.c > lvl : bar.c < lvl);
+  const atOrPast = (o, lvl) => (dir > 0 ? o.bar_low <= lvl : o.bar_high >= lvl);
 
   for (const A of A_list) {
     funnel.A++;
-    // B: bearish swing OB confirmed after A, within W_AB, whose BODY sits strictly ABOVE A's price
-    const B = B_list.find((o) => o.created_time > A.time && o.created_time <= A.time + cfg.W_AB_H * H && o.bar_low > A.price);
+    const B = B_list.find((o) => o.created_time > A.time && o.created_time <= A.time + cfg.W_AB_H * H && beyondA(o, A));
     if (!B) continue;
     funnel.B++;
-    // C: bearish swing BOS after B, within W_BC, at a price BELOW A -- the break has failed downward
-    const C = C_list.find((e) => e.time > B.created_time && e.time <= B.created_time + cfg.W_BC_H * H && e.price < A.price);
+    const C = C_list.find((e) => e.time > B.created_time && e.time <= B.created_time + cfg.W_BC_H * H && pastA(e, A));
     if (!C) continue;
     funnel.C++;
-    // D: on the base rung, price penetrates C.price then RECOVERS (closes back above) within W_D
     const start = idxAtOrAfter(C.time);
     if (start < 0) continue;
     let penIdx = -1;
     for (let i = start; i < base.length && base[i].t <= C.time + cfg.W_BC_H * H; i++) {
-      if (base[i].l < C.price) { penIdx = i; break; }
+      if (pierces(base[i], C.price)) { penIdx = i; break; }
     }
     if (penIdx < 0) continue;
     let recIdx = -1;
     for (let i = penIdx; i < base.length && base[i].t <= base[penIdx].t + cfg.W_D_H * H; i++) {
-      if (base[i].c > C.price) { recIdx = i; break; }
+      if (recovers(base[i], C.price)) { recIdx = i; break; }
     }
     if (recIdx < 0) continue;
     funnel.D++;
-    // E: bullish OB confirmed AT OR AFTER the recovery, within W_E, sitting AT OR UNDER C's price.
-    // BUG FIX 2026-08-17: the original window was recT +/- W_E, which admitted blocks confirmed up
-    // to 48h BEFORE the recovery. That contradicts the template's own wording -- the recovery is
-    // what PRODUCES the block -- and let through chains whose final element had nothing to do with
-    // the preceding steps. available_at was never violated (entry is after both), but the SEMANTICS
-    // were wrong, so the pre-fix numbers describe a different pattern than the one declared.
-    // This is a correction to make the code match the stated spec, NOT a tolerance change.
+    // E confirmed AT OR AFTER the recovery -- the recovery is what PRODUCES the block.
+    // BUG FIX 2026-08-17: the first implementation used recT +/- W_E, admitting blocks confirmed up
+    // to 48h BEFORE the recovery. available_at was never violated (entry follows both), but the
+    // semantics were wrong and it matched chains that were not the declared pattern. Fixing it moved
+    // BTC from -0.2037% to +0.0620% -- one specification detail flipping a sign, which is recorded
+    // in #170 as the main caution about this whole mechanism.
     const recT = base[recIdx].t;
-    const E = E_list.find((o) => o.created_time >= recT && o.created_time <= recT + cfg.W_E_H * H && o.bar_low <= C.price);
+    const E = E_list.find((o) => o.created_time >= recT && o.created_time <= recT + cfg.W_E_H * H && atOrPast(o, C.price));
     if (!E) continue;
     funnel.E++;
-    // chain completes at the LAST confirmation among the recovery bar and E
     const completeT = Math.max(recT, E.created_time);
     const entryIdx = idxAtOrAfter(completeT + 1);
     if (entryIdx < 0 || entryIdx >= base.length) continue;
     chains.push({ A, B, C, recT, E, completeT, entryIdx });
   }
-  // one chain per completion bar -- overlapping A's must not inflate n
   const seen = new Set(); const uniq = [];
   for (const ch of chains.sort((a, b) => a.entryIdx - b.entryIdx)) {
     if (seen.has(ch.entryIdx)) continue;
@@ -168,7 +183,7 @@ async function main() {
   console.log(`Trade: #143 frozen -- ${R_MULT}R @ ${ATR_MULT}x ATR(${ATR_LEN}), hold<=${HOLD_BARS}, slip ${SLIP_ENTRY_ATR}/${SLIP_STOP_ATR}, taker+funding.`);
   console.log("No forward-return stage. Matched chains go straight to the trade construction.\n");
 
-  for (const inst of ["BTC", "ETH"]) {
+  for (const inst of ["BTC", "ETH", "SOL"]) {
     const db = new DatabaseSync(new URL(`../../../data/signal-bus/smc${dbSuffix(inst)}.db`, import.meta.url), { readOnly: true });
     const ev = db.prepare("SELECT timeframe, type, side, scope, price, time FROM structure_events WHERE instrument = ? ORDER BY time").all(inst);
     const obs = db.prepare("SELECT timeframe, side, scope, bar_high, bar_low, created_time, origin_time FROM order_blocks WHERE instrument = ? AND created_time IS NOT NULL ORDER BY created_time").all(inst);
@@ -176,49 +191,46 @@ async function main() {
 
     const base = await loadCandles(BASE_TF, inst);
     const atr = atrSeries(base, ATR_LEN);
-    const { chains, funnel } = matchT1(ev, obs, base, T1);
+
+    // per-bar outcomes for both sides, so the random-entry null is a lookup
+    const NET = { long: new Float64Array(base.length).fill(NaN), short: new Float64Array(base.length).fill(NaN) };
+    for (let i = 0; i < base.length; i++) for (const s of ["long", "short"]) {
+      const t = runTrade(base, atr, i, s);
+      if (t) NET[s][i] = t.net;
+    }
+    const validBy = { long: [], short: [] };
+    for (let i = 0; i < base.length; i++) for (const s of ["long", "short"]) if (Number.isFinite(NET[s][i])) validBy[s].push(i);
 
     console.log(`===== ${inst}  (${ev.length.toLocaleString()} structure events, ${obs.length.toLocaleString()} order blocks, ${base.length.toLocaleString()} ${BASE_TF} bars)`);
-    console.log(`  funnel:  A ${funnel.A}  ->  B(OB above) ${funnel.B}  ->  C(lower break) ${funnel.C}  ->  D(pen+recover) ${funnel.D}  ->  E(OB under) ${funnel.E}   unique completions: ${chains.length}`);
 
-    if (chains.length) {
-      const last = chains[chains.length - 1];
-      console.log(`  most recent chain: A ${new Date(last.A.time * 1000).toISOString().slice(0, 16)} @${last.A.price.toFixed(1)} (${last.A.timeframe})` +
-        ` | B ${new Date(last.B.created_time * 1000).toISOString().slice(0, 16)} ${last.B.bar_low.toFixed(1)}-${last.B.bar_high.toFixed(1)}` +
-        ` | C ${new Date(last.C.time * 1000).toISOString().slice(0, 16)} @${last.C.price.toFixed(1)} (${last.C.timeframe})` +
-        ` | recover ${new Date(last.recT * 1000).toISOString().slice(0, 16)}` +
-        ` | E ${new Date(last.E.created_time * 1000).toISOString().slice(0, 16)} ${last.E.bar_low.toFixed(1)}-${last.E.bar_high.toFixed(1)}`);
+    for (const [label, dir, side] of [["T1  LONG  (trapped bullish break)", 1, "long"],
+                                      ["T1M SHORT (mirror)", -1, "short"]]) {
+      const { chains, funnel } = matchTemplate(ev, obs, base, T1, dir);
+      console.log(`  ${label}`);
+      console.log(`    funnel: A ${funnel.A} -> B ${funnel.B} -> C ${funnel.C} -> D(pen+recover) ${funnel.D} -> E ${funnel.E}   unique completions: ${chains.length}`);
+      if (chains.length < MIN_N) {
+        console.log(`    n=${chains.length} below the n>=${MIN_N} floor -> INCONCLUSIVE, not a failure.`);
+        console.log(`    declared relaxation order (one step only): ${RELAX_ORDER.join(" | ")}`);
+        continue;
+      }
+      const taken = [];
+      for (const ch of chains) { const t = runTrade(base, atr, ch.entryIdx, side); if (t) taken.push(t); }
+      if (taken.length < MIN_N) { console.log(`    only ${taken.length} tradeable -> INCONCLUSIVE`); continue; }
+      const obs2 = mean(taken.map((t) => t.net));
+      const win = taken.filter((t) => t.won).length / taken.length;
+      const valid = validBy[side];
+      const rnd = mulberry32(SEED);
+      let ge = 0, nsum = 0;
+      for (let k = 0; k < ITERATIONS; k++) {
+        let s = 0;
+        for (let j = 0; j < taken.length; j++) s += NET[side][valid[Math.floor(rnd() * valid.length)]];
+        const m = s / taken.length; nsum += m;
+        if (m >= obs2) ge++;
+      }
+      const p = ge / ITERATIONS;
+      console.log(`    TRADES n=${taken.length}  win ${(win * 100).toFixed(1)}%  net ${(obs2 * 100).toFixed(4)}%/trade   random-entry null ${((nsum / ITERATIONS) * 100).toFixed(4)}%   p=${p.toFixed(4)}${p < 0.05 ? " *" : ""}${obs2 > 0 ? "  [profitable]" : "  [loses]"}`);
     }
-
-    if (chains.length < MIN_N) {
-      console.log(`  n=${chains.length} is below the n>=${MIN_N} floor -> INCONCLUSIVE, not a failure.`);
-      console.log(`  Declared relaxation order (one step only): ${RELAX_ORDER.join("  |  ")}\n`);
-      continue;
-    }
-
-    const taken = [];
-    for (const ch of chains) {
-      const t = runTrade(base, atr, ch.entryIdx, "long");
-      if (t) taken.push({ bar: ch.entryIdx, ...t });
-    }
-    if (taken.length < MIN_N) { console.log(`  only ${taken.length} tradeable -> INCONCLUSIVE\n`); continue; }
-    const obs2 = mean(taken.map((t) => t.net));
-    const win = taken.filter((t) => t.won).length / taken.length;
-
-    // null: same count of randomly-timed long entries on the same rung
-    const NET = new Float64Array(base.length).fill(NaN);
-    for (let i = 0; i < base.length; i++) { const t = runTrade(base, atr, i, "long"); if (t) NET[i] = t.net; }
-    const valid = []; for (let i = 0; i < base.length; i++) if (Number.isFinite(NET[i])) valid.push(i);
-    const rnd = mulberry32(SEED);
-    let ge = 0, nsum = 0;
-    for (let k = 0; k < ITERATIONS; k++) {
-      let s = 0;
-      for (let j = 0; j < taken.length; j++) s += NET[valid[Math.floor(rnd() * valid.length)]];
-      const m = s / taken.length; nsum += m;
-      if (m >= obs2) ge++;
-    }
-    const p = ge / ITERATIONS;
-    console.log(`  TRADES n=${taken.length}  win ${(win * 100).toFixed(1)}%  net ${(obs2 * 100).toFixed(4)}%/trade   random-entry null ${((nsum / ITERATIONS) * 100).toFixed(4)}%   p=${p.toFixed(4)}${p < 0.05 ? " *" : ""}${obs2 > 0 ? "  [profitable]" : "  [loses]"}\n`);
+    console.log("");
   }
 }
 
