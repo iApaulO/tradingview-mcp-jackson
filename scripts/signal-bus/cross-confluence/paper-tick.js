@@ -72,11 +72,28 @@ function main() {
       console.log("\nABORT: SMC rebuild failed, ledger untouched.");
       process.exit(1);
     }
+    // MUST follow build-historical, which resets the annotations this writes back onto order_blocks.
+    // Strategy A2 filters on recurrence_count >= 3, so skipping this does NOT error -- it silently
+    // yields zero A2 signals, which is indistinguishable from "the market produced none". Caught
+    // by hand on 2026-08-17 before the first populated tick; rebuild-all.js documents the same
+    // dependency and this orchestrator was violating it.
+    if (!run("rebuild confluence/recurrence", "scripts/signal-bus/smc/build-confluence.js", [`--instrument=${inst}`])) {
+      console.log("\nABORT: confluence rebuild failed, ledger untouched.");
+      process.exit(1);
+    }
   }
 
   console.log("");
-  const r = spawnSync(process.execPath, ["scripts/signal-bus/cross-confluence/paper-trade-k3.js"], { cwd: ROOT, encoding: "utf8", stdio: "inherit" });
-  process.exit(r.status === 0 ? 0 : 1);
+  // Two ledgers, deliberately separate. paper-trade-k3 is the pre-registered construction on its
+  // own terms; paper-trade-all carries all four validated constructions with their evidence tier
+  // recorded per row. K>=3 appears in both, which is intentional -- the dedicated ledger is the one
+  // that answers #143's gate, and flattening it into the multi-strategy table would lose that.
+  let bad = 0;
+  for (const s of ["paper-trade-k3.js", "paper-trade-all.js"]) {
+    const r = spawnSync(process.execPath, [`scripts/signal-bus/cross-confluence/${s}`], { cwd: ROOT, encoding: "utf8", stdio: "inherit" });
+    if (r.status !== 0) bad++;
+  }
+  process.exit(bad ? 1 : 0);
 }
 
 main();
