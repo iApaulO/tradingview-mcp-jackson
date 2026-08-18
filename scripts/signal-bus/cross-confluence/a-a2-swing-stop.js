@@ -30,6 +30,7 @@ import { loadCandles } from "../../backtest/lib/load-candles.js";
 import { FEE_TIERS, REPRESENTATIVE_FUNDING_PCT_PER_HOUR } from "../../backtest/lib/costs.js";
 import { computeSwingPivotSeries } from "../smc/calc.js";
 import { classifyEngulfment } from "../smc/engulfment.js";
+import { dbSuffix } from "../lib/instrument.js";
 
 const ATR_LEN = 14, R_MULT = 2, HOLD_BARS = 200;
 const SLIP_ENTRY_ATR = 0.05, SLIP_STOP_ATR = 0.15, SLIP_TARGET_ATR = 0;
@@ -47,6 +48,8 @@ const FIRST_TOUCH_ONLY = !process.argv.includes("--all-touches");
 // available_at holds in both: the confirming candle must be CLOSED, so entry is the NEXT bar's open.
 // If no confirmation arrives inside CONFIRM_WINDOW the setup is SKIPPED, not entered late.
 const CONFIRM_WINDOW = 12;
+const INSTRUMENTS = (process.argv.find((a) => a.startsWith("--instruments=")) || "--instruments=BTC,ETH,SOL")
+  .split("=")[1].split(",").map((x) => x.trim()).filter(Boolean);
 
 const mean = (xs) => (xs.length ? xs.reduce((s, x) => s + x, 0) / xs.length : NaN);
 const median = (xs) => { const s = [...xs].sort((a, b) => a - b); return s.length ? s[Math.floor(s.length / 2)] : NaN; };
@@ -88,19 +91,25 @@ function runTrade(c, atr, idx, side, stopPrice) {
   return { net, won, riskPct, R: net / riskPct };
 }
 
-async function main() {
-  console.log("A and A2 -- OB-HEIGHT STOP versus SWING-STRUCTURAL STOP.");
+async function runInstrument(inst) {
+  console.log(`
+################ ${inst} ################`);
   console.log("#174 found the OB-height stop degenerates (riskPct -> 1.0e-7, realised R -> -9,881).");
   console.log("#175 established a swing stop cannot degenerate. Both views reported; neither privileged.");
   console.log(`Degenerate = riskPct < ${(DEGENERATE_RISK_PCT * 100).toFixed(2)}% of price, i.e. unsizeable by a fixed-risk rule.\n`);
 
-  const db = new DatabaseSync(new URL("../../../data/signal-bus/smc.db", import.meta.url), { readOnly: true });
+  const db = new DatabaseSync(new URL(`../../../data/signal-bus/smc${dbSuffix(inst)}.db`, import.meta.url), { readOnly: true });
 
   // Population is taken EXACTLY as the real builders take it, not approximated. Entries come from
   // `order_block_touches` (a block can be touched several times, each a separate trade), NOT from
   // mitigated_time -- an earlier version of this file used mitigated_time and would have measured a
   // different and smaller population than A/A2 actually trade.
-  const allOb = db.prepare("SELECT id, timeframe, side, bar_high, bar_low, recurrence_count FROM order_blocks WHERE instrument='BTC'").all();
+  // BUG FIX 2026-08-17: this SELECT previously pulled geometry only. classifyEngulfment needs
+  // created_time and mitigated_time to test WINDOW overlap as well as PRICE overlap -- without them
+  // windowsOverlap compared undefined, found no partners, and classified every block "isolated",
+  // so A2 came back with zero qualifying blocks. That was a defect in this harness, not a fact
+  // about A2, and it is why #176 and #177 could not report an A2 number at all.
+  const allOb = db.prepare("SELECT id, timeframe, side, bar_high, bar_low, created_time, mitigated_time, recurrence_count FROM order_blocks WHERE instrument = ?").all(inst);
   classifyEngulfment(allOb);
   const touches = db.prepare("SELECT order_block_id, start_bar_idx FROM order_block_touches").all();
   db.close();
@@ -112,7 +121,7 @@ async function main() {
 
   const candlesByTf = {}, atrByTf = {}, pivByTf = {};
   for (const tf of TFS) {
-    const c = await loadCandles(tf, "BTC");
+    const c = await loadCandles(tf, inst);
     candlesByTf[tf] = c; atrByTf[tf] = atrSeries(c, ATR_LEN); pivByTf[tf] = computeSwingPivotSeries(c);
   }
 
@@ -178,6 +187,14 @@ async function main() {
     if (swingUnavailable) console.log(`    (swing level unavailable or wrong-side on ${swingUnavailable} setups)`);
     console.log("");
   }
+}
+
+async function main() {
+  console.log("A and A2 -- entry-rule and stop comparison across instruments.");
+  console.log("react_reclaim = touch, then first candle CLOSING BACK OUTSIDE the block, enter next bar.");
+  console.log(`Degenerate = riskPct < ${(DEGENERATE_RISK_PCT * 100).toFixed(2)}% of price.`);
+  for (const inst of INSTRUMENTS) await runInstrument(inst);
+  console.log("");
   console.log("  R/trade is the column that compounds under fixed-fractional-risk sizing.");
   console.log("  net%/trade is the column that lands in the account under fixed position size.");
   console.log("  DEGENERATE counts setups a fixed-risk rule cannot size at all -- those have no usable");
