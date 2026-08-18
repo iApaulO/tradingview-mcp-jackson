@@ -24,12 +24,12 @@ export const DEFAULT_INSTRUMENT = "BTC";
 // Instruments the pipeline is allowed to write. Deliberately a closed set: a typo'd or
 // silently-empty instrument is the failure mode this whole migration exists to prevent, so an
 // unknown value must fail loudly at the write boundary rather than create a third population.
-export const KNOWN_INSTRUMENTS = new Set(["BTC", "ETH", "SOL"]);
+export const KNOWN_INSTRUMENTS = new Set(["BTC", "ETH", "SOL", "XRP"]);
 
 // Per-instrument DB filename suffix. BTC keeps the bare name so the ~74 analysis scripts that call
 // openStore() with no argument keep reading BTC unchanged -- the reason separate files were chosen
 // in the first place. Adding an instrument means adding one line here, not editing every store.
-export const DB_SUFFIX = { BTC: "", ETH: "-eth", SOL: "-sol" };
+export const DB_SUFFIX = { BTC: "", ETH: "-eth", SOL: "-sol", XRP: "-xrp" };
 export function dbSuffix(instrument) {
   const s = DB_SUFFIX[instrument];
   if (s === undefined) throw new Error(`unknown instrument '${instrument}'; known: ${Object.keys(DB_SUFFIX).join(", ")}`);

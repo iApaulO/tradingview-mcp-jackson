@@ -26,7 +26,7 @@ const INSTRUMENT = (process.argv.find((a) => a.startsWith("--instrument=")) || "
 
 // Must match load-candles.js's INSTRUMENT_FILE_PREFIX, which is the single source of truth for
 // where an instrument's raw series lives.
-const OUT_PREFIX = { BTC: "binance-btc", ETH: "binance-eth", SOL: "binance-sol" };
+const OUT_PREFIX = { BTC: "binance-btc", ETH: "binance-eth", SOL: "binance-sol", XRP: "binance-xrp" };
 
 const JOBS = [
   { source: "1h", bucketSeconds: 2 * 3600, out: "2h" },

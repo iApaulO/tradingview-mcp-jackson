@@ -19,6 +19,7 @@ const DB_FILES = {
   BTC: "smc.db",
   ETH: "smc-eth.db",
   SOL: "smc-sol.db",
+  XRP: "smc-xrp.db",
 };
 
 function dbPathFor(instrument) {

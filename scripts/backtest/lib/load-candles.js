@@ -31,6 +31,7 @@ const INSTRUMENT_FILE_PREFIX = {
   BTC: "binance-btc",
   ETH: "binance-eth",
   SOL: "binance-sol",
+  XRP: "binance-xrp",
 };
 
 // `instrument` defaults to BTC while the store layer's requireInstrument() refuses to default at
