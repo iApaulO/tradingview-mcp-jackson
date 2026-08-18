@@ -15,10 +15,11 @@
 // ones while the slow one accumulates in the background. Nothing is lost by including them and a
 // year of waiting is lost by excluding them.
 //
-// **EVIDENCE TIER IS RECORDED PER STRATEGY AND MUST NOT BE FLATTENED.** H passed a pre-registration
-// on an instrument sealed in advance (#143) and is the only one that did. A2/A/G are OOS-validated
-// (#120/#121) and directionally sound (#167) but were never pre-registered. Those are different
-// standards of evidence and the ledger carries the distinction so a future reader cannot lose it.
+// **EVIDENCE TIER IS RECORDED PER STRATEGY AND MUST NOT BE FLATTENED.** Three of the four have now
+// passed a pre-registration on an instrument sealed in advance: H on SOL (#143), and A/A2 in their
+// RECLAIM form on XRP (#180, spec committed before any XRP data existed). G remains OOS-validated
+// (#106-#125, #167) and has never been pre-registered. Those are different standards of evidence
+// and the ledger carries `tier` per row so a future reader cannot lose the distinction.
 //
 // EACH STRATEGY KEEPS ITS OWN CONSTRUCTION. H uses 2.0x ATR; A/A2/G use 0.6x. #138 showed H FAILS
 // out-of-sample at 0.6x purely because the risk unit is too small against a 0.10% round trip, so
@@ -49,7 +50,7 @@ import { mkdirSync } from "fs";
 import { loadCandles } from "../../backtest/lib/load-candles.js";
 import { applyCosts } from "../../backtest/lib/costs.js";
 import {
-  buildStrategyA, buildStrategyA2, buildStrategyG, buildStrategyH, PORTFOLIO_COST_PARAMS,
+  buildStrategyG, buildStrategyH, buildStrategyAReclaim, buildStrategyA2Reclaim, PORTFOLIO_COST_PARAMS,
 } from "./portfolio-backtest.js";
 
 const REPORT_ONLY = process.argv.includes("--report");
@@ -58,18 +59,31 @@ const LIVE_CUTOFF_BARS = 2;   // an exit must be this far behind the data edge t
 const LADDER = ["1w", "1d", "4h", "3h", "2h", "1h", "15m", "5m"];
 
 // strategy -> [builder, evidence tier, register rows]
+//
+// SWITCHED TO THE RECLAIM ENTRY 2026-08-17 for A and A2, per #180. The blind every-touch
+// construction they previously ran is the one #176 showed is 3.2x inflated by re-taps and whose
+// R/trade is NEGATIVE on BTC once that inflation is removed, and which #180 then beat on a
+// pre-registered gate. Accumulating forward evidence on a construction already shown inferior
+// would waste the only thing this ledger produces.
+//
+// The OLD builders are deliberately NOT removed from portfolio-backtest.js -- #145 and every
+// portfolio row reference them, and they must stay re-runnable. They are simply no longer what
+// paper trades. The reclaim strategies carry NEW names, so the ledger's UNIQUE(strategy,
+// instrument, entry_time, side) key keeps the two constructions separate rather than merging them.
 const STRATEGIES = [
   ["H_cooccurrence_k3", buildStrategyH, "pre-registered", "#143 #144"],
-  ["A2_engulfment_only", buildStrategyA2, "oos-validated", "#120 #121 #167"],
-  ["A_recurrence", buildStrategyA, "oos-validated", "#167"],
+  ["A2_engulfment_reclaim", buildStrategyA2Reclaim, "pre-registered", "#176 #177 #179 #180"],
+  ["A_recurrence_reclaim", buildStrategyAReclaim, "pre-registered", "#176 #177 #179 #180"],
   ["G_wt_anchor_ct_15m", buildStrategyG, "oos-validated", "#106-#125 #167"],
 ];
 
-// #145 standalone reference figures, for reconciliation only.
+// Reconciliation references. H and G from #145's standalone figures; A/A2 from #179's BTC
+// RECLAIM cells, because that is the construction now being traded -- reconciling forward results
+// against the superseded blind numbers would compare against a strategy that is not running.
 const REF = {
   H_cooccurrence_k3: { win: 0.657, net: 0.006232 },
-  A2_engulfment_only: { win: 0.551, net: 0.002366 },
-  A_recurrence: { win: 0.561, net: 0.002631 },
+  A2_engulfment_reclaim: { win: 0.548, net: 0.003101 },
+  A_recurrence_reclaim: { win: 0.581, net: 0.003662 },
   G_wt_anchor_ct_15m: { win: 0.210, net: 0.004100 },
 };
 

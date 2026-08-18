@@ -277,6 +277,85 @@ async function buildStrategyA2(candlesByTf) {
   return trades;
 }
 
+
+// --- Strategies A_reclaim / A2_reclaim (#180): the PRE-REGISTERED confirmation entry. ---
+//
+// ADDED ALONGSIDE the originals rather than replacing them, deliberately. #145 and every portfolio
+// row since reference the blind every-touch construction; editing buildStrategyA in place would
+// silently change numbers the register already quotes and destroy comparability with rows that can
+// no longer be re-run. The old builders stay exactly as they were and are still the ones #145
+// describes; these are new.
+//
+// Construction is #180's frozen specification, verbatim:
+//   * FIRST TOUCH only per order block. #176 found the every-touch population is 3.2x inflated by
+//     re-taps of the same line, and that the inflation alone drove A's R/trade negative.
+//   * RECLAIM confirmation: the first candle within 12 bars that CLOSES BACK OUTSIDE the block.
+//     Entry is the NEXT bar's open, so the confirming candle is always closed. Unconfirmed setups
+//     are SKIPPED, never entered late.
+//   * Stop at the order block's own edge; 2R target. #175/#179 found the OB stop beats the swing
+//     stop risk-adjusted in every cell tested.
+// Passed a pre-registration on XRP with the spec committed before any XRP data existed (#180).
+const RECLAIM_CONFIRM_WINDOW = 12;
+
+function buildReclaimTrades(candlesByTf, obRows, touchRows, label) {
+  const touchesByOb = new Map();
+  for (const t of touchRows) {
+    if (!touchesByOb.has(t.order_block_id)) touchesByOb.set(t.order_block_id, []);
+    touchesByOb.get(t.order_block_id).push(t.start_bar_idx);
+  }
+  const trades = [];
+  for (const ob of obRows) {
+    const candles = candlesByTf[ob.timeframe];
+    if (!candles) continue;
+    const tl = (touchesByOb.get(ob.id) || []).slice().sort((a, b) => a - b);
+    if (!tl.length) continue;
+    const touchIdx = tl[0] + 1;                       // FIRST touch only
+    if (touchIdx < 1 || touchIdx >= candles.length) continue;
+    const side = ob.side === "bullish" ? "long" : "short";
+
+    let entryIdx = -1;
+    for (let j = touchIdx; j < Math.min(candles.length - 1, touchIdx + RECLAIM_CONFIRM_WINDOW); j++) {
+      const ok = side === "long" ? candles[j].c > ob.bar_high : candles[j].c < ob.bar_low;
+      if (ok) { entryIdx = j + 1; break; }            // confirming candle closed -> enter next open
+    }
+    if (entryIdx < 1 || entryIdx >= candles.length) continue;
+
+    const entryPrice = candles[entryIdx].o, entryTime = candles[entryIdx].t;
+    const stopPrice = ob.side === "bullish" ? ob.bar_low : ob.bar_high;
+    const risk = Math.abs(entryPrice - stopPrice);
+    if (risk <= 0) continue;
+    const targetPrice = side === "long" ? entryPrice + R_MULT * risk : entryPrice - R_MULT * risk;
+    const result = simulateFixedR(candles, entryIdx, side, stopPrice, targetPrice);
+    if (!result) continue;
+    const pnlPct = side === "long" ? (result.exitPrice - entryPrice) / entryPrice : (entryPrice - result.exitPrice) / entryPrice;
+    trades.push({ strategy: label, side, entryTime, entryPrice, exitTime: result.exitTime, exitPrice: result.exitPrice, pnlPct, riskPct: risk / entryPrice, timeframe: ob.timeframe, confidence: ob.recurrence_count });
+  }
+  return trades;
+}
+
+async function buildStrategyAReclaim(candlesByTf) {
+  const db = new DatabaseSync(SMC_DB_PATH, { readOnly: true });
+  const allObRows = db.prepare("SELECT id, timeframe, side, bar_high, bar_low, created_time, mitigated_time, recurrence_count FROM order_blocks").all();
+  const obRows = allObRows.filter((o) => o.recurrence_count >= 3);
+  const touchRows = db.prepare(
+    `SELECT order_block_id, start_bar_idx FROM order_block_touches WHERE order_block_id IN (${obRows.map(() => "?").join(",") || "0"})`,
+  ).all(...obRows.map((o) => o.id));
+  db.close();
+  return buildReclaimTrades(candlesByTf, obRows, touchRows, "A_recurrence_reclaim");
+}
+
+async function buildStrategyA2Reclaim(candlesByTf) {
+  const db = new DatabaseSync(SMC_DB_PATH, { readOnly: true });
+  const allObRows = db.prepare("SELECT id, timeframe, side, bar_high, bar_low, created_time, mitigated_time, recurrence_count FROM order_blocks").all();
+  classifyEngulfment(allObRows);
+  const obRows = allObRows.filter((o) => o.recurrence_count >= 3 && o.engulfmentClass === "engulfment");
+  const touchRows = db.prepare(
+    `SELECT order_block_id, start_bar_idx FROM order_block_touches WHERE order_block_id IN (${obRows.map(() => "?").join(",") || "0"})`,
+  ).all(...obRows.map((o) => o.id));
+  db.close();
+  return buildReclaimTrades(candlesByTf, obRows, touchRows, "A2_engulfment_reclaim");
+}
+
 // --- Strategy B (#49): Cipher B regular divergence, 1d only, BEARISH side ---
 async function buildStrategyB(candlesByTf) {
   const candles = candlesByTf["1d"];
@@ -1245,7 +1324,7 @@ async function main() {
 // portfolio backtest as an import side effect. CLI behaviour is unchanged.
 // The builders are exported for the same reason lib/strategy-g-population.js exists: a second
 // hand-written copy of a population definition is how two copies silently diverge.
-export { buildStrategyA, buildStrategyA2, buildStrategyG, buildStrategyH };
+export { buildStrategyA, buildStrategyA2, buildStrategyG, buildStrategyH, buildStrategyAReclaim, buildStrategyA2Reclaim };
 export const PORTFOLIO_COST_PARAMS = {
   takerFeePct: FEE_TIERS[FEE_TIER].takerFeePct,
   fundingPctPerHour: REPRESENTATIVE_FUNDING_PCT_PER_HOUR,
