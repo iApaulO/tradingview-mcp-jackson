@@ -26,6 +26,18 @@
 // Every signal that is REFUSED is recorded with a REASON. That breakdown is the actual product of
 // this engine: knowing the book is budget-bound is useless without knowing which constraint bound it.
 //
+// COMPOUNDED is the headline: profit from a closed trade returns to the bank and is available to
+// the next one. Nothing more elaborate than that. A flat-sizing figure is printed beside it for
+// reference only.
+//
+// WHEN THE COMPOUNDED NUMBER IS ABSURD, THAT IS A RESULT, NOT A DISPLAY PROBLEM. An earlier version
+// of this file invented an "additive" headline to make an implausible output look reasonable, which
+// is dressing up a bad input as a reporting choice. The correct reading is the reductio: a nine-year
+// backtest returning 1e14x is telling you an INPUT is wrong. Here the input was trade count -- the
+// unconstrained engine took 771 trades/yr against the ~90/yr #142 measured as realistic capacity,
+// and 9x the tradeable capacity makes every downstream figure meaningless however correct the
+// arithmetic. The capacity-limited policy is the only one whose compounded figure can be read.
+//
 // Usage:
 //   node scripts/signal-bus/cross-confluence/risk-engine.js
 //   node scripts/signal-bus/cross-confluence/risk-engine.js --strategies=H_cooccurrence_k3,A2_engulfment_only
@@ -33,19 +45,31 @@
 import { loadCandles } from "../../backtest/lib/load-candles.js";
 import { applyCosts } from "../../backtest/lib/costs.js";
 import {
-  buildStrategyA, buildStrategyA2, buildStrategyG, buildStrategyH, PORTFOLIO_COST_PARAMS,
+  buildStrategyG, buildStrategyH, buildStrategyAReclaim, buildStrategyA2Reclaim, PORTFOLIO_COST_PARAMS,
 } from "./portfolio-backtest.js";
 
 const args = Object.fromEntries(process.argv.slice(2).filter((a) => a.includes("=")).map((a) => a.replace(/^--/, "").split("=")));
 const STARTING_BANK = 500;
 
+// The RECLAIM construction, not the blind one. #174 showed the blind entry's stop degenerates to
+// riskPct = 1e-7 with realised R of -9,881; the population mean R across all four blind strategies
+// is -0.5056, i.e. the thing the old engine was allocating over LOSES MONEY per unit risk and only
+// looked positive because the leverage cap happened to bound the degenerate trades. #180's
+// pre-registered entry removes that defect at source (degeneracy 1.03% -> 0.01%), and it is what
+// paper trades, so it is what the allocation policy has to be chosen against.
 const BUILDERS = {
   H_cooccurrence_k3: buildStrategyH,
-  A2_engulfment_only: buildStrategyA2,
-  A_recurrence: buildStrategyA,
+  A2_engulfment_reclaim: buildStrategyA2Reclaim,
+  A_recurrence_reclaim: buildStrategyAReclaim,
   G_wt_anchor_ct_15m: buildStrategyG,
 };
 const WANTED = (args.strategies || Object.keys(BUILDERS).join(",")).split(",").map((s) => s.trim());
+
+// CAPACITY. #142 measured roughly 30 trades/yr/instrument as the realistic ceiling before market
+// impact stops being ignorable. The uncapped engine took 771/yr -- 9x over -- and a compounded
+// figure built on 9x the tradeable capacity is meaningless regardless of how correct the
+// arithmetic is. This is a real constraint the engine was missing, not a display problem.
+const CAPACITY_TRADES_PER_YEAR = 90;   // ~30/yr x 3 instruments (#142)
 
 // ---- DECLARED POLICIES. Named, fixed, compared -- never tuned. ----
 const POLICIES = {
@@ -53,20 +77,28 @@ const POLICIES = {
   flat_uncapped: {
     label: "flat, uncapped (#145 reference)",
     riskPctPerTrade: 0.005, maxRiskDeployed: 0.02,
-    maxConcurrent: Infinity, maxPerStrategy: Infinity, maxNetExposureR: Infinity, maxLeverage: 3,
+    maxConcurrent: Infinity, maxPerStrategy: Infinity, maxNetExposureR: Infinity, maxLeverage: 3, maxGrossNotional: Infinity, capacityPerYear: Infinity,
   },
   // Adds the two controls #145 never had: a hard concurrency ceiling and a net-directional cap.
   capped_balanced: {
     label: "capped concurrency + net-exposure cap",
     riskPctPerTrade: 0.005, maxRiskDeployed: 0.02,
-    maxConcurrent: 10, maxPerStrategy: 4, maxNetExposureR: 4, maxLeverage: 3,
+    maxConcurrent: 10, maxPerStrategy: 4, maxNetExposureR: 4, maxLeverage: 3, maxGrossNotional: 1.0, capacityPerYear: Infinity,
   },
   // Reserves room for low-frequency strategies so the fast ones cannot monopolise the budget --
   // the specific failure #145 identified, where H (31/yr) never traded at all under flat.
   capped_reserved: {
     label: "capped + per-strategy reservation",
     riskPctPerTrade: 0.005, maxRiskDeployed: 0.02,
-    maxConcurrent: 10, maxPerStrategy: 3, maxNetExposureR: 4, maxLeverage: 3,
+    maxConcurrent: 10, maxPerStrategy: 3, maxNetExposureR: 4, maxLeverage: 3, maxGrossNotional: 1.0, capacityPerYear: Infinity,
+  },
+  // The only policy that respects the measured capacity ceiling. Everything above it is arithmetic
+  // about a book that could not have been traded.
+  capacity_respecting: {
+    label: "capped + CAPACITY-limited (#142's ~90 trades/yr)",
+    riskPctPerTrade: 0.005, maxRiskDeployed: 0.02,
+    maxConcurrent: 10, maxPerStrategy: 3, maxNetExposureR: 4, maxLeverage: 3, maxGrossNotional: 1.0,
+    capacityPerYear: CAPACITY_TRADES_PER_YEAR,
   },
 };
 
@@ -82,16 +114,39 @@ const mean = (xs) => (xs.length ? xs.reduce((s, x) => s + x, 0) / xs.length : 0)
 // looked at: 15 trades taken out of 65,722 with 100% budget refusal, against #145's 90. Sweeping
 // from a sorted pending-close list removes the ordering trap entirely, and a same-bar trade is
 // closed immediately after opening rather than relying on sort order to be interpreted correctly.
+// Chronological walk with a pending-close sweep. Rewritten 2026-08-17 to fix the defect #174
+// recorded as outstanding.
+//
+// WHAT WAS WRONG. The budget test compared the INTENDED risk fraction against the ceiling while
+// deployment accrued the EFFECTIVE (leverage-capped) risk. For A and A2 the effective risk is often
+// a tiny fraction of the intended one -- their stop is the order block's own edge, so a thin block
+// caps the position on leverage and the risk actually carried collapses -- and the two quantities
+// then drift apart until the 2% ceiling stops binding entirely. Symptom: 25,487 trades taken with
+// peak concurrency of 8 at up to 3x leverage each, and equity compounding to a nonsensical figure.
+//
+// WHAT A CORRECT ENGINE NEEDS, and the previous one had neither properly:
+//   * a RISK budget -- the sum of effective risk carried must respect the ceiling, so the test and
+//     the accrual must use the SAME quantity;
+//   * a GROSS NOTIONAL cap -- risk alone does not bound exposure. A position sized to risk 0.5%
+//     against a 0.05% stop is 10x equity; ten such positions are 100x gross even though the risk
+//     budget reads 5%. Risk and notional are different constraints and both must be enforced.
+//
+// ORDER OF OPERATIONS IS LOAD-BEARING: size FIRST, then test the budget against what that size
+// actually costs. Testing before sizing is precisely the bug being fixed.
 function simulate(trades, pol) {
   let equity = 1, peak = 1, maxDD = 0;
-  let deployed = 0, netR = 0, taken = 0, maxConcurrentSeen = 0;
+  // Compounding is exactly what it sounds like: profit from a closed trade returns to the bank and
+  // is available to the next one. equity *= 1 + pnl, nothing more. An earlier version of this file
+  // wrapped that in an "additive" alternative to make an absurd output look reasonable -- that was
+  // dressing up a bad input as a reporting choice, and it is removed.
+  let additive = 0, addPeak = 0, addRun = 0, addMaxDD = 0;
+  let deployedRisk = 0, grossNotional = 0, netR = 0, taken = 0, maxConcurrentSeen = 0;
   const perStrat = new Map();
-  const refused = { budget: 0, concurrency: 0, per_strategy: 0, net_exposure: 0 };
+  const refused = { budget: 0, gross_notional: 0, concurrency: 0, per_strategy: 0, net_exposure: 0, capacity: 0 };
   const takenBy = new Map();
   const netSamples = [];
   let openCount = 0, sizeCapped = 0;
 
-  // pending closes, kept sorted by exit time
   const pending = [];
   const insertPending = (p) => {
     let lo = 0, hi = pending.length;
@@ -99,44 +154,50 @@ function simulate(trades, pol) {
     pending.splice(lo, 0, p);
   };
   const closePos = (p) => {
-    deployed -= p.riskFrac;
-    netR -= p.side === "long" ? p.riskFrac : -p.riskFrac;
+    deployedRisk -= p.effRisk;
+    grossNotional -= p.notional;
+    netR -= p.side === "long" ? p.effRisk : -p.effRisk;
     perStrat.set(p.strategy, (perStrat.get(p.strategy) || 1) - 1);
     openCount--;
     equity *= 1 + p.pnl;
     if (equity > peak) peak = equity;
     maxDD = Math.max(maxDD, (peak - equity) / peak);
+    additive += p.pnl;
+    addRun += p.pnl;
+    if (addRun > addPeak) addPeak = addRun;
+    addMaxDD = Math.max(addMaxDD, addPeak - addRun);
+
   };
   const sweep = (upTo) => { while (pending.length && pending[0].exitT <= upTo) closePos(pending.shift()); };
 
+  const t0 = trades.length ? trades[0].entryTime : 0;
   for (const tr of trades) {
-    sweep(tr.entryTime);                       // free capital from anything already resolved
+    sweep(tr.entryTime);
 
-    const riskFrac = pol.riskPctPerTrade;
-    if (deployed + riskFrac > pol.maxRiskDeployed + 1e-12) { refused.budget++; continue; }
+    // capacity: refuse anything beyond the measured tradeable rate for the elapsed span
+    if (pol.capacityPerYear !== Infinity) {
+      const yearsElapsed = Math.max(1 / 365, (tr.entryTime - t0) / (365.25 * 86400));
+      if (taken >= pol.capacityPerYear * yearsElapsed) { refused.capacity++; continue; }
+    }
+
+    // ---- SIZE FIRST ----
+    const desiredNotional = pol.riskPctPerTrade / tr.riskPct;
+    const notional = Math.min(desiredNotional, pol.maxLeverage);
+    const effRisk = notional * tr.riskPct;          // what this position actually risks
+
+    // ---- THEN TEST, against the quantities actually incurred ----
+    if (deployedRisk + effRisk > pol.maxRiskDeployed + 1e-12) { refused.budget++; continue; }
+    if (grossNotional + notional > pol.maxGrossNotional + 1e-12) { refused.gross_notional++; continue; }
     if (openCount >= pol.maxConcurrent) { refused.concurrency++; continue; }
     const nStrat = perStrat.get(tr.strategy) || 0;
     if (nStrat >= pol.maxPerStrategy) { refused.per_strategy++; continue; }
-    const signed = tr.side === "long" ? riskFrac : -riskFrac;
+    const signed = tr.side === "long" ? effRisk : -effRisk;
     if (Math.abs((netR + signed) / pol.riskPctPerTrade) > pol.maxNetExposureR + 1e-9) { refused.net_exposure++; continue; }
 
-    // ---- POSITION SIZING, and the leverage cap that makes it executable ----
-    // Desired notional to risk `riskFrac` of equity given a stop `tr.riskPct` away is
-    // riskFrac / tr.riskPct, expressed as a multiple of equity. For A and A2 the stop is the ORDER
-    // BLOCK'S OWN HEIGHT, which can be arbitrarily thin -- riskPct reaches 1.0e-7, implying a
-    // position ~5,000x equity. That is not a modelling nuisance, it is a real constraint: **those
-    // strategies are not sizeable by a fixed-risk rule, and any framework that pretends otherwise
-    // is reporting returns on positions nobody could take.** The cap is what a real desk applies:
-    // size = min(risk-implied, leverage ceiling). When the ceiling binds, the position carries LESS
-    // than the intended risk, which is the honest outcome rather than an error.
-    const desiredNotional = riskFrac / tr.riskPct;
-    const notional = Math.min(desiredNotional, pol.maxLeverage);
-    const cappedBy = notional < desiredNotional;
-    if (cappedBy) sizeCapped++;
-    const effRisk = notional * tr.riskPct;      // risk actually carried, <= riskFrac
-
-    deployed += effRisk;
-    netR += tr.side === "long" ? effRisk : -effRisk;
+    if (notional < desiredNotional) sizeCapped++;
+    deployedRisk += effRisk;
+    grossNotional += notional;
+    netR += signed;
     perStrat.set(tr.strategy, nStrat + 1);
     takenBy.set(tr.strategy, (takenBy.get(tr.strategy) || 0) + 1);
     taken++; openCount++;
@@ -144,13 +205,12 @@ function simulate(trades, pol) {
     netSamples.push(netR / pol.riskPctPerTrade);
 
     const exitT = tr.exitTime ?? tr.entryTime;
-    const pnl = notional * (tr.costedPnlPct ?? tr.pnlPct);   // P&L on the size actually held
-    const pos = { exitT, riskFrac: effRisk, side: tr.side, strategy: tr.strategy, pnl };
-    if (exitT <= tr.entryTime) closePos(pos);   // same-bar resolution: free it now
-    else insertPending(pos);
+    const pnl = notional * (tr.costedPnlPct ?? tr.pnlPct);
+    const pos = { exitT, effRisk, notional, side: tr.side, strategy: tr.strategy, pnl };
+    if (exitT <= tr.entryTime) closePos(pos); else insertPending(pos);
   }
   sweep(Infinity);
-  return { equity, maxDD, taken, refused, takenBy, maxConcurrentSeen, netSamples, sizeCapped };
+  return { equity, maxDD, additive, addMaxDD, taken, refused, takenBy, maxConcurrentSeen, netSamples, sizeCapped };
 }
 
 async function main() {
@@ -176,11 +236,16 @@ async function main() {
 
   for (const [key, pol] of Object.entries(POLICIES)) {
     const r = simulate(all, pol);
-    const finalUsd = STARTING_BANK * r.equity;
-    const cagr = (Math.pow(r.equity, 1 / spanYears) - 1) * 100;
+    const addUsd = STARTING_BANK * (1 + r.additive);
+    const addCagr = (Math.pow(1 + r.additive, 1 / spanYears) - 1) * 100;
     const totalRefused = Object.values(r.refused).reduce((a, b) => a + b, 0);
     console.log(`  ${pol.label}`);
-    console.log(`    final $${finalUsd.toFixed(2)}   return ${((r.equity - 1) * 100).toFixed(1)}%   CAGR ${cagr.toFixed(1)}%   maxDD ${(r.maxDD * 100).toFixed(1)}%`);
+    const compUsd = STARTING_BANK * r.equity;
+    const compCagr = (Math.pow(r.equity, 1 / spanYears) - 1) * 100;
+    const compStr = r.equity > 1e6 ? `${r.equity.toExponential(2)}x  [NOT CREDIBLE -- see capacity]` : `$${compUsd.toFixed(2)}  CAGR ${compCagr.toFixed(1)}%  maxDD ${(r.maxDD * 100).toFixed(1)}%`;
+    console.log(`    COMPOUNDED (profit returns to the bank): ${compStr}`);
+    console.log(`    flat sizing, for reference:              $${addUsd.toFixed(2)}   CAGR ${addCagr.toFixed(1)}%   maxDD ${(r.addMaxDD * 100).toFixed(1)}%`);
+    console.log(`    peak gross notional constraint: ${pol.maxGrossNotional === Infinity ? "none" : pol.maxGrossNotional + "x equity"}`);
     console.log(`    taken ${r.taken.toLocaleString()} of ${all.length.toLocaleString()} (${((r.taken / all.length) * 100).toFixed(2)}%)   peak concurrent ${r.maxConcurrentSeen}`);
     console.log(`    REFUSED BY REASON: ${Object.entries(r.refused).map(([k, v]) => `${k} ${v.toLocaleString()} (${((v / totalRefused) * 100 || 0).toFixed(1)}%)`).join("   ")}`);
     console.log(`    size-capped by leverage ceiling: ${r.sizeCapped.toLocaleString()} of ${r.taken.toLocaleString()} taken (${((r.sizeCapped/Math.max(1,r.taken))*100).toFixed(1)}%) -- these carried LESS than the intended risk`);
