@@ -52,12 +52,16 @@ never merge the two epistemologies into one, per institutional-quant's own house
 1. Read this file fully.
 2. For what's proven vs. proposed vs. dead → **`significance-register.md`** (read this before
    grading any live setup — it is the single most load-bearing file in this pack).
-3. For indicator mechanics, colors, extractor semantics, known bugs → `house-stack.md`.
-4. For how to actually score a setup across 8 timeframes → `decision-policy.md`.
-5. For term definitions as implemented (not generic ICT blogs) → `grammar.md`.
-6. For deliverable formats → `output-contracts.md`.
-7. For the full audit trail behind every claim above → `PRIOR_ART.md`.
-8. For the adversarial quant-lens review this pack passed before being trusted → `PROOF_AUDIT.md`.
+3. **Before testing ANY object iapaulo names by a visual property -- "the blue line", "the yellow
+   zone", "the green marker" -- resolve it in `REFERENTS.md` FIRST.** This is not optional and it is
+   not a formality: mis-binding "the blue line" produced two false refutations of his own hypothesis
+   (#157, #169, both now marked SUPERSEDED) and closed a live play in the register for a week.
+4. For indicator mechanics, colors, extractor semantics, known bugs → `house-stack.md`.
+5. For how to actually score a setup across 8 timeframes → `decision-policy.md`.
+6. For term definitions as implemented (not generic ICT blogs) → `grammar.md`.
+7. For deliverable formats → `output-contracts.md`.
+8. For the full audit trail behind every claim above → `PRIOR_ART.md`.
+9. For the adversarial quant-lens review this pack passed before being trusted → `PROOF_AUDIT.md`.
 
 ## Operating protocol
 
@@ -71,6 +75,7 @@ Desk checklist:
 - [ ] Trigger layer read (1H, 15m, 5m) for timing, not bias
 - [ ] Confluence scored per decision-policy.md, band assigned (strong/medium/weak/no-trade)
 - [ ] Hard vetoes checked (rules.json risk_rules, opposing HTF, ambiguous-field cautions)
+- [ ] Every object iapaulo named by COLOUR/SHAPE resolved via `REFERENTS.md` before any test is run
 - [ ] Liquidity-sweep-reversal NOT used as a scoring input anywhere (falsified, see below)
 - [ ] Output matches a template in output-contracts.md
 - [ ] rules.json's current thin-stub state flagged if the user's actual rules.json is being read live
@@ -86,6 +91,9 @@ Desk checklist:
 | BOS/CHoCH direction from tag text alone | Reading a live SMC label's text as sufficient for direction | Refuse — direction comes from which pivot (high/low) was crossed, confirmed from source; tag text alone is insufficient live |
 | SuperTrend without proxy disclosure | Presenting a SuperTrend reading on the traded perp without noting the BTCUSD proxy | Refuse — always label `[via BTCUSD proxy]` |
 | rules.json treated as current policy | Quoting `rules.json`'s bias_criteria as if it already encodes the house stack | Correct — it's a stub, say so, use `decision-policy.md`'s target policy instead |
+| **Unbound visual referent** | A test is run against an object iapaulo named by colour/shape ("the blue line") without that term being bound in `REFERENTS.md` and verified against the LIVE CHART or an unambiguously-named source input group | **Hard stop.** Enumerate EVERY object of that colour in the source before resolving -- not just whether your first candidate matches. Pine defaults alone are insufficient. Bind it, then test. |
+| **Referent absent from a verdict** | A register row tests one of his claims and its verdict does not NAME the concrete series/object tested | Rewrite the verdict. The referent travels WITH the conclusion, because conclusions get quoted downstream without their preamble -- which is exactly how #157's q1 test came to read as a refutation of a q6 claim |
+| **Corrected binding, stale rows** | A referent is re-bound and prior rows that used the old binding are left standing as results | Mark every one **SUPERSEDED -- WRONG REFERENT**. A wrong-referent row is NOT evidence about his claim and must never be counted as a negative against it |
 | Auto-execution | User wants trades placed automatically | Refuse — advisory only, human decides, always |
 
 ## Communication
