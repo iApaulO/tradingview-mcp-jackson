@@ -71,10 +71,30 @@ required before the result gets a causal reading either way.
 
 ---
 
-## Q3. The core hypothesis itself — still untested
+## Q3. The core hypothesis — **RUN 2026-08-19, #193: REFUTED on 1h, INCONCLUSIVE on 4h**
 
-**q6 at its ceiling + price above swept buyside liquidity → short.** Standing since #146. #157 (q1)
-and #169 (q5) are marked SUPERSEDED — WRONG REFERENT and do not bear on it. See `REFERENTS.md`.
+**q6 at its ceiling + price above swept buyside liquidity → short.** Standing since #146. Tested on
+the correct referent for the first time. #157 (q1) and #169 (q5) remain SUPERSEDED and never bore
+on it.
+
+**Refuted on the three testable cells, same direction each time.** Sweep within 50 bars: BTC 1h LONG
++0.0172% vs SHORT −0.7069% (n=147); ETH 1h +0.1559% vs −0.9036% (n=176); SOL 1h +0.7964% vs −1.5080%
+(n=122).
+
+**But the setup is real and carries information — it just points the other way.** The condition
+SHARPENS the long: BTC 1h −0.1318% → +0.0172%, SOL 1h −0.0697% → +0.7964%.
+
+**4h is NOT refuted — it is untested.** The recency-capped cells hold n=33–42, below the floor, on
+exactly the rung where #188 found q6's edge. More data or a looser window is the honest next step,
+**not** a re-run at a different threshold now that this result is known.
+
+**His framework predicted this and his directional call contradicted it.** Blue carries short
+information → q6 at ceiling is peak short pressure → exhaustion → up. Second time his semantics have
+beaten a directional call (after #191).
+
+**Still conditional on MY choices:** "swept" coded as close-above-and-held-above (a
+wick-through-and-reject is a different event and would be a new test), and the 50-bar window, which
+is what separates a testable 18–22% subset from a 99% tautology.
 
 ---
 
