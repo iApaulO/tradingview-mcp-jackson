@@ -84,9 +84,10 @@ on it.
 **But the setup is real and carries information — it just points the other way.** The condition
 SHARPENS the long: BTC 1h −0.1318% → +0.0172%, SOL 1h −0.0697% → +0.7964%.
 
-**4h is NOT refuted — it is untested.** The recency-capped cells hold n=33–42, below the floor, on
-exactly the rung where #188 found q6's edge. More data or a looser window is the honest next step,
-**not** a re-run at a different threshold now that this result is known.
+**4h RESOLVED 2026-08-19 (#195): refuted there too.** Pooled BTC/ETH/SOL/XRP, n=150: LONG +0.7495%
+vs SHORT −1.9678%. The condition moves the long UP (+0.4631% complement → +0.7495%) and the short
+DOWN. **Two independent rungs now agree — the setup carries information and points opposite to the
+call.** All thresholds inherited; only the instrument set changed.
 
 **His framework predicted this and his directional call contradicted it.** Blue carries short
 information → q6 at ceiling is peak short pressure → exhaustion → up. Second time his semantics have
@@ -115,7 +116,27 @@ threshold — a hint, not evidence.**
 understanding, not as a strategy candidate.
 
 **What would settle it:** more instruments to lift n. **NOT** loosening the sweep definition or
-widening the window — both are now known-outcome adjustments.
+widening the window — both are now known-outcome adjustments. Pooling all four (#195) still only
+reached n=47 loose / n=18 strict, so this stays untestable without instruments not yet fetched.
+
+---
+
+## Q5. NEW — #188 is weaker than recorded, and the reserve gate is gone (#195)
+
+**XRP does not replicate #188's magnitude.** XRP 4h q6-ceiling LONG is **+0.0910%** (n=188, t=0.14)
+against BTC +0.4988%, ETH +0.7252%, SOL +0.7420%. Pooled over four instruments the ungated long is
++0.5172% with **t=1.69 on n=794 — does not clear t=2**.
+
+Direction replicates (long beats short; short loses at −1.1470%, t=−1.95). Magnitude does not.
+Three-of-four — the shape #186 warned about.
+
+**#188 should now read: direction robust across four instruments, magnitude carried by three,
+pooled significance marginal.** It is still the best thing in the Boom Hunter programme; it is no
+longer "the strongest unvalidated candidate".
+
+**The reserve gate is spent.** Every instrument in the corpus has seen q6. The only remaining clean
+tests are **forward in time** (paper trade) or **instruments not yet fetched**. No in-sample
+rearrangement substitutes.
 
 ---
 
