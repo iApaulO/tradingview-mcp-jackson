@@ -1,0 +1,71 @@
+# QUEUE — iapaulo's open items, not mine
+
+Things he has raised that are **not yet tested and must not be lost**. Each entry records his claim
+in his framing, what I actually said, and what would settle it. **Nothing here is a finding.**
+
+---
+
+## Q1. Buyside/sellside liquidity zones DO have support/resistance value
+
+**His claim (2026-08-19):** *"you said that buyside/sellside liquidity zone have no support
+resistance value and im saying that there is and it is integral."*
+
+**He is right that I overreached, and the register shows it.** Two things were tested; neither is the
+S/R claim:
+
+| What was actually tested | Verdict | Row |
+|---|---|---|
+| EQH/EQL **sweep → reversal** (does a sweep predict a turn?) | falsified — and the row itself says read it as "falsified *as operationalized via EQH/EQL*", not as a blanket claim | early register |
+| Liquidity pools as **standing targets** ("price runs to liquidity") | the durable-pool-ahead configuration is rare; pools are mostly a record of historical sweeps | #150s |
+
+**Neither tests support/resistance.** S/R is a claim about price APPROACHING a pool and REACTING at
+it — rejection, bounce, or a slowdown in the approach — not about what happens AFTER a sweep, and
+not about whether pools function as objectives. **These are three different questions and I collapsed
+them into one negative.** That is the same error shape as
+[[feedback-dont-generalize-saturation-across-domains]]: a null in one relation treated as a null on
+a different relation over the same object.
+
+**What would settle it, and it is directly testable:** condition on price approaching an UNBROKEN
+pool boundary from the untouched side (`ict/liquidity.js` already stores pool geometry, break state
+and `broken_bar_idx`), then measure the reaction at first touch against a matched baseline of
+random price levels drawn from the same bar distribution — the same null-model discipline #143 used.
+Two separable sub-questions: (a) does the first touch produce a reaction at all (range compression,
+rejection wick, direction change) versus a random level, and (b) does the reaction have tradeable
+size under #143's frozen construction. **(a) can be real while (b) is blocked, and that distinction
+must be preserved in the verdict rather than collapsed again.**
+
+**Do NOT quote the sweep-reversal falsification as bearing on this.** It does not.
+
+---
+
+## Q2. Why does the sweep flip q6 from exhaustion to continuation?
+
+**His flagged line (2026-08-19), kept verbatim at his request:** *"I did not write down a mechanism
+for why the sweep flips it."*
+
+#188 found q6 ceiling excursions strongly bullish on all six instrument-rung cells. His claim is that
+the SAME q6 ceiling excursion, when price sits above swept buyside liquidity, is BEARISH. Under his
+framework (blue carries short information) q6 at its ceiling is peak short pressure and the usual
+outcome is exhaustion and a bounce. **The sweep is the condition he says inverts that.**
+
+Candidate framings exist — liquidity already taken means no fuel left above, so the short pressure
+resolves DOWN instead of squeezing up — **but that is my inference and it is exactly the kind of
+inference that produced the referent failure.** Recorded as a hypothesis awaiting HIS statement,
+never as his position. Ask him; do not fill it in.
+
+Answering this is **not required to run the test** — the test is fully specified without it. It IS
+required before the result gets a causal reading either way.
+
+---
+
+## Q3. The core hypothesis itself — still untested
+
+**q6 at its ceiling + price above swept buyside liquidity → short.** Standing since #146. #157 (q1)
+and #169 (q5) are marked SUPERSEDED — WRONG REFERENT and do not bear on it. See `REFERENTS.md`.
+
+---
+
+## Q4. Unbound referent
+
+The price-pane **"yellow zone marker"** (#185). Candidates are ICT Concepts' bearish-OB break
+`#f9ff57` and bullish-FVG break `#808000`. Needs a live-chart read. See `REFERENTS.md`.
