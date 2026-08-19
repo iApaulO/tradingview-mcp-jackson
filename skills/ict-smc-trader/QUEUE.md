@@ -5,7 +5,7 @@ in his framing, what I actually said, and what would settle it. **Nothing here i
 
 ---
 
-## Q1. Buyside/sellside liquidity zones DO have support/resistance value
+## Q1. Buyside/sellside liquidity zones DO have support/resistance value — **RUN 2026-08-19, #192: HE WAS RIGHT (partly)**
 
 **His claim (2026-08-19):** *"you said that buyside/sellside liquidity zone have no support
 resistance value and im saying that there is and it is integral."*
@@ -35,6 +35,19 @@ size under #143's frozen construction. **(a) can be real while (b) is blocked, a
 must be preserved in the verdict rather than collapsed again.**
 
 **Do NOT quote the sweep-reversal falsification as bearing on this.** It does not.
+
+### RESULT (#192)
+
+**(a) real, on 4h.** The touch bar closes back on the approach side **61.3%** of the time at a real
+pool vs **48.2%** at matched placebo levels (n=269, z=3.27), all three instruments same direction.
+1h is weak and inconsistent (53.6% vs 50.3%, z=1.66; SOL negative).
+
+**(b) blocked.** The 12-bar reaction is null (pooled t=-1.31 on 1h, +1.48 on 4h, signs disagree) and
+fading the touch loses on five of six cells.
+
+**Reading:** pools are structure, not an entry — a candidate CONDITION on other signals, which is
+exactly the role his core hypothesis (Q3) assigns them. The 1h/4h split is POST-HOC and unexplained,
+the same weakness that sank #184's pre-registration.
 
 ---
 
