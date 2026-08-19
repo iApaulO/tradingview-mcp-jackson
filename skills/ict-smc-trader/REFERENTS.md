@@ -18,6 +18,31 @@ into the institutional memory, which is self-reinforcing.**
 Only in #187, from a chart image, was the blue line identified as **q6**. His actual claim — *price
 above buyside liquidity + the blue line to the top → bearish* — **has still never been tested.**
 
+## The root cause, found 2026-08-19 during the full signal inventory (#190)
+
+**Boom Hunter's plot titles are wrong and they collide.** Enumerating every `plot` in
+`boom-hunter-pro.pine`:
+
+| Pine var | actually plots | title TradingView reports | colour |
+|---|---|---|---|
+| `Plot33` | q3 | `Quotient 1` | red |
+| `Plot44` | q4 | `Quotient 2` | red |
+| `Plot54` | **q6** | `Quotient 1` | **blue** (hardcoded) |
+| `Plot55` | **q5** | `Quotient 1` | **yellow** |
+| `Plot` | q1 | `Quotient 2` | state-dependent |
+| `Plot4` | q1 (again) | `Quotient 2` | `osccol` input, **default blue** |
+| `Plot3` | trigger | `Quotient 1` | `trigcol`, default white |
+
+**Four different series report as `Quotient 1`. Not one title is correct.** q1 is also plotted twice,
+with `Plot4` redrawing it in flat blue on top of the informative state-colour plot — which is why q1
+looks plainly blue on the chart.
+
+So there were **two blue objects** (`Plot54`=q6, `Plot4`=q1) whose Data Window titles were identical
+to two other series', and the visual distinction between them was destroyed by overdraw. Resolving
+"the blue line" from titles or from Pine defaults was never going to work. **This is not an excuse —
+enumerating the plots is a ten-minute job I should have done in #146 — but it does mean the fix is
+structural: never resolve a Boom Hunter series by its TradingView title.**
+
 ## The three rules this registry enforces
 
 1. **Bind before testing.** No test proceeds on an object named by a visual property until it is
@@ -35,7 +60,7 @@ above buyside liquidity + the blue line to the top → bearish* — **has still 
 | iapaulo's term | bound to | status | evidence |
 |---|---|---|---|
 | **"the blue line"** | **q6** — Downward Boom Line | **VERIFIED** | #187. Chart image showed two sharp vertical spikes; q6 ran floor→ceiling at 17 Aug 04:00–07:00 and 16:00–20:00, matching exactly. q5 was pinned at 110 throughout and q1 wandered 65–110 — neither produces two distinct spikes. Pine `Plot54 = plot(showdboom ? q6 : na, color=color.new(color.blue, 0))`. |
-| **"the yellow line"** | **q5** — Quotient5 | VERIFIED | #66. Pine's own input group is literally named `EOT 3 (Yellow Line)`; `Plot55` plots q5 in yellow (orange under the Light theme). Consistent with his statement that yellow carries long data. |
+| **"the yellow line"** | **q5** — Quotient5 | **VERIFIED** | #66/#190. Pine's own input group is literally named `EOT 3 (Yellow Line)`; `Plot55` (L264) plots q5. **Always yellow** — the Light-theme orange branch is unreachable because `theme` is hardcoded to `'Dark'` at L10 with its input commented out. (An earlier version of this row hedged with "orange under the Light theme"; that branch is dead code.) Consistent with his statement that yellow carries long data. |
 | **"the red wave"** | q3 / q4 — EOT2 pair | VERIFIED | Pine input group `EOT 2 (Red Wave)`; `Plot33`/`Plot44` both red, filled between. q4 ported #156. |
 | **"green MSS line"** | bullish CHoCH (SMC `structure_events`) | VERIFIED | #185. ICT Concepts labels a bullish CHoCH as "MSS". Matched at 63,390.0 on 17 Aug 02:00 UTC against his 63,376 read. |
 | "the green line" (SMC) | bullish structure line | VERIFIED | #90. SMC structure colour, price pane — a different domain from the oscillator panel, unambiguous. |
@@ -63,4 +88,23 @@ his model and is NOT recorded here, because he has not stated it and I will not 
 
 - **q6 + price above swept buyside liquidity → short.** His standing hypothesis since #146. Still
   untested. #157 and #169 are marked SUPERSEDED and do not bear on it.
-- **"yellow zone marker"** — unbound, needs a live-chart read.
+- **"yellow zone marker"** -- unbound, needs a live-chart read.
+
+### QUEUED — iapaulo's, not mine, do not lose (2026-08-19)
+
+**"I did not write down a mechanism for why the sweep flips it."** He flagged this line specifically
+and asked for it to be kept. It is the open question, stated as a question and NOT answered here:
+
+> #188 found q6 ceiling excursions strongly bullish on all six instrument-rung cells. His claim is
+> that the SAME q6 ceiling excursion, when price sits above swept buyside liquidity, is BEARISH.
+> **What does the sweep change?** Under his framework (blue = short information), q6 at its ceiling
+> is peak short pressure; the usual outcome is exhaustion and a bounce. The sweep is the condition
+> he says inverts that.
+
+Candidate framings exist — liquidity already taken means no fuel left above, so the short pressure
+resolves DOWN instead of squeezing up — **but that is my inference and it is exactly the kind of
+inference that caused the referent failure.** It is recorded here as a hypothesis awaiting HIS
+statement, never as his position. Ask him; do not fill it in.
+
+Answering this is not required to run the test — the test is fully specified without it. It IS
+required before the result gets a causal reading either way.
