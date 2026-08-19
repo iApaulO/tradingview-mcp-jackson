@@ -36,7 +36,15 @@
 // backtest returning 1e14x is telling you an INPUT is wrong. Here the input was trade count -- the
 // unconstrained engine took 771 trades/yr against the ~90/yr #142 measured as realistic capacity,
 // and 9x the tradeable capacity makes every downstream figure meaningless however correct the
-// arithmetic. The capacity-limited policy is the only one whose compounded figure can be read.
+// arithmetic.
+//
+// The EDGE SENSITIVITY line is where that now gets answered. Under the capped policy the outcome
+// runs $95,930,039 / $4,701,324 / $226,550 / $10,734 as the realised edge falls to 75% / 50% / 25%
+// of the backtested one -- a 25% haircut costs 95% of the result, and a 50% haircut costs 99.8%.
+// Over 4,128 trades a modest overestimate of per-trade edge compounds into an order-of-magnitude
+// error, so the headline figure is not a forecast; it is a statement about a quantity nobody has
+// measured yet. NO BACKTEST CAN DISTINGUISH THE 100% COLUMN FROM THE 50% COLUMN. Only forward
+// evidence can, which is the entire argument for the paper ledger existing.
 //
 // Usage:
 //   node scripts/signal-bus/cross-confluence/risk-engine.js
@@ -65,11 +73,27 @@ const BUILDERS = {
 };
 const WANTED = (args.strategies || Object.keys(BUILDERS).join(",")).split(",").map((s) => s.trim());
 
-// CAPACITY. #142 measured roughly 30 trades/yr/instrument as the realistic ceiling before market
-// impact stops being ignorable. The uncapped engine took 771/yr -- 9x over -- and a compounded
-// figure built on 9x the tradeable capacity is meaningless regardless of how correct the
-// arithmetic is. This is a real constraint the engine was missing, not a display problem.
-const CAPACITY_TRADES_PER_YEAR = 90;   // ~30/yr x 3 instruments (#142)
+// CAPACITY, corrected 2026-08-17 after measuring it per strategy (#183) instead of borrowing it.
+//
+// The previous version capped the book at 90 trades/yr, taken from #142 and applied to all four
+// strategies. That was a CATEGORY ERROR twice over. First, #142's "~30/yr" is a FREQUENCY figure --
+// how often K>=3 fires -- not a liquidity capacity; the register uses one word for both and they are
+// not the same quantity. Second, the number is right for H (measured 31/yr) and wrong by 14x for A2
+// (447/yr) and 42x for A (1,316/yr), so the cap was throttling three strategies to a rate that has
+// nothing to do with them.
+//
+// **A FREQUENCY CAP IS NOT A CAPITAL CONSTRAINT AND IS REMOVED.** What actually consumes the book is
+// CONCURRENCY x NOTIONAL, both of which the engine already enforces -- and the measurement shows
+// concurrency is not what binds (max 17 across all four) while notional is (G needs a MEDIAN of
+// 2.51x equity per trade). Capping trades/yr at each strategy's own measured rate would also be
+// circular: it is a cap at exactly what the strategy already produces.
+//
+// True liquidity capacity needs L2 depth, which this project does not have (EEH-CITI-1.0 Priority
+// 4). Rather than substitute a made-up proxy, the engine now reports EDGE SENSITIVITY instead: how
+// the outcome moves if the realised per-trade edge is a fraction of the backtested one. That is the
+// honest expression of the same worry -- a small edge compounded over thousands of trades is
+// extremely sensitive to whether the edge is real, and forward evidence currently stands at n=1.
+const EDGE_HAIRCUTS = [1.0, 0.75, 0.5, 0.25];
 
 // ---- DECLARED POLICIES. Named, fixed, compared -- never tuned. ----
 const POLICIES = {
@@ -91,14 +115,6 @@ const POLICIES = {
     label: "capped + per-strategy reservation",
     riskPctPerTrade: 0.005, maxRiskDeployed: 0.02,
     maxConcurrent: 10, maxPerStrategy: 3, maxNetExposureR: 4, maxLeverage: 3, maxGrossNotional: 1.0, capacityPerYear: Infinity,
-  },
-  // The only policy that respects the measured capacity ceiling. Everything above it is arithmetic
-  // about a book that could not have been traded.
-  capacity_respecting: {
-    label: "capped + CAPACITY-limited (#142's ~90 trades/yr)",
-    riskPctPerTrade: 0.005, maxRiskDeployed: 0.02,
-    maxConcurrent: 10, maxPerStrategy: 3, maxNetExposureR: 4, maxLeverage: 3, maxGrossNotional: 1.0,
-    capacityPerYear: CAPACITY_TRADES_PER_YEAR,
   },
 };
 
@@ -133,7 +149,7 @@ const mean = (xs) => (xs.length ? xs.reduce((s, x) => s + x, 0) / xs.length : 0)
 //
 // ORDER OF OPERATIONS IS LOAD-BEARING: size FIRST, then test the budget against what that size
 // actually costs. Testing before sizing is precisely the bug being fixed.
-function simulate(trades, pol) {
+function simulate(trades, pol, haircut = 1) {
   let equity = 1, peak = 1, maxDD = 0;
   // Compounding is exactly what it sounds like: profit from a closed trade returns to the bank and
   // is available to the next one. equity *= 1 + pnl, nothing more. An earlier version of this file
@@ -142,7 +158,7 @@ function simulate(trades, pol) {
   let additive = 0, addPeak = 0, addRun = 0, addMaxDD = 0;
   let deployedRisk = 0, grossNotional = 0, netR = 0, taken = 0, maxConcurrentSeen = 0;
   const perStrat = new Map();
-  const refused = { budget: 0, gross_notional: 0, concurrency: 0, per_strategy: 0, net_exposure: 0, capacity: 0 };
+  const refused = { budget: 0, gross_notional: 0, concurrency: 0, per_strategy: 0, net_exposure: 0 };
   const takenBy = new Map();
   const netSamples = [];
   let openCount = 0, sizeCapped = 0;
@@ -170,15 +186,9 @@ function simulate(trades, pol) {
   };
   const sweep = (upTo) => { while (pending.length && pending[0].exitT <= upTo) closePos(pending.shift()); };
 
-  const t0 = trades.length ? trades[0].entryTime : 0;
   for (const tr of trades) {
     sweep(tr.entryTime);
 
-    // capacity: refuse anything beyond the measured tradeable rate for the elapsed span
-    if (pol.capacityPerYear !== Infinity) {
-      const yearsElapsed = Math.max(1 / 365, (tr.entryTime - t0) / (365.25 * 86400));
-      if (taken >= pol.capacityPerYear * yearsElapsed) { refused.capacity++; continue; }
-    }
 
     // ---- SIZE FIRST ----
     const desiredNotional = pol.riskPctPerTrade / tr.riskPct;
@@ -205,7 +215,7 @@ function simulate(trades, pol) {
     netSamples.push(netR / pol.riskPctPerTrade);
 
     const exitT = tr.exitTime ?? tr.entryTime;
-    const pnl = notional * (tr.costedPnlPct ?? tr.pnlPct);
+    const pnl = notional * (tr.costedPnlPct ?? tr.pnlPct) * haircut;
     const pos = { exitT, effRisk, notional, side: tr.side, strategy: tr.strategy, pnl };
     if (exitT <= tr.entryTime) closePos(pos); else insertPending(pos);
   }
@@ -245,6 +255,12 @@ async function main() {
     const compStr = r.equity > 1e6 ? `${r.equity.toExponential(2)}x  [NOT CREDIBLE -- see capacity]` : `$${compUsd.toFixed(2)}  CAGR ${compCagr.toFixed(1)}%  maxDD ${(r.maxDD * 100).toFixed(1)}%`;
     console.log(`    COMPOUNDED (profit returns to the bank): ${compStr}`);
     console.log(`    flat sizing, for reference:              $${addUsd.toFixed(2)}   CAGR ${addCagr.toFixed(1)}%   maxDD ${(r.addMaxDD * 100).toFixed(1)}%`);
+    const hair = EDGE_HAIRCUTS.map((h) => {
+      const rr = simulate(all, pol, h);
+      const v = STARTING_BANK * rr.equity;
+      return `${(h * 100).toFixed(0)}%: ` + (rr.equity > 1e6 ? rr.equity.toExponential(1) + "x" : "$" + v.toFixed(0));
+    }).join("   ");
+    console.log(`    EDGE SENSITIVITY (realised edge as a fraction of backtest): ${hair}`);
     console.log(`    peak gross notional constraint: ${pol.maxGrossNotional === Infinity ? "none" : pol.maxGrossNotional + "x equity"}`);
     console.log(`    taken ${r.taken.toLocaleString()} of ${all.length.toLocaleString()} (${((r.taken / all.length) * 100).toFixed(2)}%)   peak concurrent ${r.maxConcurrentSeen}`);
     console.log(`    REFUSED BY REASON: ${Object.entries(r.refused).map(([k, v]) => `${k} ${v.toLocaleString()} (${((v / totalRefused) * 100 || 0).toFixed(1)}%)`).join("   ")}`);
