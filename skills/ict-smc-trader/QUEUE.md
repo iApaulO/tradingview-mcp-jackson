@@ -92,9 +92,30 @@ exactly the rung where #188 found q6's edge. More data or a looser window is the
 information → q6 at ceiling is peak short pressure → exhaustion → up. Second time his semantics have
 beaten a directional call (after #191).
 
-**Still conditional on MY choices:** "swept" coded as close-above-and-held-above (a
-wick-through-and-reject is a different event and would be a new test), and the 50-bar window, which
-is what separates a testable 18–22% subset from a 99% tautology.
+**Still conditional on MY choices:** the 50-bar window, which is what separates a testable 18–22%
+subset from a 99% tautology.
+
+### The wick-through-and-reject reading (#194) — INCONCLUSIVE, too rare to test
+
+Run at his request. Near-opposite configuration to #193: liquidity taken by a wick and REJECTED back
+below, rather than closed above and held.
+
+**The event barely exists.** Strict wick-reject sweeps occur on 5–55 bars in nine years per
+instrument-rung; conditioned q6 populations land at n=3–30, **below the floor on all six cells**. The
+loose variant clears the floor on only two of six (BTC 1h n=64, ETH 1h n=70). Ten of twelve cells are
+untestable. Structural, not a coding artifact — most buyside pools resolve by a CLOSE above the top,
+which is why #193's condition covered 86–99% of events.
+
+**One cell leans his way, and only one.** ETH 1h loose: the short arm's win rate exceeds the long's
+for the first time anywhere (35.7% vs 31.4%) and the condition destroys the long edge relative to its
+complement (+0.2177% → −0.4467%). Net short is still negative (−0.5028%). **n=70, 1 of 12, looser
+threshold — a hint, not evidence.**
+
+**Practical note:** even if real, this fires once or twice a year per instrument-rung. Pursue as
+understanding, not as a strategy candidate.
+
+**What would settle it:** more instruments to lift n. **NOT** loosening the sweep definition or
+widening the window — both are now known-outcome adjustments.
 
 ---
 
