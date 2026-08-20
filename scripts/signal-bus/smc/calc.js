@@ -137,6 +137,8 @@ export function computeSMC(candles) {
   const internalHigh = mkPivot(), internalLow = mkPivot();
   const equalHigh = mkPivot(), equalLow = mkPivot();
   let swingTrendBias = 0, internalTrendBias = 0;
+  const swingBias = new Array(candles.length).fill(0);
+  const internalBias = new Array(candles.length).fill(0);
 
   const eqhEqlEvents = [];
   const structureEvents = [];
@@ -284,10 +286,19 @@ export function computeSMC(candles) {
       }
     }
 
+    // Per-bar SWING trend bias. LuxAlgo labels its trailing extremes from exactly this value:
+    // `swingTrend.bias == BULLISH ? 'Strong Low' : 'Weak Low'` (source L733) and
+    // `swingTrend.bias == BEARISH ? 'Strong High' : 'Weak High'` (L728). It was computed here
+    // since the port but never exposed, so no test could condition on it -- which is why
+    // iapaulo's "preceding structure defined by arrow" (a Strong Low) was missing from the
+    // corpus entirely. Added 2026-08-19.
+    swingBias[i] = swingTrendBias;
+    internalBias[i] = internalTrendBias;
+
     // --- order block mitigation, every bar ---
     mitigateOrderBlocks("internal", i);
     mitigateOrderBlocks("swing", i);
   }
 
-  return { structureEvents, eqhEqlEvents, orderBlocks: [...orderBlocks.internal, ...orderBlocks.swing] };
+  return { structureEvents, eqhEqlEvents, orderBlocks: [...orderBlocks.internal, ...orderBlocks.swing], swingBias, internalBias };
 }
