@@ -144,3 +144,44 @@ rearrangement substitutes.
 
 The price-pane **"yellow zone marker"** (#185). Candidates are ICT Concepts' bearish-OB break
 `#f9ff57` and bullish-FVG break `#808000`. Needs a live-chart read. See `REFERENTS.md`.
+
+---
+
+## Q6. NEW — his multi-stage trade construction from the 4h chart (2026-08-19)
+
+**Recorded verbatim in structure because it is the most specific setup he has given, and NOT yet
+tested.** His words: sharp boom signal returning within 1 bar, "especially when accompanied by bos
+swing line on as on 26 jul... however, this would not be entry, because the ob hasnt fired yet, this
+is configure the trade next, before the ob appears come two choch, the second wouldnt have fire yet
+in the sequence i am showing you, bu the first choch that failed, that is our entry on trigger order.
+when bullish ob fires the trigger gets it correct."
+
+**The sequence, as I read it — HE MUST CONFIRM before anything is built:**
+
+1. Sharp EOT3 signal (returns within 1 bar) + swing BOS present → **configure**, not enter.
+2. Two CHoCHs form before the order block appears.
+3. The **first CHoCH fails**. Its level becomes a **resting trigger order** — this is the entry.
+4. The bullish OB fires and the resting trigger fills correctly.
+
+**What our 4h data shows in that window (BTCUSDT, note the instrument caveat):**
+BOS bullish internal 20 Jul 08:00 @64,967 → CHoCH bearish internal 27 Jul 20:00 @63,810 (with an
+ACTIVE bearish OB 65,217–65,745) → CHoCH bullish internal 30 Jul 08:00 @64,745 **with a bullish OB
+63,267–64,131**. That maps onto his sequence: the bearish CHoCH fails, a resting long trigger at
+~63,810 fills when the bullish OB fires.
+
+**Blockers before this is testable:**
+- **"Failed CHoCH" is a new object we do not have.** `structure_events` has no failure flag. It needs
+  a definition — e.g. a CHoCH followed by an opposite-direction CHoCH within N bars without reaching
+  a continuation threshold — and that definition is a modelling choice he should sanity-check, not
+  one I should pick alone.
+- **"Sharp, returns within 1 bar" is not yet operationalised.** #197 shows two readings of that phrase
+  (q6 excursion duration vs q5 bars-at-floor) give OPPOSITE answers. Ask which he means.
+- **Instrument mismatch.** His chart is BTCUSD INDEX; our corpus is Binance BTCUSDT and ends
+  2026-08-19 08:00 at 64,403 while his screen reads 69,402. Structure events will not align
+  bar-for-bar.
+
+**Confirmed independently from his image:** the drawn zone matches our EQH cluster (4h EQH at 64,200 /
+64,425 / 64,692.83 / 65,744.60), and the 27 Jul EQH at 65,744.60 is EXACTLY the top of a still-active
+bearish OB. His "the zone is formed by price before the EQH even form" is consistent with the box
+starting late May while EQHs confirm from 9 Jun onward.
+
