@@ -102,12 +102,16 @@ afterwards reads as *exhaustion*, not as the line being mislabelled.
 His claim then says that the same condition **plus price above swept buyside liquidity** is bearish.
 Those are not in conflict: the liquidity state is what would separate exhaustion from continuation,
 and it is the part that has never been attached to the correct series. **Why the sweep flips it is
-his model and is NOT recorded here, because he has not stated it and I will not infer it.**
+his model and is NOT recorded here, because he has not stated it and I will not infer it.** (The
+liquidity condition turned out to sharpen the LONG on both rungs rather than flip it — #193/#195.)
 
 ## Open
 
-- **q6 + price above swept buyside liquidity → short.** His standing hypothesis since #146. Still
-  untested. #157 and #169 are marked SUPERSEDED and do not bear on it.
+- **q6 + price above swept buyside liquidity → short.** His standing hypothesis since #146.
+  **TESTED 2026-08-19: refuted on 1h (#193) and on 4h pooled (#195); the wick-reject reading remains
+  untestable (#194).** #157 and #169 stay SUPERSEDED and never bore on it. This line said "still
+  untested" until the tests were run — kept current deliberately, since a stale entry here is the
+  exact failure this file exists to prevent.
 - **"yellow zone marker"** -- unbound, needs a live-chart read.
 
 ### QUEUED — iapaulo's, not mine, do not lose (2026-08-19)
