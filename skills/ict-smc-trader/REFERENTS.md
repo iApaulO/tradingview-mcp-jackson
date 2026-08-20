@@ -67,6 +67,26 @@ structural: never resolve a Boom Hunter series by its TradingView title.**
 | "Blue Wave" | `computeBlueWave` | VERIFIED | #41/#42. A named component in the source, not a colour description. |
 | **"yellow zone marker"** (price pane) | **UNBOUND** | **UNRESOLVED** | #185. Candidates in the verified colour map (#152): `#f9ff57` bearish-OB-break, `#808000` bullish-FVG-break. No ICT FVG in our data sits under the 17 Aug MSS. **Requires a live-chart read. Do not test anything that depends on it until bound.** |
 
+## BEHAVIOUR, not just identity (added 2026-08-19, #196)
+
+**Binding a referent is not enough — characterise how it MOVES before building a test on it.** Eight
+rows of q5/q6 work preceded the first measurement of q5's actual behaviour, and iapaulo had to point
+that out.
+
+| series | native state | departure | time at extreme | round trip |
+|---|---|---|---|---|
+| **q5** (yellow, `Plot55`, K13=+0.9999) | **CEILING, 96.2-96.9% of bars** | SNAPS down — down leg median **0 bars** | median **3 bars** at the floor | median **3 bars** total |
+| **q6** (blue, `Plot54`, K33=-0.9999) | **FLOOR, ~96% of bars** | snaps up | ~4% of bars above 50 | mirror of q5 |
+
+The Mobius transform at |K| -> 1 is why both snap rather than oscillate: they render as vertical
+spikes, not waves. **Consequence that matters for every test: a q5 round trip completes in a median
+of 3 bars, so "entry at the floor" and "entry on the return to ceiling" are ~3 bars apart and are
+very nearly the same trade.**
+
+**His signal model, which the register ignored for eight rows:** the line leaving its native state is
+HALF a signal; the RETURN is the other half; the signal is the completed round trip. And **sharp tips
+perform differently from flat** — confirmed in #196 (sharp long -0.1968% vs flat -0.9714%).
+
 ## His stated semantics — recorded because it reframes results, not just names
 
 **Blue carries SHORT information. Yellow carries LONG information.** (2026-08-19.)
