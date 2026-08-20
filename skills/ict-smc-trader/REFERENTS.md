@@ -65,7 +65,7 @@ structural: never resolve a Boom Hunter series by its TradingView title.**
 | **"green MSS line"** | bullish CHoCH (SMC `structure_events`) | VERIFIED | #185. ICT Concepts labels a bullish CHoCH as "MSS". Matched at 63,390.0 on 17 Aug 02:00 UTC against his 63,376 read. |
 | "the green line" (SMC) | bullish structure line | VERIFIED | #90. SMC structure colour, price pane — a different domain from the oscillator panel, unambiguous. |
 | "Blue Wave" | `computeBlueWave` | VERIFIED | #41/#42. A named component in the source, not a colour description. |
-| **"yellow zone marker"** (price pane) | **UNBOUND** | **UNRESOLVED** | #185. Candidates in the verified colour map (#152): `#f9ff57` bearish-OB-break, `#808000` bullish-FVG-break. No ICT FVG in our data sits under the 17 Aug MSS. **Requires a live-chart read. Do not test anything that depends on it until bound.** |
+| **"yellow zone marker"** (price pane) | **LEADING CANDIDATE: a BROKEN BEARISH OB** (`#f9ff57`) | **STILL UNCONFIRMED** | #185. Candidates in the verified colour map (#152): `#f9ff57` bearish-OB-break, `#808000` bullish-FVG-break. No ICT FVG in our data sits under the 17 Aug MSS. **Requires a live-chart read. Do not test anything that depends on it until bound.** |
 
 ## BEHAVIOUR, not just identity (added 2026-08-19, #196)
 
@@ -112,7 +112,15 @@ liquidity condition turned out to sharpen the LONG on both rungs rather than fli
   untestable (#194).** #157 and #169 stay SUPERSEDED and never bore on it. This line said "still
   untested" until the tests were run — kept current deliberately, since a stale entry here is the
   exact failure this file exists to prevent.
-- **"yellow zone marker"** -- unbound, needs a live-chart read.
+- **"yellow zone marker"** -- LEADING CANDIDATE identified 2026-08-20, still needs his confirmation.
+  In the 14 Aug 1h sequence he describes (continuation arrow -> yellow zone -> MSS -> strong bullish
+  break), our data holds two BEARISH internal OBs that were subsequently MITIGATED: 13 Aug 16:00 at
+  63,671.64-64,010 and **14 Aug 06:00 at 63,473.99-63,640**. ICT Concepts renders a BROKEN bearish OB
+  in `#f9ff57` -- the only true yellow in the whole source (#190). The `continuation` fired at 14 Aug
+  15:00 @62,990.95, BELOW that zone, and price then broke up through it. **A bearish OB that price
+  breaks and then holds above is exactly the "becomes the opposite of what it was" polarity flip he
+  described in the breaker discussion.** Ask him to confirm the zone's price band on his chart before
+  any test uses it -- his chart is BTCUSD INDEX and the band will read differently there.
 
 ### QUEUED — iapaulo's, not mine, do not lose (2026-08-19)
 
