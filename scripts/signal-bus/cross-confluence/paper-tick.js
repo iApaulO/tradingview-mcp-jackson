@@ -32,7 +32,7 @@ import { spawnSync } from "child_process";
 const args = Object.fromEntries(
   process.argv.slice(2).filter((a) => a.includes("=")).map((a) => a.replace(/^--/, "").split("=")),
 );
-const INSTRUMENTS = (args.instruments || "BTC,ETH,SOL").split(",").map((s) => s.trim()).filter(Boolean);
+const INSTRUMENTS = (args.instruments || "BTC,ETH,SOL,XRP").split(",").map((s) => s.trim()).filter(Boolean);   // XRP added 2026-08-21 for the MSS R4 ledger
 const NO_FETCH = process.argv.includes("--no-fetch");
 const ROOT = new URL("../../../", import.meta.url);
 
@@ -59,7 +59,10 @@ function main() {
     if (!NO_FETCH) {
       // repair mode re-fetches from the 2025-01-01 seam forward, which subsumes "append the newest
       // bars" and needs no separate incremental path. Slower, but it cannot leave a hole.
-      if (!run("fetch native candles", "scripts/backtest/fetch-binance-history.js", [`--mode=${inst === "BTC" ? "repair" : "full"}`, `--instrument=${inst}`])) {
+      // repair for ALL instruments since 2026-08-21: every instrument's CSVs now exist, and repair
+      // refetches only from the 2025-01-01 seam forward. The old `full` path for non-BTC refetched
+      // an entire multi-year series every tick, which was only ever needed for a first-time fetch.
+      if (!run("fetch native candles", "scripts/backtest/fetch-binance-history.js", [`--mode=repair`, `--instrument=${inst}`])) {
         console.log("\nABORT: refresh failed, ledger untouched. Next tick retries.");
         process.exit(1);
       }
@@ -89,7 +92,9 @@ function main() {
   // recorded per row. K>=3 appears in both, which is intentional -- the dedicated ledger is the one
   // that answers #143's gate, and flattening it into the multi-strategy table would lose that.
   let bad = 0;
-  for (const s of ["paper-trade-k3.js", "paper-trade-all.js"]) {
+  // paper-trade-mss added 2026-08-21 (#206/#207): the MSS R4 construction, all four instruments,
+  // tier "in-sample" -- the weakest tier in the ledger, recorded per row, never flattened.
+  for (const s of ["paper-trade-k3.js", "paper-trade-all.js", "paper-trade-mss.js"]) {
     const r = spawnSync(process.execPath, [`scripts/signal-bus/cross-confluence/${s}`], { cwd: ROOT, encoding: "utf8", stdio: "inherit" });
     if (r.status !== 0) bad++;
   }
