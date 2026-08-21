@@ -120,9 +120,12 @@ The vocabulary collides with ours. This is the failure that cost #157 and #169.
 
 ## What is testable, ranked by value
 
-1. **Strong-low protection** — do lows that *caused* a BOS get breached less often than lows that did
-   not? Mechanical, natural null, no new objects, and it underpins the entire strong/weak scheme
-   here *and* in LuxAlgo. **Highest value.**
+1. ~~**Strong-low protection**~~ — **TESTED 2026-08-21 (#227): REFUTED AND INVERTED.** Strong lows are
+   breached **54.9%** within 100 bars versus **52.2%** for distance-matched random levels (n=4,667
+   each, **z = +2.59**) — breached *more*, not less. The clock started at the BOS bar and the control
+   was distance-matched, so the usual circularity is neutralised. **The strong/weak protection premise
+   does not hold in this market.** Note this does NOT bear on our regime gate, which uses the same
+   words for a different claim.
 2. **The pairing claim** — does an HTF CHoCH coincide with an LTF trend change? Direct co-occurrence
    measurement; #204's episode de-duplication applies.
 3. **The timing claim** — does the LTF bearish switch *lead* the HTF pullback, or merely coincide?
