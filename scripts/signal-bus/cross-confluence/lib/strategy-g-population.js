@@ -24,6 +24,7 @@ import { DatabaseSync } from "node:sqlite";
 import { loadCandles } from "../../../backtest/lib/load-candles.js";
 import { calcATRSeries, computeAdaptiveSuperTrend } from "../../../lib/adaptive-supertrend.js";
 import { computeWtExtremeFractals } from "../../vmc-cipher-b/calc.js";
+import { asOf, HOUSE_LADDER, RUNG_SECONDS } from "../../lib/mtf-state.js";
 import { computeBoomHunter } from "../../boom-hunter/calc.js";
 import { computeSwingPivotSeries } from "../../smc/calc.js";
 
@@ -36,7 +37,11 @@ import { computeSwingPivotSeries } from "../../smc/calc.js";
 // bus mapping agrees 100.00% of the time, the `dir > 0` mapping 0.00%. See register #139.
 
 const D4M_TOL_PCT = 0.012, ATR_LEN = 14, ATR_MULT = 0.6, MAX_HOLD_BARS = 200, ST_ATR_LEN = 10;
-const LADDER = [["1w", 604800], ["1d", 86400], ["4h", 14400], ["3h", 10800], ["2h", 7200], ["1h", 3600], ["15m", 900], ["5m", 300]];
+// MIGRATED 2026-08-21 to the shared MTF layer. The ladder and the available_at rule now come from
+// `signal-bus/lib/mtf-state.js` -- one definition of "which bar of rung R is knowable at instant t"
+// for the whole project. The local walk this replaced was CORRECT; this is consolidation, not a bug
+// fix, and the migration was gated on byte-identical output from portfolio-backtest.js.
+const LADDER = HOUSE_LADDER.map((tf) => [tf, RUNG_SECONDS[tf]]);
 
 const dbFile = (base, instrument) =>
   new URL(`../../../../data/signal-bus/${instrument === "BTC" ? `${base}.db` : `${base}-eth.db`}`, import.meta.url);
@@ -71,11 +76,11 @@ export async function buildGPopulation(instrument = "BTC", tf = "15m") {
     const c = rtf === tf ? candles : await loadCandles(rtf, instrument);
     const { dir } = computeAdaptiveSuperTrend(c, calcATRSeries(c, ST_ATR_LEN));
     const s = new Int8Array(nB).fill(-1);
-    let j = 0;
     for (let i = 0; i < nB; i++) {
-      const cutoff = candles[i].t - stepSec;
-      while (j + 1 < c.length && c[j + 1].t <= cutoff) j++;
-      if (c[j].t <= cutoff && Number.isFinite(dir[j])) s[i] = dir[j] === -1 ? 1 : 0;
+      // asOf() == "last bar of this rung whose CLOSE is at or before the base bar's OPEN", which is
+      // exactly the cutoff walk this replaced (`c[j].t + stepSec <= candles[i].t`).
+      const j = asOf(c, stepSec, candles[i].t);
+      if (j >= 0 && Number.isFinite(dir[j])) s[i] = dir[j] === -1 ? 1 : 0;
     }
     dirs.push(s);
   }

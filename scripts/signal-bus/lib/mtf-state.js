@@ -40,7 +40,12 @@ export const RUNG_SECONDS = {
   "1w": 604800, "1d": 86400, "4h": 14400, "3h": 10800,
   "2h": 7200, "1h": 3600, "15m": 900, "5m": 300,
 };
-export const DEFAULT_RUNGS = ["1d", "4h", "1h"];
+// THE HOUSE LADDER (house-stack.md): W/D/4H/3H/2H/1H/15m/5m, never a subset. The first version of
+// this module defaulted to 1d/4h/1h, silently dropping 3h/2h/15m/5m -- all of which ARE built in the
+// signal bus for BTC/ETH/SOL/XRP. Corrected 2026-08-21 at iapaulo's instruction. Instruments fetched
+// 1h/1d-native only have no 15m/5m; openMtf skips rungs with no data and reports which.
+export const HOUSE_LADDER = ["1w", "1d", "4h", "3h", "2h", "1h", "15m", "5m"];
+export const DEFAULT_RUNGS = HOUSE_LADDER;
 
 const BULL = 1, BEAR = -1;
 const biasName = (b) => (b === BULL ? "bullish" : b === BEAR ? "bearish" : "none");
@@ -60,8 +65,13 @@ export function asOf(candles, dur, t) {
 }
 
 async function loadRung(instrument, tf) {
-  const candles = await loadCandles(tf, instrument);
-  if (!candles.length) return null;
+  // loadCandles THROWS on a missing file rather than returning empty, so instruments fetched
+  // 1h/1d-native only (no 15m/5m) would abort the whole ladder. A missing rung is a normal,
+  // reportable condition here -- it is surfaced via `skipped`, never swallowed into a silent gap.
+  let candles;
+  try { candles = await loadCandles(tf, instrument); }
+  catch { return null; }
+  if (!candles || !candles.length) return null;
   const smc = computeSMC(candles);
   const boom = computeBoomHunter(candles);
   let pools = [];
@@ -150,10 +160,12 @@ export async function openMtf(instrument, { rungs = DEFAULT_RUNGS } = {}) {
     const R = await loadRung(instrument, tf);
     if (R) loaded[tf] = R;
   }
+  const skipped = rungs.filter((tf) => !loaded[tf]);
   if (!Object.keys(loaded).length) throw new Error(`no rung data for ${instrument}`);
   return {
     instrument,
     rungs: Object.keys(loaded),
+    skipped,
     /** Full stack state at instant `t` (unix seconds). No rung can see past its own close. */
     at(t) {
       const out = { instrument, t, rungs: {} };
@@ -178,12 +190,13 @@ export async function openMtf(instrument, { rungs = DEFAULT_RUNGS } = {}) {
 if (import.meta.url === `file://${process.argv[1]?.replace(/\\/g, "/")}` || process.argv[1]?.endsWith("mtf-state.js")) {
   const args = Object.fromEntries(process.argv.slice(2).filter((a) => a.includes("=")).map((a) => a.replace(/^--/, "").split("=")));
   const inst = args.instrument || "BTC";
-  const rungs = (args.rungs || "1w,1d,4h,1h").split(",");
+  const rungs = (args.rungs || HOUSE_LADDER.join(",")).split(",");
   const t = args.at ? Math.floor(Date.parse(args.at) / 1000) : null;
   const mtf = await openMtf(inst, { rungs });
   const when = t ?? (() => { const s = mtf.at(Math.floor(Date.now() / 1000)); return s.t; })();
   const snap = mtf.at(when);
   console.log(`MTF STATE — ${inst} @ ${new Date(when * 1000).toISOString()}   (available_at enforced: no rung sees past its own close)\n`);
+  if (mtf.skipped.length) console.log(`  [no data for: ${mtf.skipped.join(", ")}]`);
   for (const tf of mtf.rungs) {
     const r = snap.rungs[tf];
     if (!r.available) { console.log(`  ${tf.padEnd(4)} no closed bar yet`); continue; }

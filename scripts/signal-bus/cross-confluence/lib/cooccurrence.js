@@ -25,11 +25,12 @@
 
 import { DatabaseSync } from "node:sqlite";
 import { dbSuffix } from "../../lib/instrument.js";
+import { HOUSE_LADDER, RUNG_SECONDS } from "../../lib/mtf-state.js";
 
-export const LADDER = [
-  { tf: "1w", sec: 604800 }, { tf: "1d", sec: 86400 }, { tf: "4h", sec: 14400 }, { tf: "3h", sec: 10800 },
-  { tf: "2h", sec: 7200 }, { tf: "1h", sec: 3600 }, { tf: "15m", sec: 900 }, { tf: "5m", sec: 300 },
-];
+// MIGRATED 2026-08-21: the ladder is now DERIVED from the shared MTF layer rather than restated
+// here. Two copies of an eight-rung list is how the two drift apart silently; the shape of this
+// export is unchanged so every consumer is unaffected.
+export const LADDER = HOUSE_LADDER.map((tf) => ({ tf, sec: RUNG_SECONDS[tf] }));
 const IDX = new Map(LADDER.map((l, i) => [l.tf, i]));
 
 const smcDbFor = (instrument) =>

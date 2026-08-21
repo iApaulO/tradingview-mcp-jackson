@@ -1,0 +1,308 @@
+{
+  "config": {
+    "rMultiple": 2,
+    "riskPctPerTrade": 0.005,
+    "maxPortfolioRiskPct": 0.02,
+    "feeTier": "bitunix_futures_vip1",
+    "startingBankUsd": 500,
+    "sensitivity": 150,
+    "minSizeMult": 0.5,
+    "maxSizeMult": 2.5,
+    "premiumPercentile": 0.8,
+    "premiumReservePct": 0.3,
+    "perStrategyFloorPct": 0.001
+  },
+  "perStrategy": {
+    "A_recurrence": {
+      "trade_count": 47343,
+      "trades_per_year": 5256.657613021037,
+      "win_rate": 0.5615191263755993,
+      "gross_expectancy_pct_per_trade": 0.0037320229359943157,
+      "costed_expectancy_pct_per_trade": 0.002640278644335586
+    },
+    "A2_engulfment_only": {
+      "trade_count": 17553,
+      "trades_per_year": 1950.5785134094435,
+      "win_rate": 0.5518145046430809,
+      "gross_expectancy_pct_per_trade": 0.003470846032517615,
+      "costed_expectancy_pct_per_trade": 0.0023796835531693784
+    },
+    "B_1d_divergence": {
+      "trade_count": 42,
+      "trades_per_year": 4.918403334402052,
+      "win_rate": 0.38095238095238093,
+      "gross_expectancy_pct_per_trade": 0.0027227554819356722,
+      "costed_expectancy_pct_per_trade": 0.0012013269105070994
+    },
+    "C_nested_divergence": {
+      "trade_count": 144,
+      "trades_per_year": 16.056987305060165,
+      "win_rate": 0.3541666666666667,
+      "gross_expectancy_pct_per_trade": 0.0020763023112667593,
+      "costed_expectancy_pct_per_trade": 0.0010508682834889827
+    },
+    "D_boom_nested_boost": {
+      "trade_count": 0,
+      "trades_per_year": 0,
+      "win_rate": null,
+      "gross_expectancy_pct_per_trade": null,
+      "costed_expectancy_pct_per_trade": null
+    },
+    "E_swing_regime_2h": {
+      "trade_count": 142,
+      "trades_per_year": 16.057430340557275,
+      "win_rate": 0.34507042253521125,
+      "gross_expectancy_pct_per_trade": 0.037765093351347846,
+      "costed_expectancy_pct_per_trade": 0.030156994759798595
+    },
+    "F_wt_anchor_1d": {
+      "trade_count": 124,
+      "trades_per_year": 14.087402799377916,
+      "win_rate": 0.49193548387096775,
+      "gross_expectancy_pct_per_trade": 0.013033606740085633,
+      "costed_expectancy_pct_per_trade": 0.0114505422239566
+    },
+    "G_wt_anchor_ct_15m": {
+      "trade_count": 671,
+      "trades_per_year": 75.78828963771127,
+      "win_rate": 0.21013412816691504,
+      "gross_expectancy_pct_per_trade": 0.005203835251846869,
+      "costed_expectancy_pct_per_trade": 0.004099741548419154
+    },
+    "H_cooccurrence_k3": {
+      "trade_count": 275,
+      "trades_per_year": 30.800009369536657,
+      "win_rate": 0.6581818181818182,
+      "gross_expectancy_pct_per_trade": 0.007310607684159601,
+      "costed_expectancy_pct_per_trade": 0.006234262987189907
+    }
+  },
+  "flat": {
+    "tradeCount": 18951,
+    "tradesTaken": 290,
+    "skippedNoCapacity": 18661,
+    "spanYears": 8.99886873526504,
+    "totalReturnPct": 64.43451979022214,
+    "cagr": 5.682295662049874,
+    "maxDrawdownPct": 5.6230462814466105,
+    "finalEquityMultiple": 1.6443451979022214,
+    "finalBankUsd": 822.1725989511107,
+    "contribByStrategy": {
+      "A2_engulfment_only": 0.5372394463468988,
+      "C_nested_divergence": -0.029727106885256125,
+      "H_cooccurrence_k3": 0.0044568960447770615,
+      "F_wt_anchor_1d": 0.009235608300871827,
+      "B_1d_divergence": -0.010266470605091033,
+      "G_wt_anchor_ct_15m": -0.005622332196642952
+    }
+  },
+  "prioritized": {
+    "tradesTaken": 321,
+    "skippedNoEdge": 0,
+    "skippedNoCapacity": 18630,
+    "totalReturnPct": 224.26958359423247,
+    "cagr": 13.965786874809428,
+    "maxDrawdownPct": 7.011852862210604,
+    "finalEquityMultiple": 3.2426958359423246,
+    "finalBankUsd": 1621.3479179711624,
+    "premiumCutoff": 0.0040898242534768954,
+    "contribByStrategy": {
+      "A2_engulfment_only": 0.6656261554946581,
+      "H_cooccurrence_k3": 0.08311570014989854,
+      "C_nested_divergence": -0.004453393233776012,
+      "F_wt_anchor_1d": 0.02775908763365037,
+      "G_wt_anchor_ct_15m": 0.12539119420335007,
+      "E_swing_regime_2h": 0.33826451256594836
+    },
+    "edgeByBucket": {
+      "A2_engulfment_only:3": {
+        "edge": 0.0005015603016993416,
+        "n": 7974,
+        "trusted": true
+      },
+      "A2_engulfment_only:4": {
+        "edge": 0.0026787934577428224,
+        "n": 5098,
+        "trusted": true
+      },
+      "A2_engulfment_only:5": {
+        "edge": 0.0040898242534768954,
+        "n": 2462,
+        "trusted": true
+      },
+      "A2_engulfment_only:8": {
+        "edge": 0.008096972125520316,
+        "n": 231,
+        "trusted": true
+      },
+      "A2_engulfment_only:7": {
+        "edge": 0.007882242634753543,
+        "n": 504,
+        "trusted": true
+      },
+      "C_nested_divergence:2": {
+        "edge": 0.0012885414291278238,
+        "n": 131,
+        "trusted": true
+      },
+      "A2_engulfment_only:6": {
+        "edge": 0.00667341994290342,
+        "n": 1086,
+        "trusted": true
+      },
+      "H_cooccurrence_k3:3": {
+        "edge": 0.005656620203207145,
+        "n": 160,
+        "trusted": true
+      },
+      "H_cooccurrence_k3:4": {
+        "edge": 0.005454491358584126,
+        "n": 75,
+        "trusted": true
+      },
+      "E_swing_regime_2h:flat": {
+        "edge": 0.030156994759798595,
+        "n": 142,
+        "trusted": true
+      },
+      "F_wt_anchor_1d:flat": {
+        "edge": 0.0114505422239566,
+        "n": 124,
+        "trusted": true
+      },
+      "G_wt_anchor_ct_15m:flat": {
+        "edge": 0.004099741548419154,
+        "n": 671,
+        "trusted": true
+      },
+      "B_1d_divergence:flat": {
+        "edge": 0.0012013269105070994,
+        "n": 42,
+        "trusted": true
+      },
+      "C_nested_divergence:3": {
+        "edge": 0.0010508682834889827,
+        "n": 13,
+        "trusted": false
+      },
+      "H_cooccurrence_k3:6": {
+        "edge": 0.006234262987189907,
+        "n": 13,
+        "trusted": false
+      },
+      "H_cooccurrence_k3:5": {
+        "edge": 0.006234262987189907,
+        "n": 27,
+        "trusted": false
+      },
+      "A2_engulfment_only:9": {
+        "edge": 0.004038361592461866,
+        "n": 168,
+        "trusted": true
+      },
+      "A2_engulfment_only:10": {
+        "edge": 0.0023796835531693736,
+        "n": 17,
+        "trusted": false
+      },
+      "A2_engulfment_only:14": {
+        "edge": 0.0023796835531693736,
+        "n": 13,
+        "trusted": false
+      }
+    }
+  },
+  "floored": {
+    "tradesTaken": 1523,
+    "skippedNoEdge": 0,
+    "skippedNoCapacity": 17428,
+    "totalReturnPct": 418.01665058682954,
+    "cagr": 20.05534561489586,
+    "maxDrawdownPct": 5.608913200807514,
+    "finalEquityMultiple": 5.1801665058682955,
+    "finalBankUsd": 2590.083252934148,
+    "contribByStrategy": {
+      "A2_engulfment_only": 0.29519484675511576,
+      "C_nested_divergence": -0.02250868731262227,
+      "H_cooccurrence_k3": 0.22945909027884318,
+      "F_wt_anchor_1d": 0.05768023946247042,
+      "G_wt_anchor_ct_15m": 1.0223585776672244,
+      "B_1d_divergence": 0.003380026111742195,
+      "E_swing_regime_2h": 0.09171229957190948
+    },
+    "floorContribByStrategy": {
+      "A2_engulfment_only": 0.00902905985202615,
+      "C_nested_divergence": -0.01805529407884625,
+      "H_cooccurrence_k3": 0.2231199451982315,
+      "F_wt_anchor_1d": 0.05133650731901716,
+      "G_wt_anchor_ct_15m": 1.0223585776672244,
+      "B_1d_divergence": 0.003380026111742195,
+      "E_swing_regime_2h": 0.09171229957190948
+    },
+    "generalContribByStrategy": {
+      "A2_engulfment_only": 0.2861657869030895,
+      "C_nested_divergence": -0.004453393233776017,
+      "H_cooccurrence_k3": 0.006339145080611652,
+      "F_wt_anchor_1d": 0.00634373214345324,
+      "G_wt_anchor_ct_15m": 0,
+      "B_1d_divergence": 0,
+      "E_swing_regime_2h": 0
+    }
+  },
+  "overlapDist": {
+    "0": 354,
+    "1": 3643,
+    "2": 2813,
+    "3": 2301,
+    "4": 1970,
+    "5": 1577,
+    "6": 1314,
+    "7": 1024,
+    "8": 766,
+    "9": 536,
+    "10": 472,
+    "11": 388,
+    "12": 304,
+    "13": 243,
+    "14": 213,
+    "15": 139,
+    "16": 145,
+    "17": 92,
+    "18": 93,
+    "19": 94,
+    "20": 59,
+    "21": 53,
+    "22": 52,
+    "23": 47,
+    "24": 34,
+    "25": 25,
+    "26": 21,
+    "27": 24,
+    "28": 12,
+    "29": 27,
+    "30": 16,
+    "31": 15,
+    "32": 1,
+    "33": 10,
+    "34": 8,
+    "35": 5,
+    "36": 3,
+    "37": 6,
+    "38": 4,
+    "39": 7,
+    "41": 7,
+    "42": 5,
+    "43": 4,
+    "44": 3,
+    "45": 7,
+    "46": 7,
+    "47": 1,
+    "48": 2,
+    "50": 2,
+    "52": 2,
+    "53": 1
+  },
+  "pctWithOverlap": 0.9813202469526674,
+  "git_commit": "fb5207476fa306c1d1c2a9b128a144da8e20a21a",
+  "generated_at": "2026-08-21T12:36:04.998Z"
+}
