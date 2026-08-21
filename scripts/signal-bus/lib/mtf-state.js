@@ -201,7 +201,13 @@ export async function openMtf(instrument, { rungs = DEFAULT_RUNGS } = {}) {
  * `asOf` so nothing that had not yet formed at `t` can appear. Distance is signed: positive = the
  * level sits ABOVE price (resistance for a long), negative = BELOW (support).
  */
-export function htfContext(loadedRungs, t, price, { within = 0.05, rungs = null, activeOnly = true } = {}) {
+// activeOnly DEFAULT REVERSED 2026-08-21 (#216). The first version hid mitigated blocks on the
+// assumption they were dead levels. They are not: mitigated OBs beat matched placebos on reaction
+// (Welch t = 2.93 to 12.03) and on same-bar rejection rate (z = 7.23 to 10.27) across two
+// independent instrument groups, and they react with FLIPPED polarity -- the breaker behaviour.
+// Hiding them was discarding real structure, so `activeOnly` now defaults to FALSE and mitigated
+// levels carry a `flipped` flag naming the polarity they now act with.
+export function htfContext(loadedRungs, t, price, { within = 0.05, rungs = null, activeOnly = false } = {}) {
   const out = [];
   const push = (rung, kind, level, extra = {}) => {
     if (!Number.isFinite(level) || level <= 0) return;
@@ -226,13 +232,20 @@ export function htfContext(loadedRungs, t, price, { within = 0.05, rungs = null,
       // the live structure under decades of spent zones -- the first run of this function returned
       // 22 rows of which 20 were mitigated. `activeOnly` is the default for that reason.
       if (activeOnly && mitigated) continue;
-      const edge = ob.side === "bullish" ? ob.barHigh : ob.barLow;    // the edge price meets first
-      push(tf, `OB-${ob.side}${mitigated ? "-mitigated" : ""}`, edge, { top: ob.barHigh, bottom: ob.barLow, scope: ob.scope });
+      // A mitigated block is met from the OTHER side, so the edge price reaches first swaps too.
+      const edge = mitigated
+        ? (ob.side === "bearish" ? ob.barHigh : ob.barLow)
+        : (ob.side === "bullish" ? ob.barHigh : ob.barLow);
+      push(tf, `OB-${ob.side}${mitigated ? "-BREAKER" : ""}`, edge, {
+        top: ob.barHigh, bottom: ob.barLow, scope: ob.scope,
+        // #216: a broken block acts with flipped polarity -- broken bearish -> support, broken bullish -> resistance.
+        flipped: mitigated ? (ob.side === "bearish" ? "support" : "resistance") : null,
+      });
     }
     for (const p of R.pools) {
       if (p.createdBarIdx > i) continue;
       const broken = p.brokenBarIdx !== null && p.brokenBarIdx <= i;
-      if (activeOnly && broken) continue;                              // a swept pool is spent
+      if (activeOnly && broken) continue;   // swept pools kept by default too (#216 applies to OBs; pools untested)
       push(tf, `liq-${p.side}${broken ? "-swept" : ""}`, p.side === "buyside" ? p.bottom : p.top, { top: p.top, bottom: p.bottom });
     }
     const si = R.lastStruct[i];
@@ -267,11 +280,11 @@ if (import.meta.url === `file://${process.argv[1]?.replace(/\\/g, "/")}` || proc
     const px = Number(args.context) || snap.rungs[mtf.rungs[mtf.rungs.length - 1]]?.bar?.c;
     const within = Number(args.within || 0.05);
     console.log(`
-  TOP-DOWN CONTEXT around ${px} (within ${(within * 100).toFixed(1)}%)${args.all === undefined ? ", LIVE structure only (--all to include mitigated/swept)" : ", including mitigated"}:`);
-    const rows = mtf.context(when, px, { within, rungs: (args.ctxRungs || "1w,1d,4h").split(","), activeOnly: args.all === undefined });
+  TOP-DOWN CONTEXT around ${px} (within ${(within * 100).toFixed(1)}%)${args.activeOnly !== undefined ? ", LIVE only" : ", incl. BREAKERS (#216: mitigated blocks still react, flipped)"}:`);
+    const rows = mtf.context(when, px, { within, rungs: (args.ctxRungs || "1w,1d,4h").split(","), activeOnly: args.activeOnly !== undefined });
     if (!rows.length) console.log("    (no levels in range -- open air)");
     for (const r of rows.slice(0, 25)) {
-      console.log(`    ${r.rung.padEnd(4)} ${r.kind.padEnd(24)} ${String(r.level).padStart(11)}  ${r.distPct >= 0 ? "+" : ""}${r.distPct.toFixed(2)}% ${r.side.padEnd(5)}${r.status ? "  " + r.status : ""}${r.scope ? "  " + r.scope : ""}`);
+      console.log(`    ${r.rung.padEnd(4)} ${r.kind.padEnd(24)} ${String(r.level).padStart(11)}  ${r.distPct >= 0 ? "+" : ""}${r.distPct.toFixed(2)}% ${r.side.padEnd(5)}${r.flipped ? "  now:" + r.flipped : ""}${r.status ? "  " + r.status : ""}${r.scope ? "  " + r.scope : ""}`);
     }
   }
   mtf.close();
