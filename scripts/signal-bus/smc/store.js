@@ -24,6 +24,10 @@ const DB_FILES = {
   ADA: "smc-ada.db",
   LTC: "smc-ltc.db",
   LINK: "smc-link.db",
+  XLM: "smc-xlm.db",
+  TRX: "smc-trx.db",
+  ETC: "smc-etc.db",
+  DOGE: "smc-doge.db",
 };
 
 function dbPathFor(instrument) {

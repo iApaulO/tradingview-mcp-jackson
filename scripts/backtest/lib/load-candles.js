@@ -38,6 +38,11 @@ const INSTRUMENT_FILE_PREFIX = {
   ADA: "binance-ada",
   LTC: "binance-ltc",
   LINK: "binance-link",
+  // Added 2026-08-21 for PREREGISTRATION-regime-depth.md, before any of their data existed.
+  XLM: "binance-xlm",
+  TRX: "binance-trx",
+  ETC: "binance-etc",
+  DOGE: "binance-doge",
 };
 
 // `instrument` defaults to BTC while the store layer's requireInstrument() refuses to default at
