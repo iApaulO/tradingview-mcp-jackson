@@ -118,6 +118,14 @@ directional forecast — that is a stronger claim and Osler does not test it.
 Note also the magnitudes. **59.3% vs 54.8% is a 4.5-point edge on a coin flip**, from a paper with
 proprietary order data. Retail-visible proxies should be expected to deliver *less*, not more.
 
+> **TESTED ON OUR OWN DATA 2026-08-21 (#222) — IT DOES NOT TRANSFER TO CRYPTO.** Replicating Osler's
+> round-number reversal test across nine instruments: 4h round 64.3% vs arbitrary 64.7% (edge −0.4pp,
+> n≈125k, z=−2.06); 1h 64.5% vs 64.9% (edge −0.4pp, n≈290k, z=−3.26). **The effect is absent and
+> faintly inverted.** At that sample a 4.5-point effect would be unmissable, so this is not a power
+> problem. Crypto is 24/7, dealer-less, fragmented and algorithmic — round-number stop clustering
+> appears to be a dealer-market artefact. **Do not borrow "stop clustering" as a mechanism for a
+> crypto finding without testing it here first.**
+
 Reading: [Osler, Stop-Loss Orders and Price Cascades (FRBNY SR 150)](https://www.newyorkfed.org/medialibrary/media/research/staff_reports/sr150.pdf) ·
 [Osler, Support for Resistance: Technical Analysis and Intraday Exchange Rates](https://ideas.repec.org/a/fip/fednep/y2000ijulp53-68nv.6no.2.html)
 
