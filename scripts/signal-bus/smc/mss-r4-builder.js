@@ -25,7 +25,12 @@ const ATR_LEN = 14, ATR_MULT = 2.0, R_MULT = 4, HOLD_BARS = 200, SLIP_STOP_ATR =
 const TAKER = FEE_TIERS.bitunix_futures_vip1.takerFeePct;
 const MAKER = FEE_TIERS.bitunix_futures_vip1.makerFeePct;
 
-export const MSS_R4_REF = { win: 0.344, net: 0.028241, rows: "#206 #204", tier: "in-sample" };
+// TIER CORRECTED 2026-08-21 (#208): this construction FAILED its pre-registration on four fresh
+// instruments -- pooled net -0.1436% (n=137, t=-0.16), win 23.4% against the 34.4% reference below.
+// The reference figures are KEPT as the in-sample values the forward ledger reconciles against, but
+// the tier now records the failure. CLOSED for promotion. Rows are not deleted: forward data on a
+// failed construction is still informative, and deleting them would erase the fact that it failed.
+export const MSS_R4_REF = { win: 0.344, net: 0.028241, rows: "#206 #204 #208-FAIL", tier: "failed-preregistration" };
 
 function atrSeries(c, L) {
   const tr = c.map((x, i) => (i === 0 ? x.h - x.l : Math.max(x.h - x.l, Math.abs(x.h - c[i - 1].c), Math.abs(x.l - c[i - 1].c))));
