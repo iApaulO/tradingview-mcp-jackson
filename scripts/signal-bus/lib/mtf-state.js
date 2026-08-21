@@ -166,6 +166,9 @@ export async function openMtf(instrument, { rungs = DEFAULT_RUNGS } = {}) {
     instrument,
     rungs: Object.keys(loaded),
     skipped,
+    _loaded: loaded,
+    /** Top-down levels standing near `price` at instant `t`. See htfContext(). */
+    context(t, price, opts) { return htfContext(loaded, t, price, opts); },
     /** Full stack state at instant `t` (unix seconds). No rung can see past its own close. */
     at(t) {
       const out = { instrument, t, rungs: {} };
@@ -184,6 +187,58 @@ export async function openMtf(instrument, { rungs = DEFAULT_RUNGS } = {}) {
     },
     close() {},
   };
+}
+
+/**
+ * TOP-DOWN CONTEXT — every higher-timeframe level standing near `price` at instant `t`.
+ *
+ * iapaulo, 2026-08-21: "thats the part that is missing is a top down analysis for the context and
+ * probability of bottom up predictive signal forward." A bottom-up trigger (a Boom flag, a q6
+ * excursion, an OB touch) says WHEN. It says nothing about WHERE that trigger sits in the larger
+ * structure -- whether it is firing into weekly resistance or into open air. This returns the WHERE.
+ *
+ * Levels are drawn ONLY from rungs at or above `minRung`, and every one of them is filtered through
+ * `asOf` so nothing that had not yet formed at `t` can appear. Distance is signed: positive = the
+ * level sits ABOVE price (resistance for a long), negative = BELOW (support).
+ */
+export function htfContext(loadedRungs, t, price, { within = 0.05, rungs = null, activeOnly = true } = {}) {
+  const out = [];
+  const push = (rung, kind, level, extra = {}) => {
+    if (!Number.isFinite(level) || level <= 0) return;
+    const dist = (level - price) / price;
+    if (Math.abs(dist) > within) return;
+    out.push({ rung, kind, level, distPct: dist * 100, side: dist >= 0 ? "above" : "below", ...extra });
+  };
+  for (const tf of (rungs || Object.keys(loadedRungs))) {
+    const R = loadedRungs[tf];
+    if (!R) continue;
+    const i = asOf(R.candles, R.dur, t);
+    if (i < 0) continue;
+
+    for (const e of R.smc.eqhEqlEvents || []) {
+      if ((e.confirmBarIdx ?? e.barIdx ?? Infinity) > i) continue;   // not yet confirmed at t
+      push(tf, e.side === "EQH" || e.type === "EQH" ? "EQH" : "EQL", e.level ?? e.price, { status: e.sweepStatus ?? null });
+    }
+    for (const ob of R.smc.orderBlocks) {
+      if (ob.createdBarIdx > i) continue;
+      const mitigated = ob.mitigatedBarIdx !== null && ob.mitigatedBarIdx <= i;
+      // A MITIGATED order block is a dead level, not resistance. Including them by default buries
+      // the live structure under decades of spent zones -- the first run of this function returned
+      // 22 rows of which 20 were mitigated. `activeOnly` is the default for that reason.
+      if (activeOnly && mitigated) continue;
+      const edge = ob.side === "bullish" ? ob.barHigh : ob.barLow;    // the edge price meets first
+      push(tf, `OB-${ob.side}${mitigated ? "-mitigated" : ""}`, edge, { top: ob.barHigh, bottom: ob.barLow, scope: ob.scope });
+    }
+    for (const p of R.pools) {
+      if (p.createdBarIdx > i) continue;
+      const broken = p.brokenBarIdx !== null && p.brokenBarIdx <= i;
+      if (activeOnly && broken) continue;                              // a swept pool is spent
+      push(tf, `liq-${p.side}${broken ? "-swept" : ""}`, p.side === "buyside" ? p.bottom : p.top, { top: p.top, bottom: p.bottom });
+    }
+    const si = R.lastStruct[i];
+    if (si >= 0) for (const e of R.structAt.get(si)) push(tf, `${e.side}-${e.type}`, e.price, { scope: e.scope, barsAgo: i - si });
+  }
+  return out.sort((a, b) => Math.abs(a.distPct) - Math.abs(b.distPct));
 }
 
 // ---------------------------------------------------------------- CLI
@@ -207,6 +262,17 @@ if (import.meta.url === `file://${process.argv[1]?.replace(/\\/g, "/")}` || proc
     console.log(`       BOOM  q1=${r.boom.q1?.toFixed(1).padStart(6)} q5=${r.boom.q5?.toFixed(1).padStart(6)} q6=${r.boom.q6?.toFixed(1).padStart(6)}` +
                 `  ${r.boom.q6AtCeiling ? "[q6 CEILING]" : ""}${r.boom.q5AtFloor ? "[q5 FLOOR]" : ""}  last: ${b ? `${b.types.join("/")} ${b.barsAgo} bars ago` : "none"}`);
     console.log(`       ICT   buyside pools above=${r.ict.buysideAbove}  sellside below=${r.ict.sellsideBelow}  above-swept-buyside=${r.ict.aboveSweptBuyside}`);
+  }
+  if (args.context !== undefined) {
+    const px = Number(args.context) || snap.rungs[mtf.rungs[mtf.rungs.length - 1]]?.bar?.c;
+    const within = Number(args.within || 0.05);
+    console.log(`
+  TOP-DOWN CONTEXT around ${px} (within ${(within * 100).toFixed(1)}%)${args.all === undefined ? ", LIVE structure only (--all to include mitigated/swept)" : ", including mitigated"}:`);
+    const rows = mtf.context(when, px, { within, rungs: (args.ctxRungs || "1w,1d,4h").split(","), activeOnly: args.all === undefined });
+    if (!rows.length) console.log("    (no levels in range -- open air)");
+    for (const r of rows.slice(0, 25)) {
+      console.log(`    ${r.rung.padEnd(4)} ${r.kind.padEnd(24)} ${String(r.level).padStart(11)}  ${r.distPct >= 0 ? "+" : ""}${r.distPct.toFixed(2)}% ${r.side.padEnd(5)}${r.status ? "  " + r.status : ""}${r.scope ? "  " + r.scope : ""}`);
+    }
   }
   mtf.close();
 }
