@@ -32,6 +32,12 @@ const INSTRUMENT_FILE_PREFIX = {
   ETH: "binance-eth",
   SOL: "binance-sol",
   XRP: "binance-xrp",
+  // Fresh instruments, added 2026-08-21 for PREREGISTRATION-fresh-instruments.md. Never appeared
+  // in any register row before that spec was committed.
+  BNB: "binance-bnb",
+  ADA: "binance-ada",
+  LTC: "binance-ltc",
+  LINK: "binance-link",
 };
 
 // `instrument` defaults to BTC while the store layer's requireInstrument() refuses to default at

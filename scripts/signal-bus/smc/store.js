@@ -20,6 +20,10 @@ const DB_FILES = {
   ETH: "smc-eth.db",
   SOL: "smc-sol.db",
   XRP: "smc-xrp.db",
+  BNB: "smc-bnb.db",
+  ADA: "smc-ada.db",
+  LTC: "smc-ltc.db",
+  LINK: "smc-link.db",
 };
 
 function dbPathFor(instrument) {

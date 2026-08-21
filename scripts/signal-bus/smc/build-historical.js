@@ -17,6 +17,9 @@ import { openStore, clearAll, insertRun, insertAll } from "./store.js";
 // existing invocations keep their exact prior behaviour; pass --instrument=ETH to build ETH.
 // The store layer refuses to write an unlabelled row, so this value is load-bearing.
 const INSTRUMENT = (process.argv.find((a) => a.startsWith("--instrument=")) || "--instrument=BTC").split("=")[1];
+// Optional rung filter (2026-08-21): --tf=1w,1d,4h,... builds only those rungs. Added for the
+// fresh-instrument pre-registration, where only 1h/1d natives are fetched and 15m/5m do not exist.
+const TF_FILTER = (() => { const a = process.argv.find((x) => x.startsWith("--tf=")); return a ? new Set(a.split("=")[1].split(",")) : null; })();
 
 
 const LADDER = [
@@ -44,7 +47,7 @@ async function main() {
   clearAll(db, INSTRUMENT);
 
   const summary = [];
-  for (const { label, key } of LADDER) {
+  for (const { label, key } of LADDER.filter((l) => !TF_FILTER || TF_FILTER.has(l.key))) {
     process.stdout.write(`${label.padEnd(4)} (${key}) ... `);
     const t0 = Date.now();
     const candles = await loadCandles(key, INSTRUMENT);
