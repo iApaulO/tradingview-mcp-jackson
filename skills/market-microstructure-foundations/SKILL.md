@@ -129,6 +129,14 @@ proprietary order data. Retail-visible proxies should be expected to deliver *le
 Reading: [Osler, Stop-Loss Orders and Price Cascades (FRBNY SR 150)](https://www.newyorkfed.org/medialibrary/media/research/staff_reports/sr150.pdf) ·
 [Osler, Support for Resistance: Technical Analysis and Intraday Exchange Rates](https://ideas.repec.org/a/fip/fednep/y2000ijulp53-68nv.6no.2.html)
 
+> **MECHANISM TESTED HERE 2026-08-21 (#223).** For our own pivot-based levels the effect decomposes
+> as: ~80% generic **prior-extreme / range structure**, ~20% genuine **clustering** increment
+> (rejection 40.9% placebo → 48.8% isolated pivot → 50.8% clustered). And the resting-liquidity
+> signature **fails**: post-breach displacement is 0.841 ATR after a cluster vs 0.951 ATR after an
+> isolated pivot (t=−2.18) — an ANTI-cascade. **Together with #222's null round-number result, the
+> stop-liquidity mechanism has now failed on both of its testable signatures in crypto.** Levels
+> react here; resting-stop cascades are not why.
+
 ### Support and resistance — **mixed, with the useful version being order-based**
 
 Osler's support/resistance work uses **dealer-published levels** and finds predictive content. The
