@@ -128,8 +128,12 @@ The vocabulary collides with ours. This is the failure that cost #157 and #169.
    words for a different claim.
 2. **The pairing claim** — does an HTF CHoCH coincide with an LTF trend change? Direct co-occurrence
    measurement; #204's episode de-duplication applies.
-3. **The timing claim** — does the LTF bearish switch *lead* the HTF pullback, or merely coincide?
-   Lead/lag is measurable and is the whole practical value of the method.
+3. ~~**The timing claim**~~ — **TESTED 2026-08-21 (#228): HOLDS.** At the LTF bearish switch,
+   **66.9%** of the pullback is still ahead on his 4h/15m pairing (n=3,972) versus **51.6%** for a
+   random bar (t=32.67); 56.6% on 4h/1h. **The finer LTF is materially better, validating his 16x
+   ratio**, and it beats our own HTF internal break, which sits at chance (49.3%/50.0%). **Caveat:
+   false-positive rate is UNMEASURED — this conditions on pullbacks that occurred — and tradeability
+   is untested.**
 4. **The recursion claim** — is an HTF run really a complete LTF trend? Measurable as HH/HL count on
    the LTF within one HTF run.
 
